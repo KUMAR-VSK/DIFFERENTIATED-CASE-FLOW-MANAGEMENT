@@ -1,7 +1,5 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { ThemeProvider as MuiThemeProvider, createTheme } from '@mui/material/styles';
-import { CssBaseline } from '@mui/material';
 import { AuthProvider, useAuth, ThemeProvider } from './context/AuthContext';
 
 // Components
@@ -34,51 +32,13 @@ const ProtectedRoute = ({ children, allowedRoles = [] }) => {
 };
 
 function App() {
-  // Create MUI theme
-  const muiTheme = createTheme({
-    palette: {
-      primary: {
-        main: '#2563eb', // Blue-600 to match Tailwind
-      },
-      secondary: {
-        main: '#7c3aed', // Purple-600 for notes
-      },
-      background: {
-        default: '#f8fafc', // Slate-50
-      },
-    },
-    typography: {
-      fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
-    },
-    components: {
-      MuiButton: {
-        styleOverrides: {
-          root: {
-            textTransform: 'none', // Disable uppercase
-            borderRadius: '8px',
-          },
-        },
-      },
-      MuiCard: {
-        styleOverrides: {
-          root: {
-            borderRadius: '12px',
-            boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
-          },
-        },
-      },
-    },
-  });
-
   return (
-    <MuiThemeProvider theme={muiTheme}>
-      <CssBaseline />
-      <ThemeProvider>
-        <AuthProvider>
-          <Router>
-            <Navigation />
-            <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-slate-900 transition-colors duration-300">
-              <main className="py-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+    <ThemeProvider>
+      <AuthProvider>
+        <Router>
+          <Navigation />
+          <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-slate-900 transition-colors duration-300">
+            <main className="py-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
               <Routes>
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
@@ -137,7 +97,6 @@ function App() {
         </Router>
       </AuthProvider>
     </ThemeProvider>
-    </MuiThemeProvider>
   );
 }
 

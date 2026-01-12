@@ -3,20 +3,14 @@ package com.example.dcm.service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 import com.example.dcm.model.Case;
-import com.example.dcm.model.CaseNote;
-import com.example.dcm.model.Document;
 import com.example.dcm.model.User;
-import com.example.dcm.repository.CaseNoteRepository;
 import com.example.dcm.repository.CaseRepository;
-import com.example.dcm.repository.DocumentRepository;
 import com.example.dcm.repository.UserRepository;
 
 @Service
@@ -28,12 +22,6 @@ public class CaseService {
 
     @Autowired
     private UserRepository userRepository;
-
-    @Autowired
-    private DocumentRepository documentRepository;
-
-    @Autowired
-    private CaseNoteRepository caseNoteRepository;
 
     @Autowired
     private PriorityEngine priorityEngine;
@@ -70,25 +58,6 @@ public class CaseService {
 
         caseEntity.setStatus(newStatus);
         return caseRepository.save(caseEntity);
-    }
-
-    // Update case details
-    public Case updateCase(Long caseId, Case updatedCase) {
-        Case existingCase = caseRepository.findById(caseId)
-                .orElseThrow(() -> new IllegalArgumentException("Case not found"));
-
-        // Update allowed fields
-        if (updatedCase.getTitle() != null) existingCase.setTitle(updatedCase.getTitle());
-        if (updatedCase.getDescription() != null) existingCase.setDescription(updatedCase.getDescription());
-        if (updatedCase.getCaseType() != null) existingCase.setCaseType(updatedCase.getCaseType());
-        if (updatedCase.getResourceRequirement() != null) existingCase.setResourceRequirement(updatedCase.getResourceRequirement());
-        if (updatedCase.getEstimatedDurationDays() != null) existingCase.setEstimatedDurationDays(updatedCase.getEstimatedDurationDays());
-
-        // Recalculate priority if case type or other factors changed
-        int newPriority = priorityEngine.calculatePriority(existingCase);
-        existingCase.setPriority(newPriority);
-
-        return caseRepository.save(existingCase);
     }
 
     // Assign judge to case
@@ -147,7 +116,7 @@ public class CaseService {
         return caseRepository.findByPriorityGreaterThanEqual(8);
     }
 
-    // Update case priority (recalculate with age consideration)
+    // Update case priority
     public Case updatePriority(Long caseId) {
         Case caseEntity = caseRepository.findById(caseId)
                 .orElseThrow(() -> new IllegalArgumentException("Case not found"));
@@ -156,19 +125,6 @@ public class CaseService {
         int newPriority = priorityEngine.adjustPriorityForAge(caseEntity);
         caseEntity.setPriority(newPriority);
 
-        return caseRepository.save(caseEntity);
-    }
-
-    // Manually set case priority
-    public Case setPriority(Long caseId, Integer priority) {
-        Case caseEntity = caseRepository.findById(caseId)
-                .orElseThrow(() -> new IllegalArgumentException("Case not found"));
-
-        if (priority < 1 || priority > 10) {
-            throw new IllegalArgumentException("Priority must be between 1 and 10");
-        }
-
-        caseEntity.setPriority(priority);
         return caseRepository.save(caseEntity);
     }
 
@@ -189,107 +145,6 @@ public class CaseService {
     // Get case by ID
     public Optional<Case> getCaseById(Long id) {
         return caseRepository.findById(id);
-    }
-
-    // Get all cases
-    public List<Case> getAllCases() {
-        return caseRepository.findAll();
-    }
-
-    // Get cases by IDs
-    public List<Case> getCasesByIds(List<Long> ids) {
-        return caseRepository.findAllById(ids);
-    }
-
-    // Get documents for a case
-    public List<Document> getCaseDocuments(Long caseId) {
-        Case caseEntity = caseRepository.findById(caseId)
-                .orElseThrow(() -> new IllegalArgumentException("Case not found"));
-        return documentRepository.findByCaseEntityIdOrderByUploadDateDesc(caseId);
-    }
-
-    // Upload document for a case
-    public Document uploadDocument(Long caseId, MultipartFile file, String description, String username) {
-        Case caseEntity = caseRepository.findById(caseId)
-                .orElseThrow(() -> new IllegalArgumentException("Case not found"));
-
-        User uploader = userRepository.findByUsername(username)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
-
-        // Validate file
-        if (file.isEmpty()) {
-            throw new IllegalArgumentException("File is empty");
-        }
-
-        // Generate unique filename
-        String originalFilename = file.getOriginalFilename();
-        String fileExtension = getFileExtension(originalFilename);
-        String uniqueFilename = UUID.randomUUID().toString() + "." + fileExtension;
-
-        // Save file (for now, we'll just store metadata - in production, save to file system or cloud storage)
-        try {
-            // For demo purposes, we'll just store the metadata
-            // In a real application, you'd save the file to a directory or cloud storage
-            Document document = new Document(
-                uniqueFilename,
-                originalFilename,
-                file.getContentType(),
-                file.getSize(),
-                caseEntity,
-                uploader
-            );
-
-            if (description != null && !description.trim().isEmpty()) {
-                document.setDescription(description.trim());
-            }
-
-            return documentRepository.save(document);
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to save document: " + e.getMessage());
-        }
-    }
-
-    private String getFileExtension(String filename) {
-        if (filename == null || filename.lastIndexOf('.') == -1) {
-            return "";
-        }
-        return filename.substring(filename.lastIndexOf('.') + 1);
-    }
-
-    // Create a note for a case (judges only)
-    public CaseNote createCaseNote(Long caseId, String note, String judgeUsername) {
-        Case caseEntity = caseRepository.findById(caseId)
-                .orElseThrow(() -> new IllegalArgumentException("Case not found"));
-
-        User judge = userRepository.findByUsername(judgeUsername)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
-
-        if (judge.getRole() != User.Role.JUDGE) {
-            throw new IllegalArgumentException("Only judges can create case notes");
-        }
-
-        if (note == null || note.trim().isEmpty()) {
-            throw new IllegalArgumentException("Note cannot be empty");
-        }
-
-        CaseNote caseNote = new CaseNote(note.trim(), caseEntity, judge);
-        return caseNoteRepository.save(caseNote);
-    }
-
-    // Get notes for a case
-    public List<CaseNote> getCaseNotes(Long caseId) {
-        Case caseEntity = caseRepository.findById(caseId)
-                .orElseThrow(() -> new IllegalArgumentException("Case not found"));
-
-        return caseNoteRepository.findByCaseEntityOrderByCreatedAtDesc(caseEntity);
-    }
-
-    // Get notes by judge
-    public List<CaseNote> getNotesByJudge(String judgeUsername) {
-        User judge = userRepository.findByUsername(judgeUsername)
-                .orElseThrow(() -> new IllegalArgumentException("Judge not found"));
-
-        return caseNoteRepository.findByCreatedByOrderByCreatedAtDesc(judge);
     }
 
     // Inner class for statistics

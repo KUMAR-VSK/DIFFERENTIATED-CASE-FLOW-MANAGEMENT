@@ -1,4 +1,3 @@
-com/example/dcm/repository/DocumentRepository.class
 com/example/dcm/controller/CaseController.class
 com/example/dcm/service/UserService.class
 com/example/dcm/model/User.class
@@ -10,11 +9,8 @@ com/example/dcm/repository/UserRepository.class
 com/example/dcm/model/Case$CaseType.class
 com/example/dcm/repository/CaseRepository.class
 com/example/dcm/model/Case.class
-com/example/dcm/model/Document.class
-com/example/dcm/model/CaseNote.class
 com/example/dcm/controller/AuthController.class
 com/example/dcm/model/User$Role.class
-com/example/dcm/repository/CaseNoteRepository.class
 com/example/dcm/service/PriorityEngine.class
 com/example/dcm/DcmApplication.class
 com/example/dcm/service/CaseService$CaseStatistics.class
