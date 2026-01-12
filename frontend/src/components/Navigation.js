@@ -106,7 +106,11 @@ const Navigation = () => {
               {/* Theme Toggle Button */}
               <button
                 onClick={toggleDarkMode}
-                className="text-slate-300 hover:text-white hover:bg-slate-800 p-2 rounded-md transition-all duration-200"
+                className={`p-2 rounded-md transition-all duration-200 ${
+                  darkMode
+                    ? 'text-yellow-400 bg-slate-800 hover:bg-slate-700 hover:text-yellow-300'
+                    : 'text-slate-300 hover:text-white hover:bg-slate-800'
+                }`}
                 title={darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
               >
                 {darkMode ? (
