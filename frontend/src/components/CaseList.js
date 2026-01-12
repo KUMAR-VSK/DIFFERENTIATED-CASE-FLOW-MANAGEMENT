@@ -18,7 +18,69 @@ const CaseList = () => {
     search: '',
     priority: '',
   });
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [confirmAction, setConfirmAction] = useState(null);
+  const [confirmMessage, setConfirmMessage] = useState('');
+  const [exportLoading, setExportLoading] = useState(false);
   const casesPerPage = 10;
+
+  const handleBulkAction = (action) => {
+    if (selectedCases.length === 0) return;
+
+    let message = '';
+    let actionFn = null;
+
+    switch (action) {
+      case 'export':
+        message = `Export ${selectedCases.length} case${selectedCases.length > 1 ? 's' : ''} to CSV?`;
+        actionFn = () => handleExport(selectedCases);
+        break;
+      case 'delete':
+        message = `Are you sure you want to delete ${selectedCases.length} case${selectedCases.length > 1 ? 's' : ''}? This action cannot be undone.`;
+        actionFn = () => handleBulkDelete(selectedCases);
+        break;
+      default:
+        return;
+    }
+
+    setConfirmMessage(message);
+    setConfirmAction(() => actionFn);
+    setShowConfirmDialog(true);
+  };
+
+  const handleExport = async (caseIds) => {
+    setExportLoading(true);
+    try {
+      const response = await axios.post('http://localhost:8081/api/cases/export', { caseIds }, {
+        responseType: 'blob'
+      });
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `cases_export_${new Date().toISOString().split('T')[0]}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error exporting cases:', error);
+      alert('Failed to export cases');
+    } finally {
+      setExportLoading(false);
+    }
+  };
+
+  const handleBulkDelete = async (caseIds) => {
+    try {
+      await axios.delete('http://localhost:8081/api/cases/bulk-delete', { data: { caseIds } });
+      setSelectedCases([]);
+      fetchCases(); // Refresh the list
+    } catch (error) {
+      console.error('Error deleting cases:', error);
+      alert('Failed to delete cases');
+    }
+  };
 
   const fetchCases = async () => {
     try {
@@ -73,6 +135,25 @@ const CaseList = () => {
       window.history.replaceState({}, document.title);
     }
   }, [location.state]);
+
+  // Effect to refresh when component becomes visible (after navigation)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        console.log('Page became visible, checking if refresh needed...');
+        // Small delay to allow navigation to complete
+        setTimeout(() => {
+          fetchCases();
+        }, 100);
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
 
   useEffect(() => {
     let filtered = cases;
@@ -306,12 +387,21 @@ const CaseList = () => {
               {selectedCases.length} case{selectedCases.length > 1 ? 's' : ''} selected
             </span>
             <div className="flex gap-2">
-              <button className="px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors">
-                Export Selected
+              <button
+                onClick={() => handleBulkAction('export')}
+                disabled={exportLoading}
+                className="px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50"
+              >
+                {exportLoading ? 'Exporting...' : 'Export Selected'}
               </button>
-              <button className="px-4 py-2 bg-gray-600 text-white text-sm rounded-md hover:bg-gray-700 transition-colors">
-                Bulk Update
-              </button>
+              {user.role === 'ADMIN' && (
+                <button
+                  onClick={() => handleBulkAction('delete')}
+                  className="px-4 py-2 bg-red-600 text-white text-sm rounded-md hover:bg-red-700 transition-colors"
+                >
+                  Delete Selected
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -504,6 +594,45 @@ const CaseList = () => {
               </Link>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Confirmation Dialog */}
+      {showConfirmDialog && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div className="mt-3">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">Confirm Action</h3>
+              <p className="text-sm text-gray-500 mb-4">
+                {confirmMessage}
+              </p>
+              <div className="flex justify-end gap-3">
+                <button
+                  onClick={() => {
+                    setShowConfirmDialog(false);
+                    setConfirmAction(null);
+                    setConfirmMessage('');
+                  }}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => {
+                    if (confirmAction) {
+                      confirmAction();
+                    }
+                    setShowConfirmDialog(false);
+                    setConfirmAction(null);
+                    setConfirmMessage('');
+                  }}
+                  className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700"
+                >
+                  Confirm
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>

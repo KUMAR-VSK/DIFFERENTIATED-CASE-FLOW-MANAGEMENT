@@ -1,6 +1,29 @@
 import React, { useState } from 'react';
 import { Navigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import {
+  TextField,
+  Button,
+  Card,
+  CardContent,
+  Typography,
+  Box,
+  Alert,
+  InputAdornment,
+  IconButton,
+  Paper,
+  Chip
+} from '@mui/material';
+import {
+  Person,
+  Lock,
+  Visibility,
+  VisibilityOff,
+  Login as LoginIcon,
+  Gavel,
+  AdminPanelSettings,
+  AssignmentInd
+} from '@mui/icons-material';
 
 const Login = () => {
   const [credentials, setCredentials] = useState({ username: '', password: '' });
@@ -67,90 +90,89 @@ const Login = () => {
           <div className="mt-4 h-1 w-24 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full mx-auto"></div>
         </div>
 
-        <form className="mt-10 space-y-6 bg-white/70 backdrop-blur-sm p-8 rounded-2xl shadow-xl border border-white/20" onSubmit={handleSubmit}>
-          {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl animate-pulse">
-              <div className="flex items-center">
-                <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                </svg>
-                {error}
-              </div>
-            </div>
-          )}
+        <Card sx={{ mt: 4, backgroundColor: 'rgba(255, 255, 255, 0.7)', backdropFilter: 'blur(8px)' }}>
+          <CardContent sx={{ p: 4 }}>
+            <form onSubmit={handleSubmit}>
+              {error && (
+                <Alert severity="error" sx={{ mb: 3 }}>
+                  {error}
+                </Alert>
+              )}
 
-          <div className="space-y-4">
-            <div>
-              <label htmlFor="username" className="block text-sm font-semibold text-gray-700 mb-2">
-                Username
-              </label>
-              <div className="relative">
-                <input
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                <TextField
+                  fullWidth
                   id="username"
                   name="username"
+                  label="Username"
                   type="text"
                   required
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20 transition-all duration-200 bg-white/50 backdrop-blur-sm text-gray-900 placeholder-gray-500"
-                  placeholder="Enter your username"
                   value={credentials.username}
                   onChange={handleChange}
                   autoComplete="username"
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Person />
+                      </InputAdornment>
+                    ),
+                  }}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      backgroundColor: 'rgba(255, 255, 255, 0.5)',
+                      backdropFilter: 'blur(8px)',
+                    }
+                  }}
                 />
-                <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
-                  <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                  </svg>
-                </div>
-              </div>
-            </div>
 
-            <div>
-              <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-2">
-                Password
-              </label>
-              <div className="relative">
-                <input
+                <TextField
+                  fullWidth
                   id="password"
                   name="password"
+                  label="Password"
                   type="password"
                   required
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20 transition-all duration-200 bg-white/50 backdrop-blur-sm text-gray-900 placeholder-gray-500"
-                  placeholder="Enter your password"
                   value={credentials.password}
                   onChange={handleChange}
                   autoComplete="current-password"
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Lock />
+                      </InputAdornment>
+                    ),
+                  }}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      backgroundColor: 'rgba(255, 255, 255, 0.5)',
+                      backdropFilter: 'blur(8px)',
+                    }
+                  }}
                 />
-                <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
-                  <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                  </svg>
-                </div>
-              </div>
-            </div>
-          </div>
 
-          <div className="pt-2">
-            <button
-              type="submit"
-              disabled={loading}
-              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-semibold rounded-xl text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-4 focus:ring-indigo-500/50 transform hover:scale-[1.02] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-lg"
-            >
-              <span className="absolute left-0 inset-y-0 flex items-center pl-3">
-                {loading ? (
-                  <svg className="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                ) : (
-                  <svg className="h-5 w-5 text-indigo-300 group-hover:text-indigo-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
-                  </svg>
-                )}
-              </span>
-              {loading ? 'Signing in...' : 'Sign In'}
-            </button>
-          </div>
-        </form>
+                <Button
+                  type="submit"
+                  fullWidth
+                  variant="contained"
+                  size="large"
+                  disabled={loading}
+                  startIcon={loading ? null : <LoginIcon />}
+                  sx={{
+                    mt: 2,
+                    py: 1.5,
+                    background: 'linear-gradient(45deg, #6366f1 30%, #8b5cf6 90%)',
+                    boxShadow: '0 3px 5px 2px rgba(99, 102, 241, .3)',
+                    '&:hover': {
+                      background: 'linear-gradient(45deg, #4f46e5 30%, #7c3aed 90%)',
+                    }
+                  }}
+                >
+                  {loading ? 'Signing in...' : 'Sign In'}
+                </Button>
+              </Box>
+            </form>
+          </CardContent>
+        </Card>
 
         <div className="mt-8">
           <h3 className="text-lg font-semibold text-gray-900 mb-6 text-center">Demo Accounts</h3>
@@ -223,4 +245,3 @@ const Login = () => {
 };
 
 export default Login;
-

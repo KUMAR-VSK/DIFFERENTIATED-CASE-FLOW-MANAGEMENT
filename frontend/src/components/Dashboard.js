@@ -2,34 +2,88 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
+import {
+  Card,
+  CardContent,
+  Typography,
+  Grid,
+  Box,
+  Chip,
+  LinearProgress,
+  Avatar,
+  List,
+  ListItem,
+  ListItemAvatar,
+  ListItemText,
+  Divider,
+  IconButton,
+  Tooltip,
+  Alert,
+  Paper
+} from '@mui/material';
+import {
+  TrendingUp,
+  Assignment,
+  CheckCircle,
+  Schedule,
+  PriorityHigh,
+  Person,
+  Folder,
+  Assessment,
+  Timeline,
+  Notifications,
+  Dashboard as DashboardIcon,
+  Work,
+  Gavel,
+  Description,
+  Group
+} from '@mui/icons-material';
 
 const Dashboard = () => {
   const { user } = useAuth();
   const [stats, setStats] = useState(null);
   const [recentCases, setRecentCases] = useState([]);
   const [highPriorityCases, setHighPriorityCases] = useState([]);
+  const [allUsers, setAllUsers] = useState([]);
+  const [systemHealth, setSystemHealth] = useState('good');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
-      // Only fetch data if user is authenticated
       if (!user) {
         setLoading(false);
         return;
       }
 
       try {
-        const [statsResponse, casesResponse, highPriorityResponse] = await Promise.all([
-          axios.get('http://localhost:8081/api/cases/statistics'),
-          axios.get('http://localhost:8081/api/cases'),
-          axios.get('http://localhost:8081/api/cases/high-priority'),
-        ]);
+        const apiCalls = [axios.get('http://localhost:8081/api/cases')];
 
-        setStats(statsResponse.data);
-        setRecentCases(casesResponse.data.slice(0, 5)); // Show last 5 cases
-        setHighPriorityCases(highPriorityResponse.data);
+        if (user.role === 'ADMIN') {
+          apiCalls.unshift(axios.get('http://localhost:8081/api/cases/statistics'));
+          apiCalls.push(axios.get('http://localhost:8081/api/cases/high-priority'));
+        }
+
+        const responses = await Promise.all(apiCalls);
+        let responseIndex = 0;
+
+        if (user.role === 'ADMIN') {
+          setStats(responses[responseIndex++].data);
+        }
+
+        const casesResponse = responses[responseIndex++];
+        setRecentCases(casesResponse.data.slice(0, 6));
+
+        if (user.role === 'ADMIN') {
+          const highPriorityResponse = responses[responseIndex];
+          setHighPriorityCases(highPriorityResponse.data);
+        }
+
+        // Mock system health check
+        setSystemHealth('good');
+
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
+        setSystemHealth('warning');
       } finally {
         setLoading(false);
       }
@@ -74,303 +128,432 @@ const Dashboard = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
-          <p className="mt-4 text-lg text-gray-600 font-medium">Loading dashboard...</p>
-        </div>
-      </div>
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
+        <Box sx={{ textAlign: 'center' }}>
+          <LinearProgress sx={{ width: 200, mb: 2 }} />
+          <Typography variant="h6">Loading dashboard...</Typography>
+        </Box>
+      </Box>
     );
   }
 
+  const completionRate = stats ? ((stats.completedCases / stats.totalCases) * 100) : 0;
+  const activeCases = stats ? stats.scheduledCases + stats.filedCases : 0;
+
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header Section */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-4xl font-bold text-gray-900 dark:text-white tracking-tight">Dashboard</h1>
-              <p className="mt-2 text-xl text-gray-600 dark:text-gray-300 font-medium">
-                Welcome back, {user.firstName || user.username}
-              </p>
-              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                Here's an overview of your case management activities
-              </p>
-            </div>
-            <div className="flex items-center space-x-3">
-              <div className="text-right">
-                <p className="text-sm text-gray-500 dark:text-gray-400">Last updated</p>
-                <p className="text-sm font-medium text-gray-900 dark:text-white">
-                  {new Date().toLocaleDateString('en-US', {
-                    weekday: 'long',
-                    year: 'numeric',
-                    month: 'short',
-                    day: 'numeric'
-                  })}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
+    <Box sx={{ minHeight: '100vh', bgcolor: 'background.default', p: 3 }}>
+      {/* Header */}
+      <Box sx={{ mb: 4 }}>
+        <Grid container justifyContent="space-between" alignItems="center">
+          <Grid item>
+            <Typography variant="h3" component="h1" gutterBottom sx={{ fontWeight: 'bold' }}>
+              Dashboard
+            </Typography>
+            <Typography variant="h5" color="text.secondary" gutterBottom>
+              Welcome back, {user.firstName || user.username}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Here's an overview of your case management activities
+            </Typography>
+          </Grid>
+          <Grid item>
+            <Box sx={{ textAlign: 'right' }}>
+              <Typography variant="body2" color="text.secondary">
+                Last updated
+              </Typography>
+              <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
+                {new Date().toLocaleDateString('en-US', {
+                  weekday: 'long',
+                  year: 'numeric',
+                  month: 'short',
+                  day: 'numeric'
+                })}
+              </Typography>
+            </Box>
+          </Grid>
+        </Grid>
+      </Box>
 
-        {/* Statistics Cards */}
-        {stats && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            {/* Total Cases */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow duration-200">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <div className="w-12 h-12 bg-gradient-to-r from-slate-500 to-slate-600 rounded-xl flex items-center justify-center">
-                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                  </div>
-                </div>
-                <div className="ml-4">
-                  <dt className="text-sm font-medium text-gray-500 truncate">Total Cases</dt>
-                  <dd className="text-3xl font-bold text-gray-900">{stats.totalCases}</dd>
-                </div>
-              </div>
-            </div>
+      {/* System Health Alert */}
+      <Alert
+        severity={systemHealth === 'good' ? 'success' : 'warning'}
+        sx={{ mb: 3 }}
+        icon={<DashboardIcon />}
+      >
+        System Status: {systemHealth === 'good' ? 'All systems operational' : 'Some services may be experiencing issues'}
+      </Alert>
 
-            {/* Filed Cases */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow duration-200">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <div className="w-12 h-12 bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center">
-                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  </div>
-                </div>
-                <div className="ml-4">
-                  <dt className="text-sm font-medium text-gray-500 truncate">Filed Cases</dt>
-                  <dd className="text-3xl font-bold text-gray-900">{stats.filedCases}</dd>
-                </div>
-              </div>
-            </div>
+      {/* Statistics Cards */}
+      {stats && (
+        <Grid container spacing={3} sx={{ mb: 4 }}>
+          <Grid item xs={12} sm={6} md={3}>
+            <Card sx={{ bgcolor: 'background.paper', '&:hover': { boxShadow: 6 } }}>
+              <CardContent>
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                  <Avatar sx={{ bgcolor: 'primary.main', mr: 2 }}>
+                    <Folder />
+                  </Avatar>
+                  <Box>
+                    <Typography variant="h4" component="div" sx={{ fontWeight: 'bold' }}>
+                      {stats.totalCases}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Total Cases
+                    </Typography>
+                  </Box>
+                </Box>
+                <LinearProgress variant="determinate" value={100} color="primary" />
+              </CardContent>
+            </Card>
+          </Grid>
 
-            {/* Scheduled Cases */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow duration-200">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <div className="w-12 h-12 bg-gradient-to-r from-amber-500 to-orange-600 rounded-xl flex items-center justify-center">
-                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  </div>
-                </div>
-                <div className="ml-4">
-                  <dt className="text-sm font-medium text-gray-500 truncate">Scheduled Cases</dt>
-                  <dd className="text-3xl font-bold text-gray-900">{stats.scheduledCases}</dd>
-                </div>
-              </div>
-            </div>
+          <Grid item xs={12} sm={6} md={3}>
+            <Card sx={{ bgcolor: 'background.paper', '&:hover': { boxShadow: 6 } }}>
+              <CardContent>
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                  <Avatar sx={{ bgcolor: 'success.main', mr: 2 }}>
+                    <CheckCircle />
+                  </Avatar>
+                  <Box>
+                    <Typography variant="h4" component="div" sx={{ fontWeight: 'bold' }}>
+                      {stats.filedCases}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Filed Cases
+                    </Typography>
+                  </Box>
+                </Box>
+                <LinearProgress
+                  variant="determinate"
+                  value={(stats.filedCases / stats.totalCases) * 100}
+                  color="success"
+                />
+              </CardContent>
+            </Card>
+          </Grid>
 
-            {/* Completed Cases */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow duration-200">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <div className="w-12 h-12 bg-gradient-to-r from-sky-500 to-sky-600 rounded-xl flex items-center justify-center">
-                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
-                    </svg>
-                  </div>
-                </div>
-                <div className="ml-4">
-                  <dt className="text-sm font-medium text-gray-500 truncate">Completed Cases</dt>
-                  <dd className="text-3xl font-bold text-gray-900">{stats.completedCases}</dd>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+          <Grid item xs={12} sm={6} md={3}>
+            <Card sx={{ bgcolor: 'background.paper', '&:hover': { boxShadow: 6 } }}>
+              <CardContent>
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                  <Avatar sx={{ bgcolor: 'warning.main', mr: 2 }}>
+                    <Schedule />
+                  </Avatar>
+                  <Box>
+                    <Typography variant="h4" component="div" sx={{ fontWeight: 'bold' }}>
+                      {stats.scheduledCases}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Scheduled Cases
+                    </Typography>
+                  </Box>
+                </Box>
+                <LinearProgress
+                  variant="determinate"
+                  value={(stats.scheduledCases / stats.totalCases) * 100}
+                  color="warning"
+                />
+              </CardContent>
+            </Card>
+          </Grid>
 
-        {/* Activity Overview */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-          {/* Recent Cases */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-            <div className="bg-gradient-to-r from-slate-600 to-slate-700 px-6 py-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-white">Recent Cases</h3>
-                <svg className="w-5 h-5 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-            </div>
-            <div className="p-6">
+          <Grid item xs={12} sm={6} md={3}>
+            <Card sx={{ bgcolor: 'background.paper', '&:hover': { boxShadow: 6 } }}>
+              <CardContent>
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                  <Avatar sx={{ bgcolor: 'info.main', mr: 2 }}>
+                    <TrendingUp />
+                  </Avatar>
+                  <Box>
+                    <Typography variant="h4" component="div" sx={{ fontWeight: 'bold' }}>
+                      {completionRate.toFixed(1)}%
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Completion Rate
+                    </Typography>
+                  </Box>
+                </Box>
+                <LinearProgress
+                  variant="determinate"
+                  value={completionRate}
+                  color="info"
+                />
+              </CardContent>
+            </Card>
+          </Grid>
+        </Grid>
+      )}
+
+      {/* Main Content Grid */}
+      <Grid container spacing={3}>
+        {/* Recent Cases */}
+        <Grid item xs={12} lg={6}>
+          <Card sx={{ height: '100%' }}>
+            <Box sx={{ bgcolor: 'primary.main', p: 2, color: 'white' }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                  Recent Cases
+                </Typography>
+                <Timeline />
+              </Box>
+            </Box>
+            <CardContent>
               {recentCases.length > 0 ? (
-                <div className="space-y-4">
-                  {recentCases.map((caseItem) => (
-                    <Link
-                      key={caseItem.id}
-                      to={`/cases/${caseItem.id}`}
-                      className="block p-4 rounded-lg border border-gray-200 hover:border-indigo-300 hover:shadow-md transition-all duration-200 group"
-                    >
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors">
-                            {caseItem.title}
-                          </p>
-                          <div className="flex flex-wrap gap-2 mt-2">
-                            <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-800">
-                              {caseItem.caseNumber}
-                            </span>
-                            <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium border ${getStatusColor(caseItem.status)}`}>
-                              {caseItem.status.replace('_', ' ')}
-                            </span>
-                            <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-slate-100 text-slate-800">
-                              Priority {caseItem.priority}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </Link>
-                  ))}
-                  <div className="pt-4 border-t border-gray-200">
-                    <Link
-                      to="/cases"
-                      className="w-full inline-flex justify-center items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors duration-200"
-                    >
-                      View All Cases
-                      <svg className="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-                      </svg>
-                    </Link>
-                  </div>
-                </div>
-              ) : (
-                <div className="text-center py-8">
-                  <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
-                  <p className="mt-2 text-sm text-gray-500">No recent cases</p>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* High Priority Cases */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-            <div className="bg-gradient-to-r from-red-600 to-red-700 px-6 py-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-white">High Priority Cases</h3>
-                <svg className="w-5 h-5 text-red-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
-                </svg>
-              </div>
-            </div>
-            <div className="p-6">
-              {highPriorityCases.length > 0 ? (
-                <div className="space-y-4">
-                  {highPriorityCases.slice(0, 5).map((caseItem) => (
-                    <Link
-                      key={caseItem.id}
-                      to={`/cases/${caseItem.id}`}
-                      className="block p-4 rounded-lg border border-gray-200 hover:border-red-300 hover:shadow-md transition-all duration-200 group"
-                    >
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold text-gray-900 group-hover:text-red-600 transition-colors">
-                            {caseItem.title}
-                          </p>
-                          <div className="flex flex-wrap gap-2 mt-2">
-                            <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium border ${getCaseTypeColor(caseItem.caseType)}`}>
-                              {caseItem.caseType}
-                            </span>
-                            <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-red-100 text-red-800 border border-red-200">
-                              Priority {caseItem.priority}
-                            </span>
-                            <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium border ${getStatusColor(caseItem.status)}`}>
-                              {caseItem.status.replace('_', ' ')}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </Link>
-                  ))}
-                  {highPriorityCases.length > 5 && (
-                    <div className="pt-4 border-t border-gray-200">
-                      <Link
-                        to="/cases?filter=high-priority"
-                        className="w-full inline-flex justify-center items-center px-4 py-2 border border-red-300 rounded-lg text-sm font-medium text-red-700 bg-red-50 hover:bg-red-100 transition-colors duration-200"
+                <List>
+                  {recentCases.map((caseItem, index) => (
+                    <React.Fragment key={caseItem.id}>
+                      <ListItem
+                        component={Link}
+                        to={`/cases/${caseItem.id}`}
+                        sx={{
+                          '&:hover': { bgcolor: 'action.hover' },
+                          textDecoration: 'none',
+                          color: 'inherit'
+                        }}
                       >
-                        View All High Priority Cases
-                        <svg className="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-                        </svg>
-                      </Link>
-                    </div>
-                  )}
-                </div>
+                        <ListItemAvatar>
+                          <Avatar sx={{ bgcolor: 'primary.main' }}>
+                            <Assignment />
+                          </Avatar>
+                        </ListItemAvatar>
+                        <ListItemText
+                          primary={caseItem.title}
+                          secondary={
+                            <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
+                              <Chip
+                                label={caseItem.caseNumber}
+                                size="small"
+                                variant="outlined"
+                              />
+                              <Chip
+                                label={caseItem.status.replace('_', ' ')}
+                                size="small"
+                                color={
+                                  caseItem.status === 'COMPLETED' ? 'success' :
+                                  caseItem.status === 'IN_PROGRESS' ? 'primary' :
+                                  caseItem.status === 'SCHEDULED' ? 'warning' : 'default'
+                                }
+                              />
+                              <Chip
+                                label={`P${caseItem.priority}`}
+                                size="small"
+                                color={caseItem.priority >= 8 ? 'error' : 'default'}
+                              />
+                            </Box>
+                          }
+                        />
+                      </ListItem>
+                      {index < recentCases.length - 1 && <Divider />}
+                    </React.Fragment>
+                  ))}
+                </List>
               ) : (
-                <div className="text-center py-8">
-                  <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  <p className="mt-2 text-sm text-gray-500">No high priority cases</p>
-                </div>
+                <Box sx={{ textAlign: 'center', py: 4 }}>
+                  <Description sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
+                  <Typography variant="body2" color="text.secondary">
+                    No recent cases
+                  </Typography>
+                </Box>
               )}
-            </div>
-          </div>
-        </div>
+            </CardContent>
+          </Card>
+        </Grid>
 
-        {/* Quick Actions */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-          <div className="bg-gradient-to-r from-indigo-600 to-indigo-700 px-6 py-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-white">Quick Actions</h3>
-              <svg className="w-5 h-5 text-indigo-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
-            </div>
-          </div>
-          <div className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {(user.role === 'CLERK' || user.role === 'ADMIN') && (
-                <Link
-                  to="/cases/new"
-                  className="flex flex-col items-center p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-indigo-400 hover:bg-indigo-50 transition-all duration-200 group"
-                >
-                  <svg className="w-8 h-8 text-gray-400 group-hover:text-indigo-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
-                  </svg>
-                  <span className="mt-2 text-sm font-medium text-gray-900 group-hover:text-indigo-600 transition-colors">File New Case</span>
-                </Link>
-              )}
-
-              <Link
-                to="/cases"
-                className="flex flex-col items-center p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-emerald-400 hover:bg-emerald-50 transition-all duration-200 group"
+        {/* Activity Timeline & Quick Actions */}
+        <Grid item xs={12} lg={6}>
+          <Grid container spacing={3} direction="column">
+            {/* High Priority Cases Alert */}
+            <Grid item>
+              <Alert
+                severity="warning"
+                icon={<PriorityHigh />}
+                sx={{ mb: 2 }}
               >
-                <svg className="w-8 h-8 text-gray-400 group-hover:text-emerald-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-                <span className="mt-2 text-sm font-medium text-gray-900 group-hover:text-emerald-600 transition-colors">Browse Cases</span>
-              </Link>
+                <Typography variant="body2">
+                  {highPriorityCases.length} high priority case{highPriorityCases.length !== 1 ? 's' : ''} requiring attention
+                </Typography>
+              </Alert>
+            </Grid>
 
-              <div className="flex flex-col items-center p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-amber-400 hover:bg-amber-50 transition-all duration-200 group cursor-pointer">
-                <svg className="w-8 h-8 text-gray-400 group-hover:text-amber-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                </svg>
-                <span className="mt-2 text-sm font-medium text-gray-900 group-hover:text-amber-600 transition-colors">View Reports</span>
-              </div>
+            {/* Quick Actions */}
+            <Grid item>
+              <Card>
+                <Box sx={{ bgcolor: 'secondary.main', p: 2, color: 'white' }}>
+                  <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                    Quick Actions
+                  </Typography>
+                </Box>
+                <CardContent>
+                  <Grid container spacing={2}>
+                    {(user.role === 'CLERK' || user.role === 'ADMIN') && (
+                      <Grid item xs={6}>
+                        <Paper
+                          component={Link}
+                          to="/cases/new"
+                          elevation={0}
+                          sx={{
+                            p: 3,
+                            textAlign: 'center',
+                            textDecoration: 'none',
+                            color: 'inherit',
+                            border: '2px dashed',
+                            borderColor: 'primary.main',
+                            '&:hover': {
+                              bgcolor: 'primary.main',
+                              color: 'white',
+                              borderColor: 'primary.main'
+                            }
+                          }}
+                        >
+                          <Work sx={{ fontSize: 32, mb: 1 }} />
+                          <Typography variant="body2">File New Case</Typography>
+                        </Paper>
+                      </Grid>
+                    )}
 
-              {user.role === 'ADMIN' && (
-                <div className="flex flex-col items-center p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-purple-400 hover:bg-purple-50 transition-all duration-200 group cursor-pointer">
-                  <svg className="w-8 h-8 text-gray-400 group-hover:text-purple-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
-                  <span className="mt-2 text-sm font-medium text-gray-900 group-hover:text-purple-600 transition-colors">System Settings</span>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+                    <Grid item xs={(user.role === 'CLERK' || user.role === 'ADMIN') ? 6 : 12}>
+                      <Paper
+                        component={Link}
+                        to="/cases"
+                        elevation={0}
+                        sx={{
+                          p: 3,
+                          textAlign: 'center',
+                          textDecoration: 'none',
+                          color: 'inherit',
+                          border: '2px dashed',
+                          borderColor: 'success.main',
+                          '&:hover': {
+                            bgcolor: 'success.main',
+                            color: 'white',
+                            borderColor: 'success.main'
+                          }
+                        }}
+                      >
+                        <Assessment sx={{ fontSize: 32, mb: 1 }} />
+                        <Typography variant="body2">Browse Cases</Typography>
+                      </Paper>
+                    </Grid>
+
+                    {user.role === 'JUDGE' && (
+                      <Grid item xs={12}>
+                        <Paper
+                          sx={{
+                            p: 3,
+                            textAlign: 'center',
+                            border: '2px dashed',
+                            borderColor: 'warning.main',
+                            cursor: 'pointer',
+                            '&:hover': {
+                              bgcolor: 'warning.main',
+                              color: 'white',
+                              borderColor: 'warning.main'
+                            }
+                          }}
+                        >
+                          <Gavel sx={{ fontSize: 32, mb: 1 }} />
+                          <Typography variant="body2">Add Case Notes</Typography>
+                        </Paper>
+                      </Grid>
+                    )}
+
+                    {user.role === 'ADMIN' && (
+                      <Grid item xs={12}>
+                        <Paper
+                          component={Link}
+                          to="/users"
+                          elevation={0}
+                          sx={{
+                            p: 3,
+                            textAlign: 'center',
+                            textDecoration: 'none',
+                            color: 'inherit',
+                            border: '2px dashed',
+                            borderColor: 'info.main',
+                            '&:hover': {
+                              bgcolor: 'info.main',
+                              color: 'white',
+                              borderColor: 'info.main'
+                            }
+                          }}
+                        >
+                          <Group sx={{ fontSize: 32, mb: 1 }} />
+                          <Typography variant="body2">Manage Users</Typography>
+                        </Paper>
+                      </Grid>
+                    )}
+                  </Grid>
+                </CardContent>
+              </Card>
+            </Grid>
+          </Grid>
+        </Grid>
+      </Grid>
+
+      {/* Performance Metrics */}
+      {stats && (
+        <Grid container spacing={3} sx={{ mt: 2 }}>
+          <Grid item xs={12}>
+            <Card>
+              <CardContent>
+                <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold' }}>
+                  Performance Overview
+                </Typography>
+                <Grid container spacing={3}>
+                  <Grid item xs={12} md={4}>
+                    <Box sx={{ textAlign: 'center' }}>
+                      <Typography variant="h4" color="primary" sx={{ fontWeight: 'bold' }}>
+                        {activeCases}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Active Cases
+                      </Typography>
+                      <LinearProgress
+                        variant="determinate"
+                        value={(activeCases / stats.totalCases) * 100}
+                        sx={{ mt: 1 }}
+                      />
+                    </Box>
+                  </Grid>
+                  <Grid item xs={12} md={4}>
+                    <Box sx={{ textAlign: 'center' }}>
+                      <Typography variant="h4" color="success.main" sx={{ fontWeight: 'bold' }}>
+                        {stats.completedCases}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Cases Completed
+                      </Typography>
+                      <LinearProgress
+                        variant="determinate"
+                        value={(stats.completedCases / stats.totalCases) * 100}
+                        color="success"
+                        sx={{ mt: 1 }}
+                      />
+                    </Box>
+                  </Grid>
+                  <Grid item xs={12} md={4}>
+                    <Box sx={{ textAlign: 'center' }}>
+                      <Typography variant="h4" color="warning.main" sx={{ fontWeight: 'bold' }}>
+                        {stats.averagePriority?.toFixed(1) || '0.0'}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Avg Priority Score
+                      </Typography>
+                      <LinearProgress
+                        variant="determinate"
+                        value={(stats.averagePriority || 0) * 10}
+                        color="warning"
+                        sx={{ mt: 1 }}
+                      />
+                    </Box>
+                  </Grid>
+                </Grid>
+              </CardContent>
+            </Card>
+          </Grid>
+        </Grid>
+      )}
+    </Box>
   );
 };
 

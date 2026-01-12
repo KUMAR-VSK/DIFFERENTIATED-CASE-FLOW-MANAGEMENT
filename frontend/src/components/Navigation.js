@@ -103,22 +103,55 @@ const Navigation = () => {
                 </Link>
               )}
 
-              {/* Theme Toggle Button */}
-              <button
-                onClick={toggleDarkMode}
-                className="text-slate-300 hover:text-white hover:bg-slate-800 p-2 rounded-md transition-all duration-200"
-                title={darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-              >
-                {darkMode ? (
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-                  </svg>
-                ) : (
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-                  </svg>
-                )}
-              </button>
+              {/* Enhanced Theme Toggle Button */}
+              <div className="relative">
+                <button
+                  onClick={toggleDarkMode}
+                  className="group relative flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-slate-800 to-slate-900 hover:from-slate-700 hover:to-slate-800 border border-slate-700 hover:border-slate-600 text-slate-300 hover:text-white transition-all duration-300 ease-in-out transform hover:scale-105 hover:shadow-lg hover:shadow-slate-900/50 active:scale-95"
+                  title={darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+                >
+                  {/* Background glow effect */}
+                  <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-blue-500/10 to-indigo-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+
+                  {/* Icon container with rotation animation */}
+                  <div className={`relative z-10 transform transition-all duration-500 ease-in-out ${darkMode ? 'rotate-180 scale-110' : 'rotate-0 scale-100'}`}>
+                    {darkMode ? (
+                      <svg
+                        className="w-5 h-5 drop-shadow-sm animate-pulse"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        style={{
+                          filter: 'drop-shadow(0 0 8px rgba(59, 130, 246, 0.5))'
+                        }}
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                      </svg>
+                    ) : (
+                      <svg
+                        className="w-5 h-5 drop-shadow-sm animate-pulse"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        style={{
+                          filter: 'drop-shadow(0 0 8px rgba(147, 51, 234, 0.5))'
+                        }}
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                      </svg>
+                    )}
+                  </div>
+
+                  {/* Ripple effect on click */}
+                  <div className="absolute inset-0 rounded-xl bg-white/10 opacity-0 group-active:opacity-100 group-active:animate-ping transition-opacity duration-150"></div>
+                </button>
+
+                {/* Tooltip */}
+                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-1 bg-slate-800 text-slate-200 text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap border border-slate-700 shadow-lg">
+                  {darkMode ? 'Light Mode' : 'Dark Mode'}
+                  <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-slate-800"></div>
+                </div>
+              </div>
 
               {/* Logout Button */}
               <button
