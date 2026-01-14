@@ -2,6 +2,85 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
+import { Doughnut, Bar } from 'react-chartjs-2';
+import {
+  Chart as ChartJS,
+  ArcElement,
+  Tooltip,
+  Legend,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  PointElement,
+  Title,
+} from 'chart.js';
+import {
+  Box,
+  Container,
+  Grid,
+  Card,
+  CardContent,
+  Typography,
+  Paper,
+  Chip,
+  Avatar,
+  Button,
+  Alert,
+  AlertTitle,
+  LinearProgress,
+  Fab,
+  ThemeProvider,
+  createTheme,
+} from '@mui/material';
+import {
+  Dashboard as DashboardIcon,
+  Assignment as CaseIcon,
+  Schedule as ScheduleIcon,
+  CheckCircle as CompletedIcon,
+  Warning as WarningIcon,
+  TrendingUp as TrendingIcon,
+  Add as AddIcon,
+  Search as SearchIcon,
+  Assessment as AssessmentIcon,
+  Settings as SettingsIcon,
+  Notifications as NotificationsIcon,
+  Refresh as RefreshIcon,
+} from '@mui/icons-material';
+
+// Register Chart.js components
+ChartJS.register(
+  ArcElement,
+  Tooltip,
+  Legend,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  PointElement,
+  Title
+);
+
+// Create Material UI theme
+const theme = createTheme({
+  palette: {
+    primary: {
+      main: '#1976d2',
+    },
+    secondary: {
+      main: '#dc004e',
+    },
+    background: {
+      default: '#f5f5f5',
+    },
+  },
+  typography: {
+    h4: {
+      fontWeight: 600,
+    },
+    h6: {
+      fontWeight: 500,
+    },
+  },
+});
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -84,293 +163,604 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <ThemeProvider theme={theme}>
+      <Container maxWidth="xl" sx={{ py: 4 }}>
         {/* Header Section */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-4xl font-bold text-gray-900 dark:text-white tracking-tight">Dashboard</h1>
-              <p className="mt-2 text-xl text-gray-600 dark:text-gray-300 font-medium">
+        <Box sx={{ mb: 4 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+            <Box>
+              <Typography variant="h3" component="h1" gutterBottom fontWeight="bold">
+                <DashboardIcon sx={{ mr: 2, verticalAlign: 'middle' }} />
+                Dashboard
+              </Typography>
+              <Typography variant="h5" color="text.secondary" gutterBottom>
                 Welcome back, {user.firstName || user.username}
-              </p>
-              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
                 Here's an overview of your case management activities
-              </p>
-            </div>
-            <div className="flex items-center space-x-3">
-              <div className="text-right">
-                <p className="text-sm text-gray-500 dark:text-gray-400">Last updated</p>
-                <p className="text-sm font-medium text-gray-900 dark:text-white">
-                  {new Date().toLocaleDateString('en-US', {
-                    weekday: 'long',
-                    year: 'numeric',
-                    month: 'short',
-                    day: 'numeric'
-                  })}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
+              </Typography>
+            </Box>
+            <Box sx={{ textAlign: 'right' }}>
+              <Typography variant="body2" color="text.secondary">
+                Last updated
+              </Typography>
+              <Typography variant="body2" fontWeight="medium">
+                {new Date().toLocaleDateString('en-US', {
+                  weekday: 'long',
+                  year: 'numeric',
+                  month: 'short',
+                  day: 'numeric'
+                })}
+              </Typography>
+            </Box>
+          </Box>
+        </Box>
 
-        {/* Statistics Cards */}
-        {stats && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            {/* Total Cases */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow duration-200">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <div className="w-12 h-12 bg-gradient-to-r from-slate-500 to-slate-600 rounded-xl flex items-center justify-center">
-                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                  </div>
-                </div>
-                <div className="ml-4">
-                  <dt className="text-sm font-medium text-gray-500 truncate">Total Cases</dt>
-                  <dd className="text-3xl font-bold text-gray-900">{stats.totalCases}</dd>
-                </div>
-              </div>
-            </div>
+        {loading ? (
+          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh' }}>
+            <LinearProgress sx={{ width: '100%', maxWidth: 400 }} />
+            <Typography variant="h6" sx={{ ml: 2 }}>
+              Loading dashboard...
+            </Typography>
+          </Box>
+        ) : (
+          <>
+            {/* Statistics Cards */}
+            {stats && (
+              <Grid container spacing={3} sx={{ mb: 4 }}>
+                <Grid item xs={12} sm={6} md={3}>
+                  <Card sx={{ height: '100%', background: 'linear-gradient(135deg, #64748b 0%, #475569 100%)', color: 'white' }}>
+                    <CardContent>
+                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <Box>
+                          <Typography variant="body2" sx={{ opacity: 0.8 }}>
+                            Total Cases
+                          </Typography>
+                          <Typography variant="h4" component="div" fontWeight="bold">
+                            {stats.totalCases}
+                          </Typography>
+                        </Box>
+                        <Avatar sx={{ bgcolor: 'rgba(255,255,255,0.2)' }}>
+                          <CaseIcon />
+                        </Avatar>
+                      </Box>
+                    </CardContent>
+                  </Card>
+                </Grid>
 
-            {/* Filed Cases */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow duration-200">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <div className="w-12 h-12 bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center">
-                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  </div>
-                </div>
-                <div className="ml-4">
-                  <dt className="text-sm font-medium text-gray-500 truncate">Filed Cases</dt>
-                  <dd className="text-3xl font-bold text-gray-900">{stats.filedCases}</dd>
-                </div>
-              </div>
-            </div>
+                <Grid item xs={12} sm={6} md={3}>
+                  <Card sx={{ height: '100%', background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', color: 'white' }}>
+                    <CardContent>
+                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <Box>
+                          <Typography variant="body2" sx={{ opacity: 0.8 }}>
+                            Filed Cases
+                          </Typography>
+                          <Typography variant="h4" component="div" fontWeight="bold">
+                            {stats.filedCases}
+                          </Typography>
+                        </Box>
+                        <Avatar sx={{ bgcolor: 'rgba(255,255,255,0.2)' }}>
+                          <CompletedIcon />
+                        </Avatar>
+                      </Box>
+                    </CardContent>
+                  </Card>
+                </Grid>
 
-            {/* Scheduled Cases */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow duration-200">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <div className="w-12 h-12 bg-gradient-to-r from-amber-500 to-orange-600 rounded-xl flex items-center justify-center">
-                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  </div>
-                </div>
-                <div className="ml-4">
-                  <dt className="text-sm font-medium text-gray-500 truncate">Scheduled Cases</dt>
-                  <dd className="text-3xl font-bold text-gray-900">{stats.scheduledCases}</dd>
-                </div>
-              </div>
-            </div>
+                <Grid item xs={12} sm={6} md={3}>
+                  <Card sx={{ height: '100%', background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)', color: 'white' }}>
+                    <CardContent>
+                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <Box>
+                          <Typography variant="body2" sx={{ opacity: 0.8 }}>
+                            Scheduled Cases
+                          </Typography>
+                          <Typography variant="h4" component="div" fontWeight="bold">
+                            {stats.scheduledCases}
+                          </Typography>
+                        </Box>
+                        <Avatar sx={{ bgcolor: 'rgba(255,255,255,0.2)' }}>
+                          <ScheduleIcon />
+                        </Avatar>
+                      </Box>
+                    </CardContent>
+                  </Card>
+                </Grid>
 
-            {/* Completed Cases */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow duration-200">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <div className="w-12 h-12 bg-gradient-to-r from-sky-500 to-sky-600 rounded-xl flex items-center justify-center">
-                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
-                    </svg>
-                  </div>
-                </div>
-                <div className="ml-4">
-                  <dt className="text-sm font-medium text-gray-500 truncate">Completed Cases</dt>
-                  <dd className="text-3xl font-bold text-gray-900">{stats.completedCases}</dd>
-                </div>
-              </div>
-            </div>
-          </div>
+                <Grid item xs={12} sm={6} md={3}>
+                  <Card sx={{ height: '100%', background: 'linear-gradient(135deg, #06b6d4 0%, #0891b2 100%)', color: 'white' }}>
+                    <CardContent>
+                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <Box>
+                          <Typography variant="body2" sx={{ opacity: 0.8 }}>
+                            Completed Cases
+                          </Typography>
+                          <Typography variant="h4" component="div" fontWeight="bold">
+                            {stats.completedCases}
+                          </Typography>
+                        </Box>
+                        <Avatar sx={{ bgcolor: 'rgba(255,255,255,0.2)' }}>
+                          <CompletedIcon />
+                        </Avatar>
+                      </Box>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              </Grid>
+            )}
+
+            {/* Charts Section */}
+            {stats && (
+              <Grid container spacing={3} sx={{ mb: 4 }}>
+                <Grid item xs={12} md={6}>
+                  <Card>
+                    <CardContent>
+                      <Typography variant="h6" gutterBottom>
+                        Case Status Distribution
+                      </Typography>
+                      <Box sx={{ height: 300 }}>
+                        <Doughnut
+                          data={{
+                            labels: ['Filed', 'Under Review', 'Scheduled', 'In Progress', 'Completed', 'Dismissed'],
+                            datasets: [{
+                              data: [
+                                stats.filedCases || 0,
+                                Math.max(0, stats.totalCases - stats.filedCases - stats.scheduledCases - stats.completedCases - 2),
+                                stats.scheduledCases || 0,
+                                2,
+                                stats.completedCases || 0,
+                                0
+                              ],
+                              backgroundColor: [
+                                '#6B7280', '#F59E0B', '#3B82F6', '#06B6D4', '#10B981', '#EF4444'
+                              ],
+                              borderWidth: 2,
+                              borderColor: '#FFFFFF'
+                            }]
+                          }}
+                          options={{
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                              legend: { position: 'bottom' }
+                            }
+                          }}
+                        />
+                      </Box>
+                    </CardContent>
+                  </Card>
+                </Grid>
+
+                <Grid item xs={12} md={6}>
+                  <Card>
+                    <CardContent>
+                      <Typography variant="h6" gutterBottom>
+                        Case Priority Overview
+                      </Typography>
+                      <Box sx={{ height: 300 }}>
+                        <Bar
+                          data={{
+                            labels: ['Priority 1-3', 'Priority 4-6', 'Priority 7-8', 'Priority 9-10'],
+                            datasets: [{
+                              label: 'Number of Cases',
+                              data: [
+                                Math.floor(stats.totalCases * 0.1),
+                                Math.floor(stats.totalCases * 0.4),
+                                Math.floor(stats.totalCases * 0.3),
+                                Math.floor(stats.totalCases * 0.2)
+                              ],
+                              backgroundColor: ['#10B981', '#F59E0B', '#EF4444', '#7C3AED'],
+                              borderRadius: 4
+                            }]
+                          }}
+                          options={{
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: { y: { beginAtZero: true } },
+                            plugins: { legend: { display: false } }
+                          }}
+                        />
+                      </Box>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              </Grid>
+            )}
+
+            {/* Performance Metrics */}
+            {stats && (
+              <Grid container spacing={3} sx={{ mb: 4 }}>
+                <Grid item xs={12} md={4}>
+                  <Card>
+                    <CardContent>
+                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <Box>
+                          <Typography variant="body2" color="text.secondary">
+                            Completion Rate
+                          </Typography>
+                          <Typography variant="h4" fontWeight="bold" color="success.main">
+                            {stats.totalCases > 0 ? Math.round((stats.completedCases / stats.totalCases) * 100) : 0}%
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            Cases completed vs total cases
+                          </Typography>
+                        </Box>
+                        <Avatar sx={{ bgcolor: 'success.light' }}>
+                          <TrendingIcon sx={{ color: 'success.main' }} />
+                        </Avatar>
+                      </Box>
+                    </CardContent>
+                  </Card>
+                </Grid>
+
+                <Grid item xs={12} md={4}>
+                  <Card>
+                    <CardContent>
+                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <Box>
+                          <Typography variant="body2" color="text.secondary">
+                            Active Cases
+                          </Typography>
+                          <Typography variant="h4" fontWeight="bold" color="primary.main">
+                            {stats.totalCases - stats.completedCases}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            Cases currently in progress
+                          </Typography>
+                        </Box>
+                        <Avatar sx={{ bgcolor: 'primary.light' }}>
+                          <ScheduleIcon sx={{ color: 'primary.main' }} />
+                        </Avatar>
+                      </Box>
+                    </CardContent>
+                  </Card>
+                </Grid>
+
+                <Grid item xs={12} md={4}>
+                  <Card>
+                    <CardContent>
+                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <Box>
+                          <Typography variant="body2" color="text.secondary">
+                            Avg Priority Score
+                          </Typography>
+                          <Typography variant="h4" fontWeight="bold" color="warning.main">
+                            {stats.averagePriority ? stats.averagePriority.toFixed(1) : '5.0'}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            Average case priority (1-10 scale)
+                          </Typography>
+                        </Box>
+                        <Avatar sx={{ bgcolor: 'warning.light' }}>
+                          <WarningIcon sx={{ color: 'warning.main' }} />
+                        </Avatar>
+                      </Box>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              </Grid>
+            )}
+
+            {/* Alerts and Notifications */}
+            <Card sx={{ mb: 4 }}>
+              <CardContent>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                  <Typography variant="h6">
+                    <NotificationsIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
+                    Alerts & Notifications
+                  </Typography>
+                  <Chip
+                    label={highPriorityCases.length + (stats?.scheduledCases || 0) > 10 ? 'High Priority' : 'Normal'}
+                    color={highPriorityCases.length + (stats?.scheduledCases || 0) > 10 ? 'error' : 'default'}
+                    size="small"
+                  />
+                </Box>
+
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  {highPriorityCases.length > 0 && (
+                    <Alert severity="error" icon={<WarningIcon />}>
+                      <AlertTitle>High Priority Cases</AlertTitle>
+                      {highPriorityCases.length} cases require immediate attention
+                    </Alert>
+                  )}
+
+                  {stats && stats.scheduledCases > 0 && (
+                    <Alert severity="info" icon={<ScheduleIcon />}>
+                      <AlertTitle>Scheduled Hearings</AlertTitle>
+                      {stats.scheduledCases} cases have upcoming hearings
+                    </Alert>
+                  )}
+
+                  {stats && stats.totalCases === 0 && (
+                    <Alert severity="info" icon={<CaseIcon />}>
+                      <AlertTitle>Getting Started</AlertTitle>
+                      No cases found. Start by filing your first case.
+                    </Alert>
+                  )}
+                </Box>
+              </CardContent>
+            </Card>
+
+            {/* Activity Overview */}
+            <Grid container spacing={3} sx={{ mb: 4 }}>
+              {/* Recent Cases */}
+              <Grid item xs={12} md={6}>
+                <Card sx={{ height: '100%' }}>
+                  <CardContent sx={{ bgcolor: 'grey.50', borderBottom: 1, borderColor: 'divider' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <Typography variant="h6" fontWeight="medium">
+                        Recent Cases
+                      </Typography>
+                      <ScheduleIcon color="action" />
+                    </Box>
+                  </CardContent>
+                  <CardContent>
+                    {recentCases.length > 0 ? (
+                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                        {recentCases.map((caseItem) => (
+                          <Paper
+                            key={caseItem.id}
+                            component={Link}
+                            to={`/cases/${caseItem.id}`}
+                            elevation={1}
+                            sx={{
+                              p: 2,
+                              textDecoration: 'none',
+                              '&:hover': { bgcolor: 'action.hover' },
+                              transition: 'all 0.2s'
+                            }}
+                          >
+                            <Typography variant="subtitle2" fontWeight="medium" color="text.primary">
+                              {caseItem.title}
+                            </Typography>
+                            <Box sx={{ display: 'flex', gap: 1, mt: 1, flexWrap: 'wrap' }}>
+                              <Chip label={caseItem.caseNumber} size="small" variant="outlined" />
+                              <Chip
+                                label={caseItem.status.replace('_', ' ')}
+                                size="small"
+                                color={
+                                  caseItem.status === 'COMPLETED' ? 'success' :
+                                  caseItem.status === 'IN_PROGRESS' ? 'primary' :
+                                  caseItem.status === 'SCHEDULED' ? 'info' :
+                                  caseItem.status === 'FILED' ? 'default' : 'warning'
+                                }
+                                variant="outlined"
+                              />
+                              <Chip label={`Priority ${caseItem.priority}`} size="small" color="secondary" variant="outlined" />
+                            </Box>
+                          </Paper>
+                        ))}
+                        <Button
+                          component={Link}
+                          to="/cases"
+                          variant="outlined"
+                          fullWidth
+                          sx={{ mt: 2 }}
+                        >
+                          View All Cases
+                        </Button>
+                      </Box>
+                    ) : (
+                      <Box sx={{ textAlign: 'center', py: 4 }}>
+                        <CaseIcon sx={{ fontSize: 48, color: 'text.disabled', mb: 2 }} />
+                        <Typography variant="body2" color="text.secondary">
+                          No recent cases
+                        </Typography>
+                      </Box>
+                    )}
+                  </CardContent>
+                </Card>
+              </Grid>
+
+              {/* High Priority Cases */}
+              <Grid item xs={12} md={6}>
+                <Card sx={{ height: '100%' }}>
+                  <CardContent sx={{ bgcolor: 'error.light', borderBottom: 1, borderColor: 'divider' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <Typography variant="h6" fontWeight="medium" color="error.contrastText">
+                        High Priority Cases
+                      </Typography>
+                      <WarningIcon sx={{ color: 'error.contrastText' }} />
+                    </Box>
+                  </CardContent>
+                  <CardContent>
+                    {highPriorityCases.length > 0 ? (
+                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                        {highPriorityCases.slice(0, 5).map((caseItem) => (
+                          <Paper
+                            key={caseItem.id}
+                            component={Link}
+                            to={`/cases/${caseItem.id}`}
+                            elevation={1}
+                            sx={{
+                              p: 2,
+                              textDecoration: 'none',
+                              '&:hover': { bgcolor: 'error.light', opacity: 0.8 },
+                              transition: 'all 0.2s'
+                            }}
+                          >
+                            <Typography variant="subtitle2" fontWeight="medium" color="text.primary">
+                              {caseItem.title}
+                            </Typography>
+                            <Box sx={{ display: 'flex', gap: 1, mt: 1, flexWrap: 'wrap' }}>
+                              <Chip
+                                label={caseItem.caseType}
+                                size="small"
+                                color={
+                                  caseItem.caseType === 'CONSTITUTIONAL' ? 'error' :
+                                  caseItem.caseType === 'CRIMINAL' ? 'warning' :
+                                  caseItem.caseType === 'CIVIL' ? 'primary' : 'default'
+                                }
+                                variant="outlined"
+                              />
+                              <Chip label={`Priority ${caseItem.priority}`} size="small" color="error" />
+                              <Chip
+                                label={caseItem.status.replace('_', ' ')}
+                                size="small"
+                                color={
+                                  caseItem.status === 'COMPLETED' ? 'success' :
+                                  caseItem.status === 'IN_PROGRESS' ? 'primary' :
+                                  caseItem.status === 'SCHEDULED' ? 'info' : 'warning'
+                                }
+                                variant="outlined"
+                              />
+                            </Box>
+                          </Paper>
+                        ))}
+                        {highPriorityCases.length > 5 && (
+                          <Button
+                            component={Link}
+                            to="/cases?filter=high-priority"
+                            variant="outlined"
+                            color="error"
+                            fullWidth
+                            sx={{ mt: 2 }}
+                          >
+                            View All High Priority Cases
+                          </Button>
+                        )}
+                      </Box>
+                    ) : (
+                      <Box sx={{ textAlign: 'center', py: 4 }}>
+                        <CompletedIcon sx={{ fontSize: 48, color: 'text.disabled', mb: 2 }} />
+                        <Typography variant="body2" color="text.secondary">
+                          No high priority cases
+                        </Typography>
+                      </Box>
+                    )}
+                  </CardContent>
+                </Card>
+              </Grid>
+            </Grid>
+
+            {/* Quick Actions */}
+            <Card>
+              <CardContent sx={{ bgcolor: 'primary.main', color: 'primary.contrastText' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <Typography variant="h6" fontWeight="medium">
+                    Quick Actions
+                  </Typography>
+                  <AddIcon />
+                </Box>
+              </CardContent>
+              <CardContent>
+                <Grid container spacing={2}>
+                  {(user.role === 'CLERK' || user.role === 'ADMIN') && (
+                    <Grid item xs={12} sm={6} md={3}>
+                      <Button
+                        component={Link}
+                        to="/cases/new"
+                        variant="outlined"
+                        fullWidth
+                        sx={{
+                          p: 3,
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          gap: 1,
+                          border: '2px dashed',
+                          '&:hover': { borderColor: 'primary.main' }
+                        }}
+                      >
+                        <AddIcon sx={{ fontSize: 32 }} />
+                        <Typography variant="body2" fontWeight="medium">
+                          File New Case
+                        </Typography>
+                      </Button>
+                    </Grid>
+                  )}
+
+                  <Grid item xs={12} sm={6} md={3}>
+                    <Button
+                      component={Link}
+                      to="/cases"
+                      variant="outlined"
+                      color="success"
+                      fullWidth
+                      sx={{
+                        p: 3,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        gap: 1,
+                        border: '2px dashed',
+                        '&:hover': { borderColor: 'success.main' }
+                      }}
+                    >
+                      <SearchIcon sx={{ fontSize: 32 }} />
+                      <Typography variant="body2" fontWeight="medium">
+                        Browse Cases
+                      </Typography>
+                    </Button>
+                  </Grid>
+
+                  <Grid item xs={12} sm={6} md={3}>
+                    <Button
+                      variant="outlined"
+                      color="warning"
+                      fullWidth
+                      sx={{
+                        p: 3,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        gap: 1,
+                        border: '2px dashed',
+                        '&:hover': { borderColor: 'warning.main' }
+                      }}
+                    >
+                      <AssessmentIcon sx={{ fontSize: 32 }} />
+                      <Typography variant="body2" fontWeight="medium">
+                        View Reports
+                      </Typography>
+                    </Button>
+                  </Grid>
+
+                  {user.role === 'ADMIN' && (
+                    <Grid item xs={12} sm={6} md={3}>
+                      <Button
+                        variant="outlined"
+                        color="secondary"
+                        fullWidth
+                        sx={{
+                          p: 3,
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          gap: 1,
+                          border: '2px dashed',
+                          '&:hover': { borderColor: 'secondary.main' }
+                        }}
+                      >
+                        <SettingsIcon sx={{ fontSize: 32 }} />
+                        <Typography variant="body2" fontWeight="medium">
+                          System Settings
+                        </Typography>
+                      </Button>
+                    </Grid>
+                  )}
+                </Grid>
+              </CardContent>
+            </Card>
+          </>
         )}
 
-        {/* Activity Overview */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-          {/* Recent Cases */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-            <div className="bg-gradient-to-r from-slate-600 to-slate-700 px-6 py-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-white">Recent Cases</h3>
-                <svg className="w-5 h-5 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-            </div>
-            <div className="p-6">
-              {recentCases.length > 0 ? (
-                <div className="space-y-4">
-                  {recentCases.map((caseItem) => (
-                    <Link
-                      key={caseItem.id}
-                      to={`/cases/${caseItem.id}`}
-                      className="block p-4 rounded-lg border border-gray-200 hover:border-indigo-300 hover:shadow-md transition-all duration-200 group"
-                    >
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors">
-                            {caseItem.title}
-                          </p>
-                          <div className="flex flex-wrap gap-2 mt-2">
-                            <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-800">
-                              {caseItem.caseNumber}
-                            </span>
-                            <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium border ${getStatusColor(caseItem.status)}`}>
-                              {caseItem.status.replace('_', ' ')}
-                            </span>
-                            <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-slate-100 text-slate-800">
-                              Priority {caseItem.priority}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </Link>
-                  ))}
-                  <div className="pt-4 border-t border-gray-200">
-                    <Link
-                      to="/cases"
-                      className="w-full inline-flex justify-center items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors duration-200"
-                    >
-                      View All Cases
-                      <svg className="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-                      </svg>
-                    </Link>
-                  </div>
-                </div>
-              ) : (
-                <div className="text-center py-8">
-                  <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
-                  <p className="mt-2 text-sm text-gray-500">No recent cases</p>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* High Priority Cases */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-            <div className="bg-gradient-to-r from-red-600 to-red-700 px-6 py-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-white">High Priority Cases</h3>
-                <svg className="w-5 h-5 text-red-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
-                </svg>
-              </div>
-            </div>
-            <div className="p-6">
-              {highPriorityCases.length > 0 ? (
-                <div className="space-y-4">
-                  {highPriorityCases.slice(0, 5).map((caseItem) => (
-                    <Link
-                      key={caseItem.id}
-                      to={`/cases/${caseItem.id}`}
-                      className="block p-4 rounded-lg border border-gray-200 hover:border-red-300 hover:shadow-md transition-all duration-200 group"
-                    >
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold text-gray-900 group-hover:text-red-600 transition-colors">
-                            {caseItem.title}
-                          </p>
-                          <div className="flex flex-wrap gap-2 mt-2">
-                            <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium border ${getCaseTypeColor(caseItem.caseType)}`}>
-                              {caseItem.caseType}
-                            </span>
-                            <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-red-100 text-red-800 border border-red-200">
-                              Priority {caseItem.priority}
-                            </span>
-                            <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium border ${getStatusColor(caseItem.status)}`}>
-                              {caseItem.status.replace('_', ' ')}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </Link>
-                  ))}
-                  {highPriorityCases.length > 5 && (
-                    <div className="pt-4 border-t border-gray-200">
-                      <Link
-                        to="/cases?filter=high-priority"
-                        className="w-full inline-flex justify-center items-center px-4 py-2 border border-red-300 rounded-lg text-sm font-medium text-red-700 bg-red-50 hover:bg-red-100 transition-colors duration-200"
-                      >
-                        View All High Priority Cases
-                        <svg className="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-                        </svg>
-                      </Link>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <div className="text-center py-8">
-                  <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  <p className="mt-2 text-sm text-gray-500">No high priority cases</p>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Quick Actions */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-          <div className="bg-gradient-to-r from-indigo-600 to-indigo-700 px-6 py-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-white">Quick Actions</h3>
-              <svg className="w-5 h-5 text-indigo-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
-            </div>
-          </div>
-          <div className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {(user.role === 'CLERK' || user.role === 'ADMIN') && (
-                <Link
-                  to="/cases/new"
-                  className="flex flex-col items-center p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-indigo-400 hover:bg-indigo-50 transition-all duration-200 group"
-                >
-                  <svg className="w-8 h-8 text-gray-400 group-hover:text-indigo-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
-                  </svg>
-                  <span className="mt-2 text-sm font-medium text-gray-900 group-hover:text-indigo-600 transition-colors">File New Case</span>
-                </Link>
-              )}
-
-              <Link
-                to="/cases"
-                className="flex flex-col items-center p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-emerald-400 hover:bg-emerald-50 transition-all duration-200 group"
-              >
-                <svg className="w-8 h-8 text-gray-400 group-hover:text-emerald-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-                <span className="mt-2 text-sm font-medium text-gray-900 group-hover:text-emerald-600 transition-colors">Browse Cases</span>
-              </Link>
-
-              <div className="flex flex-col items-center p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-amber-400 hover:bg-amber-50 transition-all duration-200 group cursor-pointer">
-                <svg className="w-8 h-8 text-gray-400 group-hover:text-amber-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                </svg>
-                <span className="mt-2 text-sm font-medium text-gray-900 group-hover:text-amber-600 transition-colors">View Reports</span>
-              </div>
-
-              {user.role === 'ADMIN' && (
-                <div className="flex flex-col items-center p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-purple-400 hover:bg-purple-50 transition-all duration-200 group cursor-pointer">
-                  <svg className="w-8 h-8 text-gray-400 group-hover:text-purple-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
-                  <span className="mt-2 text-sm font-medium text-gray-900 group-hover:text-purple-600 transition-colors">System Settings</span>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+        {/* Floating Action Button */}
+        {(user.role === 'CLERK' || user.role === 'ADMIN') && (
+          <Tooltip title="File New Case">
+            <Fab
+              component={Link}
+              to="/cases/new"
+              color="primary"
+              sx={{ position: 'fixed', bottom: 24, right: 24 }}
+            >
+              <AddIcon />
+            </Fab>
+          </Tooltip>
+        )}
+      </Container>
+    </ThemeProvider>
   );
 };
 

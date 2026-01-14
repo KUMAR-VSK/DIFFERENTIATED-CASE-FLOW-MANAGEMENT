@@ -48,7 +48,16 @@ public class CaseService {
         int calculatedPriority = priorityEngine.calculatePriority(caseEntity);
         caseEntity.setPriority(calculatedPriority);
 
-        return caseRepository.save(caseEntity);
+        Case savedCase = caseRepository.save(caseEntity);
+
+        // Recalculate priorities for all existing cases to maintain relative priority accuracy
+        List<Case> allCases = caseRepository.findAll();
+        priorityEngine.recalculateAllPriorities(allCases);
+
+        // Save all updated cases
+        caseRepository.saveAll(allCases);
+
+        return savedCase;
     }
 
     // Update case status

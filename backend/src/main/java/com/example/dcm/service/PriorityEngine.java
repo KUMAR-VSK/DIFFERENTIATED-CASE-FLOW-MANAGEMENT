@@ -1,5 +1,7 @@
 package com.example.dcm.service;
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 
 import com.example.dcm.model.Case;
@@ -77,6 +79,20 @@ public class PriorityEngine {
         }
 
         return currentPriority;
+    }
+
+    // Recalculate priorities for all cases when a new case is added
+    // This ensures relative priorities remain accurate
+    public void recalculateAllPriorities(List<Case> allCases) {
+        for (Case caseEntity : allCases) {
+            // Skip completed cases as they don't need priority recalculation
+            if (caseEntity.getStatus() != Case.Status.COMPLETED) {
+                int newPriority = calculatePriority(caseEntity);
+                // Apply age-based adjustment for older cases
+                newPriority = adjustPriorityForAge(caseEntity);
+                caseEntity.setPriority(newPriority);
+            }
+        }
     }
 
     // Compare cases for scheduling order

@@ -2,6 +2,44 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
+import {
+  Box,
+  Container,
+  Typography,
+  Paper,
+  TextField,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Button,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  TablePagination,
+  Chip,
+  Checkbox,
+  Card,
+  CardContent,
+  Alert,
+  ThemeProvider,
+  createTheme,
+  Fab,
+  Tooltip,
+} from '@mui/material';
+import {
+  Add as AddIcon,
+  Search as SearchIcon,
+  FilterList as FilterIcon,
+  Sort as SortIcon,
+  Visibility as ViewIcon,
+  Edit as EditIcon,
+  FileDownload as ExportIcon,
+  Refresh as RefreshIcon,
+} from '@mui/icons-material';
 
 const CaseList = () => {
   const { user } = useAuth();
