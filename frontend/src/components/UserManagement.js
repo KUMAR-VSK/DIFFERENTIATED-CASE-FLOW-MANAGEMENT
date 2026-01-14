@@ -24,7 +24,7 @@ const UserManagement = () => {
 
   const fetchUsers = async () => {
     try {
-      const response = await axios.get('http://localhost:8081/api/auth/users');
+      const response = await axios.get('http://localhost:8080/api/auth/users');
       setUsers(response.data);
     } catch (error) {
       console.error('Error fetching users:', error);
@@ -47,7 +47,7 @@ const UserManagement = () => {
     setSuccess('');
 
     try {
-      await axios.post('http://localhost:8081/api/auth/users', formData);
+      await axios.post('http://localhost:8080/api/auth/users', formData);
       setSuccess('User created successfully!');
       setFormData({
         username: '',

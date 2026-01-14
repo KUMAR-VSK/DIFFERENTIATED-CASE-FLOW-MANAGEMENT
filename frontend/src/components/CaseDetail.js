@@ -27,7 +27,7 @@ const CaseDetail = () => {
   useEffect(() => {
     const fetchCase = async () => {
       try {
-        const response = await axios.get(`http://localhost:8081/api/cases/${id}`);
+        const response = await axios.get(`http://localhost:8080/api/cases/${id}`);
         setCaseData(response.data);
       } catch (error) {
         setError('Failed to load case details');
@@ -96,12 +96,12 @@ const CaseDetail = () => {
 
     setActionLoading(true);
     try {
-      await axios.put(`http://localhost:8081/api/cases/${id}/status`, null, {
+      await axios.put(`http://localhost:8080/api/cases/${id}/status`, null, {
         params: { status: selectedStatus }
       });
 
       // Refresh case data
-      const response = await axios.get(`http://localhost:8081/api/cases/${id}`);
+      const response = await axios.get(`http://localhost:8080/api/cases/${id}`);
       setCaseData(response.data);
       setShowStatusModal(false);
       setSelectedStatus('');
@@ -130,12 +130,12 @@ const CaseDetail = () => {
 
     setActionLoading(true);
     try {
-      await axios.put(`http://localhost:8081/api/cases/${id}/schedule`, null, {
+      await axios.put(`http://localhost:8080/api/cases/${id}/schedule`, null, {
         params: { hearingDate: selectedDate.toISOString() }
       });
 
       // Refresh case data
-      const response = await axios.get(`http://localhost:8081/api/cases/${id}`);
+      const response = await axios.get(`http://localhost:8080/api/cases/${id}`);
       setCaseData(response.data);
       setShowHearingModal(false);
       setHearingDate('');
@@ -156,7 +156,7 @@ const CaseDetail = () => {
 
     setActionLoading(true);
     try {
-      await axios.post(`http://localhost:8081/api/cases/${id}/notes`, { note: newNote });
+      await axios.post(`http://localhost:8080/api/cases/${id}/notes`, { note: newNote });
       setNewNote('');
       setShowNoteModal(false);
 
@@ -178,12 +178,12 @@ const CaseDetail = () => {
 
     setActionLoading(true);
     try {
-      await axios.put(`http://localhost:8081/api/cases/${id}/set-priority`, null, {
+      await axios.put(`http://localhost:8080/api/cases/${id}/set-priority`, null, {
         params: { priority: manualPriority }
       });
 
       // Refresh case data
-      const response = await axios.get(`http://localhost:8081/api/cases/${id}`);
+      const response = await axios.get(`http://localhost:8080/api/cases/${id}`);
       setCaseData(response.data);
       setShowPriorityModal(false);
       setManualPriority('');

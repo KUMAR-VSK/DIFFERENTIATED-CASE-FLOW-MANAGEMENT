@@ -39,6 +39,14 @@ public class CaseController {
         return ResponseEntity.ok(cases);
     }
 
+    // Get all cases for case management (includes filed cases)
+    @GetMapping("/management")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('JUDGE') or hasRole('CLERK')")
+    public ResponseEntity<List<Case>> getAllCasesForManagement() {
+        List<Case> cases = caseService.getAllCases();
+        return ResponseEntity.ok(cases);
+    }
+
     // Get case by ID
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN') or hasRole('JUDGE') or hasRole('CLERK')")
@@ -54,12 +62,13 @@ public class CaseController {
     public ResponseEntity<?> createCase(@RequestBody Case caseEntity, Authentication authentication) {
         try {
             String username = authentication.getName();
-            Case createdCase = caseService.createCase(caseEntity, username);
-            return ResponseEntity.ok(createdCase);
+            Case savedCase = caseService.createCase(caseEntity, username);
+            return ResponseEntity.ok(savedCase);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().body(Map.of("message", "Internal server error"));
+            e.printStackTrace(); // Add stack trace for debugging
+            return ResponseEntity.internalServerError().body(Map.of("message", "Internal server error: " + e.getMessage()));
         }
     }
 
@@ -137,9 +146,9 @@ public class CaseController {
         }
     }
 
-    // Get case statistics
+    // Get case statistics (allow multiple roles)
     @GetMapping("/statistics")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('CLERK') or hasRole('JUDGE')")
     public ResponseEntity<CaseService.CaseStatistics> getCaseStatistics() {
         CaseService.CaseStatistics stats = caseService.getCaseStatistics();
         return ResponseEntity.ok(stats);

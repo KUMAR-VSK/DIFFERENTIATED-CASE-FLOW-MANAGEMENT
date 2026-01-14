@@ -5,7 +5,8 @@ import { useAuth } from '../context/AuthContext';
 
 const Dashboard = () => {
   const { user } = useAuth();
-  const [stats, setStats] = useState(null);
+        const [stats, setStats] = useState(null);
+        const [statsError, setStatsError] = useState(false);
   const [recentCases, setRecentCases] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -18,8 +19,8 @@ const Dashboard = () => {
 
       try {
         const [statsResponse, casesResponse] = await Promise.all([
-          axios.get('http://localhost:8081/api/cases/statistics'),
-          axios.get('http://localhost:8081/api/cases'),
+          axios.get('http://localhost:8080/api/cases/statistics'),
+          axios.get('http://localhost:8080/api/cases'),
         ]);
 
         setStats(statsResponse.data);

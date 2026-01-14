@@ -146,6 +146,11 @@ public class CaseService {
         return new CaseStatistics(totalCases, filedCases, scheduledCases, completedCases, avgPriority);
     }
 
+    // Get all cases (for case management - includes all statuses)
+    public List<Case> getAllCases() {
+        return caseRepository.findAll();
+    }
+
     // Get case by ID
     public Optional<Case> getCaseById(Long id) {
         return caseRepository.findById(id);

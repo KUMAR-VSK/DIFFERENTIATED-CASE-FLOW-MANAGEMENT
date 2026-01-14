@@ -61,7 +61,7 @@ const CaseList = () => {
   const fetchCases = async () => {
     try {
       console.log('Fetching cases from API...');
-      const response = await axios.get('http://localhost:8081/api/cases');
+      const response = await axios.get('http://localhost:8080/api/cases/management');
       console.log('Cases fetched successfully:', response.data.length, 'cases');
       setCases(response.data);
       setFilteredCases(response.data);
@@ -104,13 +104,75 @@ const CaseList = () => {
 
   // Separate effect for location state changes
   useEffect(() => {
-    if (location.state?.refresh) {
-      console.log('Location state refresh detected, fetching cases...');
+    if (location.state?.refresh || (location.state?.timestamp && Date.now() - location.state.timestamp < 5000)) {
+      console.log('Location state refresh detected, fetching cases...', location.state);
+      setLoading(true);
       fetchCases();
       // Clear the state to prevent repeated refreshes
       window.history.replaceState({}, document.title);
     }
   }, [location.state]);
+
+  // Force refresh when navigating from case form
+  useEffect(() => {
+    const handleNavigation = () => {
+      console.log('Navigation detected, checking for refresh...');
+      if (location.state?.refresh) {
+        console.log('Force refreshing cases after navigation...');
+        fetchCases();
+      }
+    };
+
+    // Listen for navigation events
+    window.addEventListener('popstate', handleNavigation);
+
+    // Also check on mount if we came from case form
+    if (location.state?.refresh) {
+      console.log('Component mounted with refresh state, fetching cases...');
+      fetchCases();
+    }
+
+    return () => {
+      window.removeEventListener('popstate', handleNavigation);
+    };
+  }, [location.pathname, location.state]);
+
+  // Add polling for real-time updates every 30 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      console.log('Auto-refreshing cases...');
+      fetchCases();
+    }, 30000); // Refresh every 30 seconds
+
+    return () => clearInterval(interval);
+  }, []);
+
+  // Listen for localStorage refresh trigger
+  useEffect(() => {
+    const handleStorageChange = (e) => {
+      if (e.key === 'caseRefreshTrigger') {
+        console.log('localStorage refresh trigger detected, fetching cases...');
+        fetchCases();
+        // Clear the trigger
+        localStorage.removeItem('caseRefreshTrigger');
+      }
+    };
+
+    // Listen for storage events
+    window.addEventListener('storage', handleStorageChange);
+
+    // Also check on mount if there's a pending refresh trigger
+    const refreshTrigger = localStorage.getItem('caseRefreshTrigger');
+    if (refreshTrigger) {
+      console.log('Found pending refresh trigger on mount, fetching cases...');
+      fetchCases();
+      localStorage.removeItem('caseRefreshTrigger');
+    }
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, []);
 
   useEffect(() => {
     let filtered = cases;
@@ -240,6 +302,23 @@ const CaseList = () => {
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
+  // Manual refresh function
+  const handleManualRefresh = () => {
+    setLoading(true);
+    fetchCases();
+  };
+
+  // Calculate statistics
+  const stats = {
+    total: cases.length,
+    filed: cases.filter(c => c.status === 'FILED').length,
+    underReview: cases.filter(c => c.status === 'UNDER_REVIEW').length,
+    scheduled: cases.filter(c => c.status === 'SCHEDULED').length,
+    inProgress: cases.filter(c => c.status === 'IN_PROGRESS').length,
+    completed: cases.filter(c => c.status === 'COMPLETED').length,
+    highPriority: cases.filter(c => c.priority >= 8).length,
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -251,17 +330,134 @@ const CaseList = () => {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <h1 className="text-4xl font-bold text-gray-900">Case Management</h1>
-        <div className="flex gap-3">
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
+        <div>
+          <h1 className="text-4xl font-bold text-gray-900">Case Management</h1>
+          <p className="text-gray-600 mt-1">Manage and track all judicial cases in the system</p>
+        </div>
+        <div className="flex flex-col sm:flex-row gap-3">
+          <button
+            onClick={handleManualRefresh}
+            className="inline-flex items-center px-4 py-2 bg-gray-100 border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors duration-200"
+            disabled={loading}
+          >
+            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            Refresh
+          </button>
           {(user.role === 'CLERK' || user.role === 'ADMIN') && (
             <Link
               to="/cases/new"
-              className="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition-colors duration-200 shadow-lg"
+              className="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition-colors duration-200 shadow-lg inline-flex items-center"
             >
+              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
+              </svg>
               File New Case
             </Link>
           )}
+        </div>
+      </div>
+
+      {/* Statistics Dashboard */}
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
+        <div className="bg-white rounded-lg shadow p-4 border border-gray-200">
+          <div className="flex items-center">
+            <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+              <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600">Total Cases</p>
+              <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg shadow p-4 border border-gray-200">
+          <div className="flex items-center">
+            <div className="w-8 h-8 bg-yellow-100 rounded-lg flex items-center justify-center mr-3">
+              <svg className="w-4 h-4 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600">Filed</p>
+              <p className="text-2xl font-bold text-gray-900">{stats.filed}</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg shadow p-4 border border-gray-200">
+          <div className="flex items-center">
+            <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center mr-3">
+              <svg className="w-4 h-4 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+              </svg>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600">Under Review</p>
+              <p className="text-2xl font-bold text-gray-900">{stats.underReview}</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg shadow p-4 border border-gray-200">
+          <div className="flex items-center">
+            <div className="w-8 h-8 bg-cyan-100 rounded-lg flex items-center justify-center mr-3">
+              <svg className="w-4 h-4 text-cyan-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600">Scheduled</p>
+              <p className="text-2xl font-bold text-gray-900">{stats.scheduled}</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg shadow p-4 border border-gray-200">
+          <div className="flex items-center">
+            <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+              <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600">In Progress</p>
+              <p className="text-2xl font-bold text-gray-900">{stats.inProgress}</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg shadow p-4 border border-gray-200">
+          <div className="flex items-center">
+            <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center mr-3">
+              <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600">Completed</p>
+              <p className="text-2xl font-bold text-gray-900">{stats.completed}</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg shadow p-4 border border-gray-200">
+          <div className="flex items-center">
+            <div className="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center mr-3">
+              <svg className="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+              </svg>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600">High Priority</p>
+              <p className="text-2xl font-bold text-gray-900">{stats.highPriority}</p>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -355,125 +551,139 @@ const CaseList = () => {
         </div>
       )}
 
-      {/* Cases Table */}
-      <div className="bg-white rounded-lg shadow-lg overflow-hidden border border-gray-200">
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+      {/* Enhanced Cases Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        {currentCases.map((caseItem) => (
+          <div
+            key={caseItem.id}
+            className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden hover:shadow-xl transition-all duration-300 group"
+          >
+            {/* Card Header with Checkbox */}
+            <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-700 px-6 py-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
                   <input
                     type="checkbox"
-                    className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                    checked={selectedCases.length === currentCases.length && currentCases.length > 0}
-                    onChange={handleSelectAll}
+                    className="rounded border-white text-white focus:ring-white bg-white/20"
+                    checked={selectedCases.includes(caseItem.id)}
+                    onChange={() => handleSelectCase(caseItem.id)}
                   />
-                </th>
-                <th
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                  onClick={() => handleSort('caseNumber')}
-                >
-                  Case Number
-                  {sortConfig.key === 'caseNumber' && (
-                    <span className="ml-1">{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
+                  <div>
+                    <h3 className="text-lg font-bold text-white font-mono">
+                      {caseItem.caseNumber}
+                    </h3>
+                    <p className="text-indigo-100 text-sm">
+                      Filed: {new Date(caseItem.filingDate).toLocaleDateString()}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border ${
+                    getPriorityColor(caseItem.priority)
+                  } bg-white/20 border-white/30 text-white`}>
+                    Priority {caseItem.priority}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Card Content */}
+            <div className="p-6">
+              <div className="space-y-4">
+                {/* Title */}
+                <div>
+                  <h4 className="text-xl font-semibold text-gray-900 group-hover:text-indigo-700 transition-colors overflow-hidden">
+                    {caseItem.title}
+                  </h4>
+                  {caseItem.description && (
+                    <p className="text-gray-600 text-sm mt-2 overflow-hidden">
+                      {caseItem.description}
+                    </p>
                   )}
-                </th>
-                <th
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                  onClick={() => handleSort('title')}
-                >
-                  Title
-                  {sortConfig.key === 'title' && (
-                    <span className="ml-1">{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
-                  )}
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Type
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
-                </th>
-                <th
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                  onClick={() => handleSort('priority')}
-                >
-                  Priority
-                  {sortConfig.key === 'priority' && (
-                    <span className="ml-1">{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
-                  )}
-                </th>
-                <th
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                  onClick={() => handleSort('filingDate')}
-                >
-                  Filing Date
-                  {sortConfig.key === 'filingDate' && (
-                    <span className="ml-1">{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
-                  )}
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {currentCases.map((caseItem) => (
-                <tr key={caseItem.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <input
-                      type="checkbox"
-                      className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                      checked={selectedCases.includes(caseItem.id)}
-                      onChange={() => handleSelectCase(caseItem.id)}
-                    />
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    {caseItem.caseNumber}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900 max-w-xs truncate">
-                      {caseItem.title}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getCaseTypeColor(caseItem.caseType)}`}>
-                      {caseItem.caseType}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusColor(caseItem.status)}`}>
-                      {caseItem.status.replace('_', ' ')}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getPriorityColor(caseItem.priority)}`}>
-                      {caseItem.priority}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {new Date(caseItem.filingDate).toLocaleDateString()}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                </div>
+
+                {/* Status and Type */}
+                <div className="flex flex-wrap gap-2">
+                  <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${
+                    getStatusColor(caseItem.status)
+                  }`}>
+                    {caseItem.status.replace('_', ' ')}
+                  </span>
+                  <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${
+                    getCaseTypeColor(caseItem.caseType)
+                  }`}>
+                    {caseItem.caseType}
+                  </span>
+                </div>
+
+                {/* Filing Clerk Info */}
+                {caseItem.filingClerk && (
+                  <div className="flex items-center space-x-2 text-sm text-gray-500">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                    <span>Filing Clerk: {caseItem.filingClerk.firstName} {caseItem.filingClerk.lastName}</span>
+                  </div>
+                )}
+
+                {/* Judge Info */}
+                {caseItem.assignedJudge && (
+                  <div className="flex items-center space-x-2 text-sm text-gray-500">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>Judge: {caseItem.assignedJudge.firstName} {caseItem.assignedJudge.lastName}</span>
+                  </div>
+                )}
+
+                {/* Hearing Date */}
+                {caseItem.hearingDate && (
+                  <div className="flex items-center space-x-2 text-sm text-gray-500">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <span>Hearing: {new Date(caseItem.hearingDate).toLocaleDateString('en-US', {
+                      weekday: 'long',
+                      year: 'numeric',
+                      month: 'short',
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Card Actions */}
+              <div className="mt-6 pt-4 border-t border-gray-200">
+                <div className="flex items-center justify-between">
+                  <Link
+                    to={`/cases/${caseItem.id}`}
+                    className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors duration-200 shadow-sm"
+                  >
+                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                    View Details
+                  </Link>
+
+                  {(user.role === 'ADMIN' || user.role === 'JUDGE') && (
                     <Link
-                      to={`/cases/${caseItem.id}`}
-                      className="text-indigo-600 hover:text-indigo-900 mr-4"
+                      to={`/cases/${caseItem.id}/edit`}
+                      className="inline-flex items-center px-4 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors duration-200"
                     >
-                      View
+                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                      </svg>
+                      Edit
                     </Link>
-                    {(user.role === 'ADMIN' || user.role === 'JUDGE') && (
-                      <Link
-                        to={`/cases/${caseItem.id}/edit`}
-                        className="text-blue-600 hover:text-blue-900"
-                      >
-                        Edit
-                      </Link>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
 
       {/* Pagination */}

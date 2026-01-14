@@ -76,7 +76,7 @@ export const AuthProvider = ({ children }) => {
     const checkAuth = async () => {
       if (credentials) {
         try {
-          const response = await axios.get('http://localhost:8081/api/auth/me');
+          const response = await axios.get('http://localhost:8080/api/auth/me');
           setUser(response.data);
         } catch (error) {
           // Credentials invalid, clear them
@@ -96,7 +96,7 @@ export const AuthProvider = ({ children }) => {
       const authHeader = btoa(`${username}:${password}`);
       axios.defaults.headers.common['Authorization'] = `Basic ${authHeader}`;
 
-      const response = await axios.get('http://localhost:8081/api/auth/me');
+      const response = await axios.get('http://localhost:8080/api/auth/me');
       setUser(response.data);
 
       // Store credentials for persistence
@@ -113,7 +113,7 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (userData) => {
     try {
-      const response = await axios.post('http://localhost:8081/api/auth/register', userData);
+      const response = await axios.post('http://localhost:8080/api/auth/register', userData);
       return { success: true, user: response.data };
     } catch (error) {
       return { success: false, error: error.response?.data || 'Registration failed' };

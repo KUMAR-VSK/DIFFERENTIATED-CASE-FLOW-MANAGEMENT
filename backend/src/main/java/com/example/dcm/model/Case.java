@@ -92,9 +92,10 @@ public class Case {
     // Generate unique case number in format: CASE-YYYY-NNNN
     private String generateCaseNumber() {
         String year = String.valueOf(LocalDateTime.now().getYear());
-        // For simplicity, we'll use a random 4-digit number
-        // In a production system, you might want to use a sequence or database counter
-        int sequence = (int) (Math.random() * 9000) + 1000; // 1000-9999
+        // Use timestamp-based sequence for better uniqueness
+        long timestamp = System.currentTimeMillis();
+        // Take last 4 digits of timestamp for sequence (more predictable and unique)
+        int sequence = (int) (timestamp % 10000);
         return String.format("CASE-%s-%04d", year, sequence);
     }
 
