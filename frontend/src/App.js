@@ -9,6 +9,7 @@ import Dashboard from './components/Dashboard';
 import CaseList from './components/CaseList';
 import CaseForm from './components/CaseForm';
 import CaseDetail from './components/CaseDetail';
+import Reports from './components/Reports';
 import Navigation from './components/Navigation';
 import UserManagement from './components/UserManagement';
 
@@ -38,7 +39,7 @@ function App() {
         <Router>
           <Navigation />
           <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-slate-900 transition-colors duration-300">
-            <main className="py-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+            <main className="h-screen w-full overflow-auto py-8 px-4 sm:px-6 lg:px-8">
               <Routes>
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
@@ -87,6 +88,14 @@ function App() {
                   element={
                     <ProtectedRoute allowedRoles={['ADMIN']}>
                       <UserManagement />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/reports"
+                  element={
+                    <ProtectedRoute>
+                      <Reports />
                     </ProtectedRoute>
                   }
                 />

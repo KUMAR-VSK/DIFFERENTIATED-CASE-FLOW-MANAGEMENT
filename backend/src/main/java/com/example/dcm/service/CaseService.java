@@ -86,12 +86,11 @@ public class CaseService {
         Case caseEntity = caseRepository.findById(caseId)
                 .orElseThrow(() -> new IllegalArgumentException("Case not found"));
 
-        if (caseEntity.getAssignedJudge() == null) {
-            throw new IllegalArgumentException("Cannot schedule hearing without assigned judge");
-        }
-
         caseEntity.setHearingDate(hearingDate);
-        caseEntity.setStatus(Case.Status.SCHEDULED);
+        // Only change status to SCHEDULED if it's not already in a more advanced state
+        if (caseEntity.getStatus() == Case.Status.FILED || caseEntity.getStatus() == Case.Status.UNDER_REVIEW) {
+            caseEntity.setStatus(Case.Status.SCHEDULED);
+        }
         return caseRepository.save(caseEntity);
     }
 
@@ -132,6 +131,138 @@ public class CaseService {
         return caseRepository.save(caseEntity);
     }
 
+    // Set manual priority
+    public Case setManualPriority(Long caseId, Integer priority) {
+        Case caseEntity = caseRepository.findById(caseId)
+                .orElseThrow(() -> new IllegalArgumentException("Case not found"));
+
+        caseEntity.setPriority(priority);
+        return caseRepository.save(caseEntity);
+    }
+
+    // Generate case report
+    public String generateCaseReport(Long caseId) {
+        Case caseEntity = caseRepository.findById(caseId)
+                .orElseThrow(() -> new IllegalArgumentException("Case not found"));
+
+        StringBuilder report = new StringBuilder();
+        report.append("CASE MANAGEMENT REPORT\n");
+        report.append("======================\n\n");
+
+        report.append("Case Information:\n");
+        report.append("- Case Number: ").append(caseEntity.getCaseNumber()).append("\n");
+        report.append("- Title: ").append(caseEntity.getTitle()).append("\n");
+        report.append("- Case Type: ").append(caseEntity.getCaseType()).append("\n");
+        report.append("- Status: ").append(caseEntity.getStatus()).append("\n");
+        report.append("- Priority: ").append(caseEntity.getPriority()).append("/10\n");
+        report.append("- Filing Date: ").append(caseEntity.getFilingDate()).append("\n");
+
+        if (caseEntity.getHearingDate() != null) {
+            report.append("- Hearing Date: ").append(caseEntity.getHearingDate()).append("\n");
+        }
+
+        if (caseEntity.getAssignedJudge() != null) {
+            report.append("- Assigned Judge: ").append(caseEntity.getAssignedJudge().getFirstName())
+                  .append(" ").append(caseEntity.getAssignedJudge().getLastName()).append("\n");
+        }
+
+        if (caseEntity.getFilingClerk() != null) {
+            report.append("- Filing Clerk: ").append(caseEntity.getFilingClerk().getFirstName())
+                  .append(" ").append(caseEntity.getFilingClerk().getLastName()).append("\n");
+        }
+
+        if (caseEntity.getDescription() != null && !caseEntity.getDescription().trim().isEmpty()) {
+            report.append("\nDescription:\n").append(caseEntity.getDescription()).append("\n");
+        }
+
+        if (caseEntity.getNotes() != null && !caseEntity.getNotes().trim().isEmpty()) {
+            report.append("\nCase Notes:\n").append(caseEntity.getNotes()).append("\n");
+        }
+
+        report.append("\nReport Generated: ").append(java.time.LocalDateTime.now()).append("\n");
+
+        return report.toString();
+    }
+
+    // Generate case PDF (placeholder - returns formatted text for now)
+    public String generateCasePDF(Long caseId) {
+        Case caseEntity = caseRepository.findById(caseId)
+                .orElseThrow(() -> new IllegalArgumentException("Case not found"));
+
+        // For now, return a simple text-based "PDF" representation
+        // In a real implementation, you'd use a PDF library like iText or Apache PDFBox
+        StringBuilder pdfContent = new StringBuilder();
+        pdfContent.append("%PDF-1.4\n");
+        pdfContent.append("1 0 obj\n");
+        pdfContent.append("<<\n");
+        pdfContent.append("/Type /Catalog\n");
+        pdfContent.append("/Pages 2 0 R\n");
+        pdfContent.append(">>\n");
+        pdfContent.append("endobj\n");
+
+        pdfContent.append("2 0 obj\n");
+        pdfContent.append("<<\n");
+        pdfContent.append("/Type /Pages\n");
+        pdfContent.append("/Kids [3 0 R]\n");
+        pdfContent.append("/Count 1\n");
+        pdfContent.append(">>\n");
+        pdfContent.append("endobj\n");
+
+        pdfContent.append("3 0 obj\n");
+        pdfContent.append("<<\n");
+        pdfContent.append("/Type /Page\n");
+        pdfContent.append("/Parent 2 0 R\n");
+        pdfContent.append("/MediaBox [0 0 612 792]\n");
+        pdfContent.append("/Contents 4 0 R\n");
+        pdfContent.append("/Resources << /Font << /F1 5 0 R >> >>\n");
+        pdfContent.append(">>\n");
+        pdfContent.append("endobj\n");
+
+        pdfContent.append("4 0 obj\n");
+        pdfContent.append("<<\n");
+        pdfContent.append("/Length ").append(("BT\n/F1 12 Tf\n72 720 Td\n(" + caseEntity.getTitle() + ") Tj\nET\n").length()).append("\n");
+        pdfContent.append(">>\n");
+        pdfContent.append("stream\n");
+        pdfContent.append("BT\n");
+        pdfContent.append("/F1 12 Tf\n");
+        pdfContent.append("72 720 Td\n");
+        pdfContent.append("(").append(caseEntity.getTitle()).append(") Tj\n");
+        pdfContent.append("0 -20 Td\n");
+        pdfContent.append("(Case Number: ").append(caseEntity.getCaseNumber()).append(") Tj\n");
+        pdfContent.append("0 -20 Td\n");
+        pdfContent.append("(Status: ").append(caseEntity.getStatus()).append(") Tj\n");
+        pdfContent.append("ET\n");
+        pdfContent.append("endstream\n");
+        pdfContent.append("endobj\n");
+
+        pdfContent.append("5 0 obj\n");
+        pdfContent.append("<<\n");
+        pdfContent.append("/Type /Font\n");
+        pdfContent.append("/Subtype /Type1\n");
+        pdfContent.append("/BaseFont /Helvetica\n");
+        pdfContent.append(">>\n");
+        pdfContent.append("endobj\n");
+
+        pdfContent.append("xref\n");
+        pdfContent.append("0 6\n");
+        pdfContent.append("0000000000 65535 f \n");
+        pdfContent.append("0000000009 00000 n \n");
+        pdfContent.append("0000000058 00000 n \n");
+        pdfContent.append("0000000115 00000 n \n");
+        pdfContent.append("0000000274 00000 n \n");
+        pdfContent.append("0000000516 00000 n \n");
+        pdfContent.append("trailer\n");
+        pdfContent.append("<<\n");
+        pdfContent.append("/Size 6\n");
+        pdfContent.append("/Root 1 0 R\n");
+        pdfContent.append(">>\n");
+        pdfContent.append("startxref\n");
+        pdfContent.append("581\n");
+        pdfContent.append("%%EOF\n");
+
+        return pdfContent.toString();
+    }
+
     // Get case statistics
     public CaseStatistics getCaseStatistics() {
         List<Case> allCases = caseRepository.findAll();
@@ -148,7 +279,17 @@ public class CaseService {
 
     // Get all cases (for case management - includes all statuses)
     public List<Case> getAllCases() {
-        return caseRepository.findAll();
+        // Use a custom query to avoid Hibernate lazy loading issues
+        return caseRepository.findAllCasesWithUsers();
+    }
+
+    // Update case notes
+    public Case updateCaseNotes(Long caseId, String notes) {
+        Case caseEntity = caseRepository.findById(caseId)
+                .orElseThrow(() -> new IllegalArgumentException("Case not found"));
+
+        caseEntity.setNotes(notes);
+        return caseRepository.save(caseEntity);
     }
 
     // Get case by ID

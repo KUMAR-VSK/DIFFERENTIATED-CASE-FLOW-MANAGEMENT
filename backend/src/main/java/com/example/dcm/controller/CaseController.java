@@ -6,7 +6,6 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -101,11 +100,15 @@ public class CaseController {
     @PreAuthorize("hasRole('ADMIN') or hasRole('JUDGE')")
     public ResponseEntity<Case> scheduleHearing(
             @PathVariable Long id,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime hearingDate) {
+            @RequestBody Map<String, String> request) {
         try {
+            String hearingDateStr = request.get("hearingDate");
+            LocalDateTime hearingDate = LocalDateTime.parse(hearingDateStr.replace("Z", ""));
             Case updatedCase = caseService.scheduleHearing(id, hearingDate);
             return ResponseEntity.ok(updatedCase);
         } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        } catch (Exception e) {
             return ResponseEntity.badRequest().build();
         }
     }
@@ -146,11 +149,69 @@ public class CaseController {
         }
     }
 
+    // Set manual priority
+    @PutMapping("/{id}/set-priority")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Case> setManualPriority(@PathVariable Long id, @RequestParam Integer priority) {
+        try {
+            if (priority < 1 || priority > 10) {
+                return ResponseEntity.badRequest().build();
+            }
+            Case updatedCase = caseService.setManualPriority(id, priority);
+            return ResponseEntity.ok(updatedCase);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    // Add or update case notes
+    @PutMapping("/{id}/notes")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('JUDGE') or hasRole('CLERK')")
+    public ResponseEntity<Case> updateCaseNotes(@PathVariable Long id, @RequestBody Map<String, String> request) {
+        try {
+            String notes = request.get("notes");
+            Case updatedCase = caseService.updateCaseNotes(id, notes);
+            return ResponseEntity.ok(updatedCase);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
     // Get case statistics (allow multiple roles)
     @GetMapping("/statistics")
     @PreAuthorize("hasRole('ADMIN') or hasRole('CLERK') or hasRole('JUDGE')")
     public ResponseEntity<CaseService.CaseStatistics> getCaseStatistics() {
         CaseService.CaseStatistics stats = caseService.getCaseStatistics();
         return ResponseEntity.ok(stats);
+    }
+
+    // Generate case report
+    @GetMapping("/{id}/report")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('JUDGE')")
+    public ResponseEntity<String> generateCaseReport(@PathVariable Long id) {
+        try {
+            String report = caseService.generateCaseReport(id);
+            return ResponseEntity.ok()
+                    .header("Content-Type", "text/plain")
+                    .header("Content-Disposition", "attachment; filename=\"case-report-" + id + ".txt\"")
+                    .body(report);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    // Generate case PDF (placeholder - would need PDF library)
+    @GetMapping("/{id}/pdf")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('JUDGE')")
+    public ResponseEntity<String> generateCasePDF(@PathVariable Long id) {
+        try {
+            String pdfContent = caseService.generateCasePDF(id);
+            return ResponseEntity.ok()
+                    .header("Content-Type", "application/pdf")
+                    .header("Content-Disposition", "attachment; filename=\"case-report-" + id + ".pdf\"")
+                    .body(pdfContent);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 }

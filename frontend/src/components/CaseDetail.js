@@ -14,6 +14,25 @@ const CaseDetail = () => {
   const [documents, setDocuments] = useState([]);
   const [notes, setNotes] = useState([]);
   const [showNoteModal, setShowNoteModal] = useState(false);
+
+  // Parse notes from case data
+  const parseNotes = (notesString) => {
+    if (!notesString) return [];
+    return notesString.split('\n\n').filter(note => note.trim()).map((note, index) => {
+      const lines = note.split('\n');
+      const firstLine = lines[0] || '';
+      const timestampMatch = firstLine.match(/^\[([^\]]+)\]/);
+      const timestamp = timestampMatch ? timestampMatch[1] : '';
+      const content = timestampMatch ? lines.slice(1).join('\n') || firstLine.replace(/^\[[^\]]+\]\s*/, '') : firstLine;
+
+      return {
+        id: index,
+        content: content.trim(),
+        timestamp: timestamp,
+        createdAt: timestamp ? new Date(timestamp) : new Date()
+      };
+    });
+  };
   const [newNote, setNewNote] = useState('');
   const [showPriorityModal, setShowPriorityModal] = useState(false);
   const [manualPriority, setManualPriority] = useState('');
@@ -29,6 +48,9 @@ const CaseDetail = () => {
       try {
         const response = await axios.get(`http://localhost:8080/api/cases/${id}`);
         setCaseData(response.data);
+        // Parse and set notes from case data
+        const parsedNotes = parseNotes(response.data.notes);
+        setNotes(parsedNotes);
       } catch (error) {
         setError('Failed to load case details');
         console.error('Error fetching case:', error);
@@ -130,8 +152,8 @@ const CaseDetail = () => {
 
     setActionLoading(true);
     try {
-      await axios.put(`http://localhost:8080/api/cases/${id}/schedule`, null, {
-        params: { hearingDate: selectedDate.toISOString() }
+      await axios.put(`http://localhost:8080/api/cases/${id}/schedule`, {
+        hearingDate: selectedDate.toISOString()
       });
 
       // Refresh case data
@@ -156,11 +178,21 @@ const CaseDetail = () => {
 
     setActionLoading(true);
     try {
-      await axios.post(`http://localhost:8080/api/cases/${id}/notes`, { note: newNote });
+      // Get current notes and append new note with timestamp
+      const currentNotes = caseData.notes || '';
+      const timestamp = new Date().toLocaleString();
+      const updatedNotes = currentNotes
+        ? `${currentNotes}\n\n[${timestamp}] ${newNote}`
+        : `[${timestamp}] ${newNote}`;
+
+      await axios.put(`http://localhost:8080/api/cases/${id}/notes`, { notes: updatedNotes });
+
+      // Refresh case data to show updated notes
+      const response = await axios.get(`http://localhost:8080/api/cases/${id}`);
+      setCaseData(response.data);
       setNewNote('');
       setShowNoteModal(false);
 
-      // Refresh notes (in a real app, you'd fetch them again)
       showToast('Note added successfully');
     } catch (error) {
       console.error('Error adding note:', error);
@@ -191,6 +223,56 @@ const CaseDetail = () => {
     } catch (error) {
       console.error('Error setting priority:', error);
       showToast('Failed to update case priority', 'error');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleExportReport = async () => {
+    setActionLoading(true);
+    try {
+      const response = await axios.get(`http://localhost:8080/api/cases/${id}/report`, {
+        responseType: 'blob'
+      });
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `case-report-${id}.txt`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+
+      showToast('Report exported successfully');
+    } catch (error) {
+      console.error('Error exporting report:', error);
+      showToast('Failed to export report', 'error');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleGeneratePDF = async () => {
+    setActionLoading(true);
+    try {
+      const response = await axios.get(`http://localhost:8080/api/cases/${id}/pdf`, {
+        responseType: 'blob'
+      });
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `case-report-${id}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+
+      showToast('PDF generated successfully');
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      showToast('Failed to generate PDF', 'error');
     } finally {
       setActionLoading(false);
     }
@@ -513,68 +595,100 @@ const CaseDetail = () => {
                 </div>
 
                 {/* Quick Actions */}
-                <div className="bg-white rounded-lg shadow-lg p-6 border border-gray-200">
-                  <h2 className="text-xl font-semibold text-gray-900 mb-4">Quick Actions</h2>
+                <div className="bg-gradient-to-br from-indigo-50 to-blue-50 rounded-lg shadow-lg p-6 border-2 border-indigo-200">
+                  <h2 className="text-xl font-semibold text-indigo-900 mb-4 flex items-center">
+                    <svg className="h-6 w-6 text-indigo-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                    Quick Actions
+                    <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                      Available Now
+                    </span>
+                  </h2>
+
+                  {/* Debug Info */}
+                  <div className="mb-4 p-3 bg-white rounded-md border border-indigo-200">
+                    <p className="text-sm text-indigo-700">
+                      <strong>Current User Role:</strong> {user?.role || 'Not logged in'}
+                    </p>
+                    <p className="text-xs text-indigo-600 mt-1">
+                      Quick actions are available based on your role permissions.
+                    </p>
+                  </div>
+
                   <div className="space-y-3">
-                    {(user.role === 'ADMIN' || user.role === 'JUDGE') && (
+                    {/* Status Update - ADMIN/JUDGE only */}
+                    {(user.role === 'ADMIN' || user.role === 'JUDGE') ? (
                       <button
                         onClick={() => setShowStatusModal(true)}
                         disabled={actionLoading}
-                        className="w-full bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 text-sm font-medium flex items-center justify-center"
+                        className="w-full bg-indigo-600 text-white px-4 py-3 rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 text-sm font-medium flex items-center justify-center shadow-md"
                       >
-                        {actionLoading ? (
-                          <>
-                            <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
-                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                            </svg>
-                            Updating...
-                          </>
-                        ) : (
-                          'Update Status'
-                        )}
+                        <svg className="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        {actionLoading ? 'Updating...' : 'Update Status'}
                       </button>
+                    ) : (
+                      <div className="w-full bg-gray-100 text-gray-400 px-4 py-3 rounded-lg text-sm font-medium flex items-center justify-center border-2 border-dashed border-gray-300">
+                        <svg className="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        </svg>
+                        Status Update (Admin/Judge Only)
+                      </div>
                     )}
 
-                    {(user.role === 'ADMIN' || user.role === 'JUDGE') && (
+                    {/* Schedule Hearing - ADMIN/JUDGE only */}
+                    {(user.role === 'ADMIN' || user.role === 'JUDGE') ? (
                       <button
                         onClick={() => setShowHearingModal(true)}
                         disabled={actionLoading}
-                        className="w-full bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 text-sm font-medium flex items-center justify-center"
+                        className="w-full bg-green-600 text-white px-4 py-3 rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 text-sm font-medium flex items-center justify-center shadow-md"
                       >
-                        {actionLoading ? (
-                          <>
-                            <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
-                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                            </svg>
-                            Scheduling...
-                          </>
-                        ) : (
-                          'Schedule Hearing'
-                        )}
+                        <svg className="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        {actionLoading ? 'Scheduling...' : 'Schedule Hearing'}
                       </button>
+                    ) : (
+                      <div className="w-full bg-gray-100 text-gray-400 px-4 py-3 rounded-lg text-sm font-medium flex items-center justify-center border-2 border-dashed border-gray-300">
+                        <svg className="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        Schedule Hearing (Admin/Judge Only)
+                      </div>
                     )}
 
-                    {user.role === 'JUDGE' && (
+                    {/* Add Notes - JUDGE only */}
+                    {user.role === 'JUDGE' ? (
                       <button
                         onClick={() => setShowNoteModal(true)}
                         disabled={actionLoading}
-                        className="w-full bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 text-sm font-medium flex items-center justify-center"
+                        className="w-full bg-yellow-600 text-white px-4 py-3 rounded-lg hover:bg-yellow-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 text-sm font-medium flex items-center justify-center shadow-md"
                       >
-                        {actionLoading ? (
-                          <>
-                            <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
-                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                            </svg>
-                            Adding...
-                          </>
-                        ) : (
-                          'Add Notes'
-                        )}
+                        <svg className="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                        {actionLoading ? 'Adding...' : 'Add Notes'}
                       </button>
+                    ) : (
+                      <div className="w-full bg-gray-100 text-gray-400 px-4 py-3 rounded-lg text-sm font-medium flex items-center justify-center border-2 border-dashed border-gray-300">
+                        <svg className="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                        Add Notes (Judge Only)
+                      </div>
                     )}
+
+                    {/* Help Text */}
+                    <div className="mt-4 p-3 bg-indigo-50 rounded-md border border-indigo-200">
+                      <h4 className="text-sm font-medium text-indigo-800 mb-2">Available Actions:</h4>
+                      <ul className="text-xs text-indigo-700 space-y-1">
+                        <li>• <strong>Admins/Judges:</strong> Update status, schedule hearings</li>
+                        <li>• <strong>Judges:</strong> Add case notes</li>
+                        <li>• <strong>All Roles:</strong> View case details and history</li>
+                      </ul>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -699,7 +813,7 @@ const CaseDetail = () => {
                           </div>
                         </div>
                       </div>
-                      <p className="text-gray-800 leading-relaxed">{note.note}</p>
+                      <p className="text-gray-800 leading-relaxed">{note.content}</p>
                     </div>
                   ))}
                 </div>
@@ -807,19 +921,52 @@ const CaseDetail = () => {
           {/* Analytics Tab */}
           {activeTab === 'analytics' && (
             <div>
-              <h2 className="text-xl font-semibold text-gray-900 mb-6 flex items-center">
-                <svg className="h-6 w-6 text-gray-600 mr-3" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z" />
-                </svg>
-                Case Analytics
-              </h2>
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-xl font-semibold text-gray-900 flex items-center">
+                  <svg className="h-6 w-6 text-gray-600 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z" />
+                  </svg>
+                  Case Analytics & Insights
+                </h2>
+                <div className="flex gap-3">
+                  <button
+                    onClick={handleExportReport}
+                    disabled={actionLoading}
+                    className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 text-sm flex items-center"
+                  >
+                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    {actionLoading ? 'Generating...' : 'Export Report'}
+                  </button>
+                  <button
+                    onClick={handleGeneratePDF}
+                    disabled={actionLoading}
+                    className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 text-sm flex items-center"
+                  >
+                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    {actionLoading ? 'Generating...' : 'Generate PDF'}
+                  </button>
+                </div>
+              </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-6">
+              {/* Key Metrics Row */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-6 border border-blue-200">
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium text-blue-600">Priority Level</p>
                       <p className="text-3xl font-bold text-blue-900">{caseData.priority}/10</p>
+                      <div className="mt-2">
+                        <div className="w-full bg-blue-200 rounded-full h-2">
+                          <div
+                            className="bg-blue-600 h-2 rounded-full"
+                            style={{ width: `${(caseData.priority / 10) * 100}%` }}
+                          ></div>
+                        </div>
+                      </div>
                     </div>
                     <div className="bg-blue-500 rounded-full p-3">
                       <svg className="h-6 w-6 text-white" fill="currentColor" viewBox="0 0 20 20">
@@ -829,11 +976,14 @@ const CaseDetail = () => {
                   </div>
                 </div>
 
-                <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-6">
+                <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-6 border border-green-200">
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium text-green-600">Documents</p>
                       <p className="text-3xl font-bold text-green-900">{documents.length}</p>
+                      <p className="text-xs text-green-500 mt-1">
+                        {documents.length > 0 ? 'Documents available' : 'No documents uploaded'}
+                      </p>
                     </div>
                     <div className="bg-green-500 rounded-full p-3">
                       <svg className="h-6 w-6 text-white" fill="currentColor" viewBox="0 0 20 20">
@@ -843,11 +993,14 @@ const CaseDetail = () => {
                   </div>
                 </div>
 
-                <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg p-6">
+                <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg p-6 border border-purple-200">
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium text-purple-600">Case Notes</p>
                       <p className="text-3xl font-bold text-purple-900">{notes.length}</p>
+                      <p className="text-xs text-purple-500 mt-1">
+                        {notes.length > 0 ? 'Notes available' : 'No notes added yet'}
+                      </p>
                     </div>
                     <div className="bg-purple-500 rounded-full p-3">
                       <svg className="h-6 w-6 text-white" fill="currentColor" viewBox="0 0 20 20">
@@ -857,18 +1010,129 @@ const CaseDetail = () => {
                   </div>
                 </div>
 
-                <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-lg p-6">
+                <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-lg p-6 border border-orange-200">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-orange-600">Days Since Filing</p>
+                      <p className="text-sm font-medium text-orange-600">Case Age</p>
                       <p className="text-3xl font-bold text-orange-900">
                         {Math.floor((new Date() - new Date(caseData.filingDate)) / (1000 * 60 * 60 * 24))}
                       </p>
+                      <p className="text-xs text-orange-500 mt-1">days since filing</p>
                     </div>
                     <div className="bg-orange-500 rounded-full p-3">
                       <svg className="h-6 w-6 text-white" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
                       </svg>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Performance Indicators */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                <div className="bg-white rounded-lg border border-gray-200 p-6">
+                  <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                    <svg className="h-5 w-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                    Case Health Score
+                  </h3>
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Documentation</span>
+                      <span className="text-sm font-medium text-green-600">
+                        {documents.length > 0 ? 'Complete' : 'Missing'}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Judge Assignment</span>
+                      <span className="text-sm font-medium text-green-600">
+                        {caseData.assignedJudge ? 'Assigned' : 'Pending'}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Hearing Scheduled</span>
+                      <span className="text-sm font-medium text-green-600">
+                        {caseData.hearingDate ? 'Scheduled' : 'Pending'}
+                      </span>
+                    </div>
+                    <div className="mt-4 pt-4 border-t border-gray-200">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm font-medium text-gray-700">Overall Score</span>
+                        <span className="text-lg font-bold text-green-600">
+                          {Math.round(((documents.length > 0 ? 1 : 0) +
+                                       (caseData.assignedJudge ? 1 : 0) +
+                                       (caseData.hearingDate ? 1 : 0)) / 3 * 100)}%
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-white rounded-lg border border-gray-200 p-6">
+                  <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                    <svg className="h-5 w-5 text-blue-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Processing Efficiency
+                  </h3>
+                  <div className="space-y-3">
+                    <div>
+                      <div className="flex justify-between text-sm mb-1">
+                        <span>Status Progress</span>
+                        <span>{caseData.status.replace('_', ' ')}</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div
+                          className={`h-2 rounded-full ${
+                            caseData.status === 'COMPLETED' ? 'bg-green-600' :
+                            caseData.status === 'IN_PROGRESS' ? 'bg-blue-600' :
+                            caseData.status === 'SCHEDULED' ? 'bg-yellow-600' :
+                            'bg-gray-600'
+                          }`}
+                          style={{
+                            width:
+                              caseData.status === 'COMPLETED' ? '100%' :
+                              caseData.status === 'IN_PROGRESS' ? '75%' :
+                              caseData.status === 'SCHEDULED' ? '50%' :
+                              caseData.status === 'UNDER_REVIEW' ? '25%' : '10%'
+                          }}
+                        ></div>
+                      </div>
+                    </div>
+                    <div className="pt-4 border-t border-gray-200">
+                      <div className="text-sm text-gray-600">
+                        <p><strong>Estimated Duration:</strong> {caseData.estimatedDurationDays || 'N/A'} days</p>
+                        <p><strong>Days Elapsed:</strong> {Math.floor((new Date() - new Date(caseData.filingDate)) / (1000 * 60 * 60 * 24))} days</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-white rounded-lg border border-gray-200 p-6">
+                  <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                    <svg className="h-5 w-5 text-purple-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z" clipRule="evenodd" />
+                    </svg>
+                    Case Statistics
+                  </h3>
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Case Type</span>
+                      <span className="text-sm font-medium text-purple-600">{caseData.caseType.replace('_', ' ')}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Priority</span>
+                      <span className="text-sm font-medium text-purple-600">Level {caseData.priority}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Status Updates</span>
+                      <span className="text-sm font-medium text-purple-600">1 update</span>
+                    </div>
+                    <div className="pt-4 border-t border-gray-200">
+                      <p className="text-xs text-gray-500">
+                        Case created on {new Date(caseData.createdAt).toLocaleDateString()}
+                      </p>
                     </div>
                   </div>
                 </div>

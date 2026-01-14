@@ -40,4 +40,8 @@ public interface CaseRepository extends JpaRepository<Case, Long> {
 
     // Cases assigned to judge with specific status
     List<Case> findByAssignedJudgeAndStatus(User judge, Case.Status status);
+
+    // All cases with eager loading of users to avoid serialization issues
+    @Query("SELECT c FROM Case c LEFT JOIN FETCH c.filingClerk LEFT JOIN FETCH c.assignedJudge")
+    List<Case> findAllCasesWithUsers();
 }

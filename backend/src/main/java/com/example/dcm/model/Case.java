@@ -56,6 +56,9 @@ public class Case {
     @Column(name = "resource_requirement")
     private String resourceRequirement; // e.g., "High court resources", "Special expertise needed"
 
+    @Column(length = 5000)
+    private String notes; // Case notes and comments
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "assigned_judge_id")
     private User assignedJudge;
@@ -152,6 +155,9 @@ public class Case {
 
     public String getResourceRequirement() { return resourceRequirement; }
     public void setResourceRequirement(String resourceRequirement) { this.resourceRequirement = resourceRequirement; }
+
+    public String getNotes() { return notes; }
+    public void setNotes(String notes) { this.notes = notes; }
 
     public User getAssignedJudge() { return assignedJudge; }
     public void setAssignedJudge(User assignedJudge) { this.assignedJudge = assignedJudge; }
