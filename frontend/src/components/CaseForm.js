@@ -19,6 +19,8 @@ const CaseForm = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [dragActive, setDragActive] = useState(false);
+  const [createdCaseNumber, setCreatedCaseNumber] = useState(null);
+  const [showSuccess, setShowSuccess] = useState(false);
 
   const handleChange = (e) => {
     setFormData({
@@ -56,12 +58,21 @@ const CaseForm = () => {
       if (isEditing) {
         // Update existing case
         await axios.put(`http://localhost:8081/api/cases/${id}`, payload);
+        navigate('/cases', { state: { refresh: true } });
       } else {
         // Create new case
-        await axios.post('http://localhost:8081/api/cases', payload);
-      }
+        const response = await axios.post('http://localhost:8081/api/cases', payload);
+        const createdCase = response.data;
 
-      navigate('/cases', { state: { refresh: true } });
+        // Show success message with generated case number
+        setCreatedCaseNumber(createdCase.caseNumber);
+        setShowSuccess(true);
+
+        // Auto-redirect after 3 seconds
+        setTimeout(() => {
+          navigate('/cases', { state: { refresh: true } });
+        }, 3000);
+      }
     } catch (error) {
       console.error('Error creating case:', error);
       setError(
@@ -88,6 +99,47 @@ const CaseForm = () => {
           </p>
         </div>
       </div>
+
+      {/* Success Message */}
+      {showSuccess && createdCaseNumber && (
+        <div className="bg-green-50 border border-green-200 rounded-lg p-6 mb-6">
+          <div className="flex items-center">
+            <div className="flex-shrink-0">
+              <svg className="h-8 w-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div className="ml-4 flex-1">
+              <h3 className="text-lg font-semibold text-green-800">Case Filed Successfully!</h3>
+              <div className="mt-2">
+                <p className="text-sm text-green-700">
+                  Your case has been created with the following details:
+                </p>
+                <div className="mt-3 bg-white rounded-lg p-4 border border-green-200">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-gray-600">Case Number:</p>
+                      <p className="text-xl font-bold text-gray-900 font-mono">{createdCaseNumber}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-xs text-gray-500">Auto-generated</p>
+                      <button
+                        onClick={() => navigator.clipboard.writeText(createdCaseNumber)}
+                        className="mt-1 text-sm text-indigo-600 hover:text-indigo-800 font-medium"
+                      >
+                        Copy to clipboard
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <p className="text-xs text-green-600 mt-2">
+                  Redirecting to cases list in a few seconds...
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Form */}
       <div className="bg-white rounded-lg shadow-lg border border-gray-200">
