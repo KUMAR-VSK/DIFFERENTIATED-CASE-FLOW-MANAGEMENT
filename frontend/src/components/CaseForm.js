@@ -34,16 +34,16 @@ const CaseForm = () => {
 
     try {
       // Validate required fields
-      if (!formData.caseNumber.trim()) {
+      if (isEditing && !formData.caseNumber.trim()) {
         throw new Error('Case number is required');
       }
       if (!formData.title.trim()) {
         throw new Error('Case title is required');
       }
 
-      // Clean up the data
+      // Clean up the data - only include caseNumber for editing
       const payload = {
-        caseNumber: formData.caseNumber.trim(),
+        ...(isEditing && { caseNumber: formData.caseNumber.trim() }),
         title: formData.title.trim(),
         description: formData.description.trim() || null,
         caseType: formData.caseType,
@@ -112,22 +112,36 @@ const CaseForm = () => {
             <div className="bg-gray-50 rounded-lg p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Case Details</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label htmlFor="caseNumber" className="block text-sm font-medium text-gray-700 mb-2">
-                    Case Number *
-                  </label>
-                  <input
-                    type="text"
-                    id="caseNumber"
-                    name="caseNumber"
-                    required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                    placeholder="Enter case number"
-                    value={formData.caseNumber}
-                    onChange={handleChange}
-                  />
-                  <p className="text-xs text-gray-500 mt-1">Unique identifier for the case</p>
-                </div>
+                {!isEditing && (
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <div className="flex items-center space-x-2 mb-2">
+                      <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <span className="text-sm font-medium text-blue-800">Auto-Generated Case Number</span>
+                    </div>
+                    <p className="text-xs text-blue-700">Case numbers are automatically generated in the format: CASE-YYYY-NNNN</p>
+                  </div>
+                )}
+
+                {isEditing && (
+                  <div>
+                    <label htmlFor="caseNumber" className="block text-sm font-medium text-gray-700 mb-2">
+                      Case Number *
+                    </label>
+                    <input
+                      type="text"
+                      id="caseNumber"
+                      name="caseNumber"
+                      required
+                      readOnly
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-600 cursor-not-allowed"
+                      value={formData.caseNumber}
+                      onChange={handleChange}
+                    />
+                    <p className="text-xs text-gray-500 mt-1">Case number cannot be modified</p>
+                  </div>
+                )}
 
                 <div>
                   <label htmlFor="caseType" className="block text-sm font-medium text-gray-700 mb-2">

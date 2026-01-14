@@ -28,11 +28,6 @@ public class CaseService {
 
     // Create a new case
     public Case createCase(Case caseEntity, String clerkUsername) {
-        // Validate case number uniqueness
-        if (caseRepository.existsByCaseNumber(caseEntity.getCaseNumber())) {
-            throw new IllegalArgumentException("Case number already exists");
-        }
-
         // Set default status if not provided
         if (caseEntity.getStatus() == null) {
             caseEntity.setStatus(Case.Status.FILED);

@@ -77,11 +77,25 @@ public class Case {
         if (filingDate == null) {
             filingDate = LocalDateTime.now();
         }
+
+        // Auto-generate case number if not provided
+        if (caseNumber == null || caseNumber.trim().isEmpty()) {
+            caseNumber = generateCaseNumber();
+        }
     }
 
     @PreUpdate
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
+    }
+
+    // Generate unique case number in format: CASE-YYYY-NNNN
+    private String generateCaseNumber() {
+        String year = String.valueOf(LocalDateTime.now().getYear());
+        // For simplicity, we'll use a random 4-digit number
+        // In a production system, you might want to use a sequence or database counter
+        int sequence = (int) (Math.random() * 9000) + 1000; // 1000-9999
+        return String.format("CASE-%s-%04d", year, sequence);
     }
 
     public enum CaseType {
