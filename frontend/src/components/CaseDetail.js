@@ -560,7 +560,7 @@ const CaseDetail = () => {
                         <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border ${getPriorityColor(caseData.priority)}`}>
                           Priority {caseData.priority}/10
                         </span>
-                        {user.role === 'ADMIN' && (
+                        {(user.role === 'ADMIN' || user.role === 'CLERK') && (
                           <div className="flex gap-2">
                             <button
                               onClick={() => setShowPriorityModal(true)}
