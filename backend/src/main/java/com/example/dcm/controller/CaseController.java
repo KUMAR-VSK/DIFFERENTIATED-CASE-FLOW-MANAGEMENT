@@ -139,7 +139,7 @@ public class CaseController {
 
     // Update case priority
     @PutMapping("/{id}/priority")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('CLERK')")
     public ResponseEntity<Case> updatePriority(@PathVariable Long id) {
         try {
             Case updatedCase = caseService.updatePriority(id);
@@ -151,7 +151,7 @@ public class CaseController {
 
     // Set manual priority
     @PutMapping("/{id}/set-priority")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('CLERK')")
     public ResponseEntity<Case> setManualPriority(@PathVariable Long id, @RequestParam Integer priority) {
         try {
             if (priority < 1 || priority > 10) {

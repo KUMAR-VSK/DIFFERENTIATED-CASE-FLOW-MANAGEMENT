@@ -52,35 +52,9 @@ const CaseDetail = () => {
         const parsedNotes = parseNotes(response.data.notes);
         setNotes(parsedNotes);
 
-        // Mock documents data - in a real implementation, this would come from the backend
-        // For demonstration, we'll create some sample documents
-        const mockDocuments = [
-          {
-            id: 1,
-            originalFileName: 'case-evidence-001.pdf',
-            fileType: 'PDF',
-            fileSize: 2048576, // 2MB
-            uploadDate: new Date().toISOString(),
-            url: '/sample-documents/case-evidence-001.pdf.html' // Mock URL
-          },
-          {
-            id: 2,
-            originalFileName: 'court-order-2024.docx',
-            fileType: 'DOCX',
-            fileSize: 1024000, // 1MB
-            uploadDate: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
-            url: '/sample-documents/court-order-2024.docx.html' // Mock URL
-          },
-          {
-            id: 3,
-            originalFileName: 'witness-statement.txt',
-            fileType: 'TXT',
-            fileSize: 512000, // 512KB
-            uploadDate: new Date(Date.now() - 172800000).toISOString(), // 2 days ago
-            url: '/sample-documents/witness-statement.txt' // Mock URL
-          }
-        ];
-        setDocuments(mockDocuments);
+        // TODO: Fetch actual uploaded documents from backend when document upload is implemented
+        // For now, documents will be empty until proper document storage is added
+        setDocuments([]);
       } catch (error) {
         setError('Failed to load case details');
         console.error('Error fetching case:', error);
