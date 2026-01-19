@@ -63,7 +63,7 @@ Completed Cases: ${reportData.completedCases}
 RECENT CASES (Last 10):
 ----------------------
 ${reportData.recentCases.map(c =>
-  `Case ${c.number}: ${c.title}
+      `Case ${c.number}: ${c.title}
    Status: ${c.status}, Priority: ${c.priority}, Filed: ${new Date(c.filingDate).toLocaleDateString()}
 `).join('\n')}
 
@@ -94,7 +94,7 @@ For detailed case reports, please contact a judge or administrator.
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
@@ -127,8 +127,8 @@ For detailed case reports, please contact a judge or administrator.
         </div>
 
         {/* Report Tabs */}
-        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden mb-8">
-          <div className="border-b border-gray-200">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-gray-100 dark:border-slate-700 overflow-hidden mb-8 transition-colors duration-300">
+          <div className="border-b border-gray-200 dark:border-slate-700">
             <nav className="flex">
               {[
                 { id: 'overview', label: 'Overview', icon: '📊' },
@@ -138,16 +138,15 @@ For detailed case reports, please contact a judge or administrator.
                 <button
                   key={tab.id}
                   onClick={() => setSelectedReport(tab.id)}
-                  className={`flex items-center px-6 py-4 text-sm font-medium border-b-2 transition-colors duration-200 ${
-                    selectedReport === tab.id
-                      ? 'border-amber-500 text-amber-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}
+                  className={`flex items-center px-6 py-4 text-sm font-medium border-b-2 transition-colors duration-200 ${selectedReport === tab.id
+                      ? 'border-amber-500 text-amber-600 dark:text-amber-400'
+                      : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:border-gray-300 dark:hover:border-slate-600'
+                    }`}
                 >
                   <span className="mr-2">{tab.icon}</span>
                   {tab.label}
                   {tab.count !== undefined && (
-                    <span className="ml-2 bg-gray-100 text-gray-600 px-2 py-1 rounded-full text-xs">
+                    <span className="ml-2 bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 px-2 py-1 rounded-full text-xs">
                       {tab.count}
                     </span>
                   )}
@@ -161,12 +160,12 @@ For detailed case reports, please contact a judge or administrator.
             {selectedReport === 'overview' && (
               <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                  <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-6 border border-blue-200">
+                  <div className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/40 dark:to-blue-800/40 rounded-lg p-6 border border-blue-200 dark:border-blue-700/50">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm font-medium text-blue-600">Total Cases</p>
-                        <p className="text-3xl font-bold text-blue-900">{stats?.totalCases || 0}</p>
-                        <p className="text-xs text-blue-500 mt-1">All registered cases</p>
+                        <p className="text-sm font-medium text-blue-600 dark:text-blue-400">Total Cases</p>
+                        <p className="text-3xl font-bold text-blue-900 dark:text-blue-100">{stats?.totalCases || 0}</p>
+                        <p className="text-xs text-blue-500 dark:text-blue-300 mt-1">All registered cases</p>
                       </div>
                       <div className="bg-blue-500 rounded-full p-3">
                         <svg className="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -176,12 +175,12 @@ For detailed case reports, please contact a judge or administrator.
                     </div>
                   </div>
 
-                  <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-lg p-6 border border-emerald-200">
+                  <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-900/40 dark:to-emerald-800/40 rounded-lg p-6 border border-emerald-200 dark:border-emerald-700/50">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm font-medium text-emerald-600">Filed Cases</p>
-                        <p className="text-3xl font-bold text-emerald-900">{stats?.filedCases || 0}</p>
-                        <p className="text-xs text-emerald-500 mt-1">Under processing</p>
+                        <p className="text-sm font-medium text-emerald-600 dark:text-emerald-400">Filed Cases</p>
+                        <p className="text-3xl font-bold text-emerald-900 dark:text-emerald-100">{stats?.filedCases || 0}</p>
+                        <p className="text-xs text-emerald-500 dark:text-emerald-300 mt-1">Under processing</p>
                       </div>
                       <div className="bg-emerald-500 rounded-full p-3">
                         <svg className="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -191,12 +190,12 @@ For detailed case reports, please contact a judge or administrator.
                     </div>
                   </div>
 
-                  <div className="bg-gradient-to-br from-amber-50 to-amber-100 rounded-lg p-6 border border-amber-200">
+                  <div className="bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-900/40 dark:to-amber-800/40 rounded-lg p-6 border border-amber-200 dark:border-amber-700/50">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm font-medium text-amber-600">Scheduled Cases</p>
-                        <p className="text-3xl font-bold text-amber-900">{stats?.scheduledCases || 0}</p>
-                        <p className="text-xs text-amber-500 mt-1">With hearings</p>
+                        <p className="text-sm font-medium text-amber-600 dark:text-amber-400">Scheduled Cases</p>
+                        <p className="text-3xl font-bold text-amber-900 dark:text-amber-100">{stats?.scheduledCases || 0}</p>
+                        <p className="text-xs text-amber-500 dark:text-amber-300 mt-1">With hearings</p>
                       </div>
                       <div className="bg-amber-500 rounded-full p-3">
                         <svg className="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -206,12 +205,12 @@ For detailed case reports, please contact a judge or administrator.
                     </div>
                   </div>
 
-                  <div className="bg-gradient-to-br from-cyan-50 to-cyan-100 rounded-lg p-6 border border-cyan-200">
+                  <div className="bg-gradient-to-br from-cyan-50 to-cyan-100 dark:from-cyan-900/40 dark:to-cyan-800/40 rounded-lg p-6 border border-cyan-200 dark:border-cyan-700/50">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm font-medium text-cyan-600">Completed Cases</p>
-                        <p className="text-3xl font-bold text-cyan-900">{stats?.completedCases || 0}</p>
-                        <p className="text-xs text-cyan-500 mt-1">Successfully resolved</p>
+                        <p className="text-sm font-medium text-cyan-600 dark:text-cyan-400">Completed Cases</p>
+                        <p className="text-3xl font-bold text-cyan-900 dark:text-cyan-100">{stats?.completedCases || 0}</p>
+                        <p className="text-xs text-cyan-500 dark:text-cyan-300 mt-1">Successfully resolved</p>
                       </div>
                       <div className="bg-cyan-500 rounded-full p-3">
                         <svg className="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -222,8 +221,8 @@ For detailed case reports, please contact a judge or administrator.
                   </div>
                 </div>
 
-                <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-lg p-6 border border-amber-200">
-                  <h3 className="text-lg font-semibold text-amber-900 mb-4 flex items-center">
+                <div className="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-slate-700 dark:to-slate-700 rounded-lg p-6 border border-amber-200 dark:border-slate-600">
+                  <h3 className="text-lg font-semibold text-amber-900 dark:text-white mb-4 flex items-center">
                     <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
                     </svg>
@@ -231,16 +230,16 @@ For detailed case reports, please contact a judge or administrator.
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <p className="text-sm text-amber-700"><strong>Report Generated By:</strong></p>
-                      <p className="text-sm text-amber-900">{user.firstName} {user.lastName} ({user.role})</p>
+                      <p className="text-sm text-amber-700 dark:text-gray-300"><strong>Report Generated By:</strong></p>
+                      <p className="text-sm text-amber-900 dark:text-white">{user.firstName} {user.lastName} ({user.role})</p>
                     </div>
                     <div>
-                      <p className="text-sm text-amber-700"><strong>Generated At:</strong></p>
-                      <p className="text-sm text-amber-900">{new Date().toLocaleString()}</p>
+                      <p className="text-sm text-amber-700 dark:text-gray-300"><strong>Generated At:</strong></p>
+                      <p className="text-sm text-amber-900 dark:text-white">{new Date().toLocaleString()}</p>
                     </div>
                   </div>
-                  <div className="mt-4 p-4 bg-white rounded-lg border border-amber-200">
-                    <p className="text-sm text-amber-800">
+                  <div className="mt-4 p-4 bg-white dark:bg-slate-800 rounded-lg border border-amber-200 dark:border-slate-600">
+                    <p className="text-sm text-amber-800 dark:text-gray-300">
                       <strong>Note:</strong> This is a basic clerk-level report. For detailed case analytics,
                       judge-specific reports, or PDF exports, please contact a judge or administrator.
                     </p>
@@ -253,49 +252,48 @@ For detailed case reports, please contact a judge or administrator.
             {selectedReport === 'cases' && (
               <div className="space-y-6">
                 <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
+                  <table className="min-w-full divide-y divide-gray-200 dark:divide-slate-700">
+                    <thead className="bg-gray-50 dark:bg-slate-700/50">
                       <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                           Case Number
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                           Title
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                           Status
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                           Priority
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                           Filing Date
                         </th>
                       </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
+                    <tbody className="bg-white dark:bg-slate-800 divide-y divide-gray-200 dark:divide-slate-700">
                       {cases.slice(0, 50).map((caseItem) => (
-                        <tr key={caseItem.id} className="hover:bg-gray-50">
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        <tr key={caseItem.id} className="hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                             {caseItem.caseNumber}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 truncate max-w-xs">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300 truncate max-w-xs">
                             {caseItem.title}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                              caseItem.status === 'COMPLETED' ? 'bg-emerald-100 text-emerald-800' :
-                              caseItem.status === 'IN_PROGRESS' ? 'bg-blue-100 text-blue-800' :
-                              caseItem.status === 'SCHEDULED' ? 'bg-amber-100 text-amber-800' :
-                              'bg-gray-100 text-gray-800'
-                            }`}>
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${caseItem.status === 'COMPLETED' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300' :
+                                caseItem.status === 'IN_PROGRESS' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300' :
+                                  caseItem.status === 'SCHEDULED' ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300' :
+                                    'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
+                              }`}>
                               {caseItem.status.replace('_', ' ')}
                             </span>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300">
                             {caseItem.priority}/10
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300">
                             {new Date(caseItem.filingDate).toLocaleDateString()}
                           </td>
                         </tr>
@@ -304,7 +302,7 @@ For detailed case reports, please contact a judge or administrator.
                   </table>
                 </div>
                 {cases.length > 50 && (
-                  <div className="text-center text-sm text-gray-500 py-4">
+                  <div className="text-center text-sm text-gray-500 dark:text-gray-400 py-4">
                     Showing first 50 cases. Full reports available to judges and administrators.
                   </div>
                 )}
@@ -315,43 +313,43 @@ For detailed case reports, please contact a judge or administrator.
             {selectedReport === 'statistics' && (
               <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="bg-white rounded-lg border border-gray-200 p-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Case Status Distribution</h3>
+                  <div className="bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 p-6">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Case Status Distribution</h3>
                     <div className="space-y-3">
                       <div className="flex justify-between items-center">
-                        <span className="text-sm text-gray-600">Filed</span>
-                        <span className="text-sm font-medium text-gray-900">{stats?.filedCases || 0}</span>
+                        <span className="text-sm text-gray-600 dark:text-gray-400">Filed</span>
+                        <span className="text-sm font-medium text-gray-900 dark:text-white">{stats?.filedCases || 0}</span>
                       </div>
                       <div className="flex justify-between items-center">
-                        <span className="text-sm text-gray-600">Under Review</span>
-                        <span className="text-sm font-medium text-gray-900">
+                        <span className="text-sm text-gray-600 dark:text-gray-400">Under Review</span>
+                        <span className="text-sm font-medium text-gray-900 dark:text-white">
                           {cases.filter(c => c.status === 'UNDER_REVIEW').length}
                         </span>
                       </div>
                       <div className="flex justify-between items-center">
-                        <span className="text-sm text-gray-600">Scheduled</span>
-                        <span className="text-sm font-medium text-gray-900">{stats?.scheduledCases || 0}</span>
+                        <span className="text-sm text-gray-600 dark:text-gray-400">Scheduled</span>
+                        <span className="text-sm font-medium text-gray-900 dark:text-white">{stats?.scheduledCases || 0}</span>
                       </div>
                       <div className="flex justify-between items-center">
-                        <span className="text-sm text-gray-600">In Progress</span>
-                        <span className="text-sm font-medium text-gray-900">
+                        <span className="text-sm text-gray-600 dark:text-gray-400">In Progress</span>
+                        <span className="text-sm font-medium text-gray-900 dark:text-white">
                           {cases.filter(c => c.status === 'IN_PROGRESS').length}
                         </span>
                       </div>
                       <div className="flex justify-between items-center">
-                        <span className="text-sm text-gray-600">Completed</span>
-                        <span className="text-sm font-medium text-gray-900">{stats?.completedCases || 0}</span>
+                        <span className="text-sm text-gray-600 dark:text-gray-400">Completed</span>
+                        <span className="text-sm font-medium text-gray-900 dark:text-white">{stats?.completedCases || 0}</span>
                       </div>
                     </div>
                   </div>
 
-                  <div className="bg-white rounded-lg border border-gray-200 p-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Priority Distribution</h3>
+                  <div className="bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 p-6">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Priority Distribution</h3>
                     <div className="space-y-3">
                       {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(priority => (
                         <div key={priority} className="flex justify-between items-center">
-                          <span className="text-sm text-gray-600">Priority {priority}</span>
-                          <span className="text-sm font-medium text-gray-900">
+                          <span className="text-sm text-gray-600 dark:text-gray-400">Priority {priority}</span>
+                          <span className="text-sm font-medium text-gray-900 dark:text-white">
                             {cases.filter(c => c.priority === priority).length}
                           </span>
                         </div>
