@@ -60,6 +60,7 @@ const CaseForm = () => {
         caseType: formData.caseType,
         resourceRequirement: formData.resourceRequirement.trim() || null,
         estimatedDurationDays: formData.estimatedDurationDays ? parseInt(formData.estimatedDurationDays) : null,
+        documents: documents.length > 0 ? JSON.stringify(documents) : null,
       };
 
       console.log('Submitting case:', payload); // Debug log

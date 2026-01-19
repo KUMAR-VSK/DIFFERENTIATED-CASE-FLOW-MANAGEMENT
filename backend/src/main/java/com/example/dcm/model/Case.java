@@ -59,6 +59,9 @@ public class Case {
     @Column(length = 5000)
     private String notes; // Case notes and comments
 
+    @Column(length = 10000)
+    private String documents; // JSON string containing document metadata
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "assigned_judge_id")
     private User assignedJudge;
@@ -158,6 +161,9 @@ public class Case {
 
     public String getNotes() { return notes; }
     public void setNotes(String notes) { this.notes = notes; }
+
+    public String getDocuments() { return documents; }
+    public void setDocuments(String documents) { this.documents = documents; }
 
     public User getAssignedJudge() { return assignedJudge; }
     public void setAssignedJudge(User assignedJudge) { this.assignedJudge = assignedJudge; }

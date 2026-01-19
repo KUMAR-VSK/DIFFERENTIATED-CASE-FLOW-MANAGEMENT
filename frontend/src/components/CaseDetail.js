@@ -52,9 +52,18 @@ const CaseDetail = () => {
         const parsedNotes = parseNotes(response.data.notes);
         setNotes(parsedNotes);
 
-        // TODO: Fetch actual uploaded documents from backend when document upload is implemented
-        // For now, documents will be empty until proper document storage is added
-        setDocuments([]);
+        // Parse documents from case data if available
+        if (response.data.documents) {
+          try {
+            const parsedDocuments = JSON.parse(response.data.documents);
+            setDocuments(parsedDocuments);
+          } catch (error) {
+            console.error('Error parsing documents:', error);
+            setDocuments([]);
+          }
+        } else {
+          setDocuments([]);
+        }
       } catch (error) {
         setError('Failed to load case details');
         console.error('Error fetching case:', error);
