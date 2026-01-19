@@ -47,7 +47,7 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
@@ -59,18 +59,18 @@ const Dashboard = () => {
                 </svg>
               </div>
               <div>
-                <h1 className="text-4xl font-bold text-gray-900 tracking-tight">Dashboard</h1>
-                <p className="mt-1 text-lg text-gray-600 font-medium">
+                <h1 className="text-4xl font-bold text-gray-900 dark:text-white tracking-tight">Dashboard</h1>
+                <p className="mt-1 text-lg text-gray-600 dark:text-gray-300 font-medium">
                   Differentiated Case Flow Management System
                 </p>
               </div>
             </div>
             <div className="flex items-center space-x-6">
               <div className="text-center">
-                <p className="text-sm font-medium text-gray-900">
+                <p className="text-sm font-medium text-gray-900 dark:text-white">
                   Welcome back, {user.firstName || user.username}
                 </p>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-gray-500 dark:text-gray-400">
                   Last updated: {new Date().toLocaleDateString('en-US', {
                     weekday: 'long',
                     year: 'numeric',
@@ -93,7 +93,7 @@ const Dashboard = () => {
         {/* Statistics Cards */}
         {stats && (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
-            <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-6 hover:shadow-2xl transition-all duration-300 group">
+            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-gray-100 dark:border-slate-700 p-6 hover:shadow-2xl transition-all duration-300 group">
               <div className="flex items-center justify-between">
                 <div className="flex-1">
                   <p className="text-sm font-medium text-gray-600 mb-1">Total Cases</p>
@@ -110,14 +110,14 @@ const Dashboard = () => {
               </div>
             </div>
 
-            <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-6 hover:shadow-2xl transition-all duration-300 group">
+            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-gray-100 dark:border-slate-700 p-6 hover:shadow-2xl transition-all duration-300 group">
               <div className="flex items-center justify-between">
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-600 mb-1">Filed Cases</p>
-                  <p className="text-4xl font-bold text-gray-900 group-hover:text-emerald-600 transition-colors">
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">Filed Cases</p>
+                  <p className="text-4xl font-bold text-gray-900 dark:text-white group-hover:text-emerald-600 transition-colors">
                     {stats.filedCases}
                   </p>
-                  <p className="text-xs text-gray-500 mt-1">Cases under processing</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Cases under processing</p>
                 </div>
                 <div className="w-14 h-14 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
                   <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -127,14 +127,14 @@ const Dashboard = () => {
               </div>
             </div>
 
-            <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-6 hover:shadow-2xl transition-all duration-300 group">
+            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-gray-100 dark:border-slate-700 p-6 hover:shadow-2xl transition-all duration-300 group">
               <div className="flex items-center justify-between">
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-600 mb-1">Scheduled Cases</p>
-                  <p className="text-4xl font-bold text-gray-900 group-hover:text-amber-600 transition-colors">
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">Scheduled Cases</p>
+                  <p className="text-4xl font-bold text-gray-900 dark:text-white group-hover:text-amber-600 transition-colors">
                     {stats.scheduledCases}
                   </p>
-                  <p className="text-xs text-gray-500 mt-1">Cases with hearings</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Cases with hearings</p>
                 </div>
                 <div className="w-14 h-14 bg-gradient-to-br from-amber-500 to-orange-500 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
                   <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -144,14 +144,14 @@ const Dashboard = () => {
               </div>
             </div>
 
-            <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-6 hover:shadow-2xl transition-all duration-300 group">
+            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-gray-100 dark:border-slate-700 p-6 hover:shadow-2xl transition-all duration-300 group">
               <div className="flex items-center justify-between">
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-600 mb-1">Completed Cases</p>
-                  <p className="text-4xl font-bold text-gray-900 group-hover:text-cyan-600 transition-colors">
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">Completed Cases</p>
+                  <p className="text-4xl font-bold text-gray-900 dark:text-white group-hover:text-cyan-600 transition-colors">
                     {stats.completedCases}
                   </p>
-                  <p className="text-xs text-gray-500 mt-1">Successfully resolved</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Successfully resolved</p>
                 </div>
                 <div className="w-14 h-14 bg-gradient-to-br from-cyan-500 to-blue-500 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
                   <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -164,7 +164,7 @@ const Dashboard = () => {
         )}
 
         {/* Recent Cases */}
-        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden mb-8">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-gray-100 dark:border-slate-700 overflow-hidden mb-8">
           <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-700 px-6 py-5">
             <div className="flex items-center space-x-3">
               <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
@@ -261,7 +261,7 @@ const Dashboard = () => {
         </div>
 
         {/* Quick Actions */}
-        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-gray-100 dark:border-slate-700 overflow-hidden">
           <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 px-6 py-5">
             <div className="flex items-center space-x-3">
               <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">

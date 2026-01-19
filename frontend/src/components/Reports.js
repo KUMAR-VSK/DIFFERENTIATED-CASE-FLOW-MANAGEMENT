@@ -94,7 +94,7 @@ For detailed case reports, please contact a judge or administrator.
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
@@ -106,8 +106,8 @@ For detailed case reports, please contact a judge or administrator.
                 </svg>
               </div>
               <div>
-                <h1 className="text-4xl font-bold text-gray-900 tracking-tight">Reports & Analytics</h1>
-                <p className="mt-1 text-lg text-gray-600 font-medium">
+                <h1 className="text-4xl font-bold text-gray-900 dark:text-white tracking-tight">Reports & Analytics</h1>
+                <p className="mt-1 text-lg text-gray-600 dark:text-gray-300 font-medium">
                   Case Management Reports and Statistics
                 </p>
               </div>
