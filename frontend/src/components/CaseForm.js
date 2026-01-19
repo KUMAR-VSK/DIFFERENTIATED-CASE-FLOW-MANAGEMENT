@@ -103,10 +103,10 @@ const CaseForm = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
             {isEditing ? 'Edit Case' : 'File New Case'}
           </h1>
-          <p className="text-gray-600 mt-1">
+          <p className="text-gray-600 dark:text-gray-300 mt-1">
             {isEditing ? 'Update case information' : 'Create a new case in the system'}
           </p>
         </div>

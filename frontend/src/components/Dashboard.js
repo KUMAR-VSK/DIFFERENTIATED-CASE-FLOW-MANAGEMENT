@@ -37,10 +37,10 @@ const Dashboard = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 dark:bg-slate-900 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
-          <p className="mt-4 text-lg text-gray-600 font-medium">Loading dashboard...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 dark:border-indigo-400 mx-auto"></div>
+          <p className="mt-4 text-lg text-gray-600 dark:text-gray-300 font-medium">Loading dashboard...</p>
         </div>
       </div>
     );
@@ -97,7 +97,7 @@ const Dashboard = () => {
               <div className="flex items-center justify-between">
                 <div className="flex-1">
                   <p className="text-sm font-medium text-gray-600 mb-1">Total Cases</p>
-                  <p className="text-4xl font-bold text-gray-900 group-hover:text-indigo-600 transition-colors">
+                  <p className="text-4xl font-bold text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
                     {stats.totalCases}
                   </p>
                   <p className="text-xs text-gray-500 mt-1">All registered cases</p>
@@ -114,7 +114,7 @@ const Dashboard = () => {
               <div className="flex items-center justify-between">
                 <div className="flex-1">
                   <p className="text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">Filed Cases</p>
-                  <p className="text-4xl font-bold text-gray-900 dark:text-white group-hover:text-emerald-600 transition-colors">
+                  <p className="text-4xl font-bold text-gray-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
                     {stats.filedCases}
                   </p>
                   <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Cases under processing</p>
@@ -131,7 +131,7 @@ const Dashboard = () => {
               <div className="flex items-center justify-between">
                 <div className="flex-1">
                   <p className="text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">Scheduled Cases</p>
-                  <p className="text-4xl font-bold text-gray-900 dark:text-white group-hover:text-amber-600 transition-colors">
+                  <p className="text-4xl font-bold text-gray-900 dark:text-white group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
                     {stats.scheduledCases}
                   </p>
                   <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Cases with hearings</p>
@@ -148,7 +148,7 @@ const Dashboard = () => {
               <div className="flex items-center justify-between">
                 <div className="flex-1">
                   <p className="text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">Completed Cases</p>
-                  <p className="text-4xl font-bold text-gray-900 dark:text-white group-hover:text-cyan-600 transition-colors">
+                  <p className="text-4xl font-bold text-gray-900 dark:text-white group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors">
                     {stats.completedCases}
                   </p>
                   <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Successfully resolved</p>
@@ -183,7 +183,7 @@ const Dashboard = () => {
                   <Link
                     key={caseItem.id}
                     to={`/cases/${caseItem.id}`}
-                    className="block p-4 rounded-xl border border-gray-100 hover:border-indigo-200 hover:shadow-lg hover:bg-indigo-50/50 transition-all duration-300 group"
+                    className="block p-4 rounded-xl border border-gray-100 dark:border-slate-600 hover:border-indigo-200 dark:hover:border-indigo-400 hover:shadow-lg hover:bg-indigo-50/50 dark:hover:bg-slate-700/50 transition-all duration-300 group"
                     style={{ animationDelay: `${index * 0.1}s` }}
                   >
                     <div className="flex items-center justify-between">
@@ -193,33 +193,33 @@ const Dashboard = () => {
                             {caseItem.caseNumber.slice(-2)}
                           </div>
                           <div>
-                            <p className="text-sm font-semibold text-gray-900 group-hover:text-indigo-700 transition-colors truncate">
+                            <p className="text-sm font-semibold text-gray-900 dark:text-white group-hover:text-indigo-700 dark:group-hover:text-indigo-300 transition-colors truncate">
                               {caseItem.title}
                             </p>
-                            <p className="text-xs text-gray-500">Case #{caseItem.caseNumber}</p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">Case #{caseItem.caseNumber}</p>
                           </div>
                         </div>
                         <div className="flex items-center space-x-2 mt-3">
                           <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
-                            caseItem.status === 'COMPLETED' ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' :
-                            caseItem.status === 'IN_PROGRESS' ? 'bg-blue-100 text-blue-800 border border-blue-200' :
-                            caseItem.status === 'SCHEDULED' ? 'bg-amber-100 text-amber-800 border border-amber-200' :
-                            'bg-gray-100 text-gray-800 border border-gray-200'
+                            caseItem.status === 'COMPLETED' ? 'bg-emerald-100 text-emerald-800 border border-emerald-200 dark:bg-emerald-900 dark:text-emerald-200 dark:border-emerald-700' :
+                            caseItem.status === 'IN_PROGRESS' ? 'bg-blue-100 text-blue-800 border border-blue-200 dark:bg-blue-900 dark:text-blue-200 dark:border-blue-700' :
+                            caseItem.status === 'SCHEDULED' ? 'bg-amber-100 text-amber-800 border border-amber-200 dark:bg-amber-900 dark:text-amber-200 dark:border-amber-700' :
+                            'bg-gray-100 text-gray-800 border border-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600'
                           }`}>
                             {caseItem.status.replace('_', ' ')}
                           </span>
                           <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${
-                            caseItem.priority >= 8 ? 'bg-red-100 text-red-800 border-red-200' :
-                            caseItem.priority >= 6 ? 'bg-orange-100 text-orange-800 border-orange-200' :
-                            caseItem.priority >= 4 ? 'bg-yellow-100 text-yellow-800 border-yellow-200' :
-                            'bg-green-100 text-green-800 border-green-200'
+                            caseItem.priority >= 8 ? 'bg-red-100 text-red-800 border-red-200 dark:bg-red-900 dark:text-red-200 dark:border-red-700' :
+                            caseItem.priority >= 6 ? 'bg-orange-100 text-orange-800 border-orange-200 dark:bg-orange-900 dark:text-orange-200 dark:border-orange-700' :
+                            caseItem.priority >= 4 ? 'bg-yellow-100 text-yellow-800 border-yellow-200 dark:bg-yellow-900 dark:text-yellow-200 dark:border-yellow-700' :
+                            'bg-green-100 text-green-800 border-green-200 dark:bg-green-900 dark:text-green-200 dark:border-green-700'
                           }`}>
                             Priority {caseItem.priority}
                           </span>
                         </div>
                       </div>
                       <div className="ml-4">
-                        <svg className="w-5 h-5 text-gray-400 group-hover:text-indigo-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-5 h-5 text-gray-400 dark:text-gray-500 group-hover:text-indigo-500 dark:group-hover:text-indigo-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
                         </svg>
                       </div>
@@ -245,7 +245,7 @@ const Dashboard = () => {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                   </svg>
                 </div>
-                <h4 className="text-lg font-medium text-gray-900 mb-2">No Recent Cases</h4>
+                <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No Recent Cases</h4>
                 <p className="text-gray-500 mb-6">Start by filing your first case to see activity here.</p>
                 {(user.role === 'CLERK' || user.role === 'ADMIN') && (
                   <Link
@@ -278,7 +278,7 @@ const Dashboard = () => {
               {(user.role === 'CLERK' || user.role === 'ADMIN') && (
                 <Link
                   to="/cases/new"
-                  className="group p-6 bg-gradient-to-br from-indigo-50 to-indigo-100 border-2 border-dashed border-indigo-200 rounded-xl hover:border-indigo-400 hover:shadow-lg hover:from-indigo-100 hover:to-indigo-200 transition-all duration-300"
+                  className="group p-6 bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-slate-700 dark:to-slate-600 border-2 border-dashed border-indigo-200 dark:border-indigo-600 rounded-xl hover:border-indigo-400 dark:hover:border-indigo-500 hover:shadow-lg hover:from-indigo-100 hover:to-indigo-200 dark:hover:from-slate-600 dark:hover:to-slate-500 transition-all duration-300"
                 >
                   <div className="text-center">
                     <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg group-hover:scale-110 transition-transform duration-300">
@@ -286,15 +286,15 @@ const Dashboard = () => {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
                       </svg>
                     </div>
-                    <h4 className="text-lg font-semibold text-gray-900 group-hover:text-indigo-700 transition-colors">File New Case</h4>
-                    <p className="text-sm text-gray-600 mt-1">Create a new case record</p>
+                    <h4 className="text-lg font-semibold text-gray-900 dark:text-white group-hover:text-indigo-700 dark:group-hover:text-indigo-300 transition-colors">File New Case</h4>
+                    <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">Create a new case record</p>
                   </div>
                 </Link>
               )}
 
               <Link
                 to="/cases"
-                className="group p-6 bg-gradient-to-br from-emerald-50 to-emerald-100 border-2 border-dashed border-emerald-200 rounded-xl hover:border-emerald-400 hover:shadow-lg hover:from-emerald-100 hover:to-emerald-200 transition-all duration-300"
+                className="group p-6 bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-slate-700 dark:to-slate-600 border-2 border-dashed border-emerald-200 dark:border-emerald-600 rounded-xl hover:border-emerald-400 dark:hover:border-emerald-500 hover:shadow-lg hover:from-emerald-100 hover:to-emerald-200 dark:hover:from-slate-600 dark:hover:to-slate-500 transition-all duration-300"
               >
                 <div className="text-center">
                   <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg group-hover:scale-110 transition-transform duration-300">
@@ -302,14 +302,14 @@ const Dashboard = () => {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
                   </div>
-                  <h4 className="text-lg font-semibold text-gray-900 group-hover:text-emerald-700 transition-colors">Browse Cases</h4>
-                  <p className="text-sm text-gray-600 mt-1">Search and filter cases</p>
+                  <h4 className="text-lg font-semibold text-gray-900 dark:text-white group-hover:text-emerald-700 dark:group-hover:text-emerald-300 transition-colors">Browse Cases</h4>
+                  <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">Search and filter cases</p>
                 </div>
               </Link>
 
               <Link
                 to="/reports"
-                className="group p-6 bg-gradient-to-br from-amber-50 to-amber-100 border-2 border-dashed border-amber-200 rounded-xl hover:border-amber-400 hover:shadow-lg hover:from-amber-100 hover:to-amber-200 transition-all duration-300"
+                className="group p-6 bg-gradient-to-br from-amber-50 to-amber-100 dark:from-slate-700 dark:to-slate-600 border-2 border-dashed border-amber-200 dark:border-amber-600 rounded-xl hover:border-amber-400 dark:hover:border-amber-500 hover:shadow-lg hover:from-amber-100 hover:to-amber-200 dark:hover:from-slate-600 dark:hover:to-slate-500 transition-all duration-300"
               >
                 <div className="text-center">
                   <div className="w-16 h-16 bg-gradient-to-br from-amber-500 to-orange-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg group-hover:scale-110 transition-transform duration-300">
@@ -317,13 +317,13 @@ const Dashboard = () => {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                     </svg>
                   </div>
-                  <h4 className="text-lg font-semibold text-gray-900 group-hover:text-amber-700 transition-colors">View Reports</h4>
-                  <p className="text-sm text-gray-600 mt-1">Analytics and insights</p>
+                  <h4 className="text-lg font-semibold text-gray-900 dark:text-white group-hover:text-amber-700 dark:group-hover:text-amber-300 transition-colors">View Reports</h4>
+                  <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">Analytics and insights</p>
                 </div>
               </Link>
 
               {user.role === 'ADMIN' && (
-                <div className="group p-6 bg-gradient-to-br from-purple-50 to-purple-100 border-2 border-dashed border-purple-200 rounded-xl hover:border-purple-400 hover:shadow-lg hover:from-purple-100 hover:to-purple-200 transition-all duration-300 cursor-pointer">
+                <div className="group p-6 bg-gradient-to-br from-purple-50 to-purple-100 dark:from-slate-700 dark:to-slate-600 border-2 border-dashed border-purple-200 dark:border-purple-600 rounded-xl hover:border-purple-400 dark:hover:border-purple-500 hover:shadow-lg hover:from-purple-100 hover:to-purple-200 dark:hover:from-slate-600 dark:hover:to-slate-500 transition-all duration-300 cursor-pointer">
                   <div className="text-center">
                     <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg group-hover:scale-110 transition-transform duration-300">
                       <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -331,8 +331,8 @@ const Dashboard = () => {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                       </svg>
                     </div>
-                    <h4 className="text-lg font-semibold text-gray-900 group-hover:text-purple-700 transition-colors">System Settings</h4>
-                    <p className="text-sm text-gray-600 mt-1">Manage system configuration</p>
+                    <h4 className="text-lg font-semibold text-gray-900 dark:text-white group-hover:text-purple-700 dark:group-hover:text-purple-300 transition-colors">System Settings</h4>
+                    <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">Manage system configuration</p>
                   </div>
                 </div>
               )}

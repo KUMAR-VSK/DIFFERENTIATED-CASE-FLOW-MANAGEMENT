@@ -322,7 +322,7 @@ const CaseList = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="text-xl text-gray-600">Loading cases...</div>
+        <div className="text-xl text-gray-600 dark:text-gray-300">Loading cases...</div>
       </div>
     );
   }
@@ -332,8 +332,8 @@ const CaseList = () => {
       {/* Header */}
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
         <div>
-          <h1 className="text-4xl font-bold text-gray-900">Case Management</h1>
-          <p className="text-gray-600 mt-1">Manage and track all judicial cases in the system</p>
+          <h1 className="text-4xl font-bold text-gray-900 dark:text-white">Case Management</h1>
+          <p className="text-gray-600 dark:text-gray-300 mt-1">Manage and track all judicial cases in the system</p>
         </div>
         <div className="flex flex-col sm:flex-row gap-3">
           <button
@@ -362,120 +362,109 @@ const CaseList = () => {
 
       {/* Statistics Dashboard */}
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
-        <div className="bg-white rounded-lg shadow p-4 border border-gray-200">
+        <div className="bg-white dark:bg-slate-800 rounded-lg shadow p-4 border border-gray-200 dark:border-slate-700">
           <div className="flex items-center">
-            <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
-              <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/20 rounded-lg flex items-center justify-center mr-3">
+              <svg className="w-4 h-4 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-600">Total Cases</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Cases</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.total}</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-4 border border-gray-200">
+        <div className="bg-white dark:bg-slate-800 rounded-lg shadow p-4 border border-gray-200 dark:border-slate-700">
           <div className="flex items-center">
-            <div className="w-8 h-8 bg-yellow-100 rounded-lg flex items-center justify-center mr-3">
-              <svg className="w-4 h-4 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="w-8 h-8 bg-yellow-100 dark:bg-yellow-900/20 rounded-lg flex items-center justify-center mr-3">
+              <svg className="w-4 h-4 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-600">Filed</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.filed}</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Filed</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.filed}</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-4 border border-gray-200">
+        <div className="bg-white dark:bg-slate-800 rounded-lg shadow p-4 border border-gray-200 dark:border-slate-700">
           <div className="flex items-center">
-            <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center mr-3">
-              <svg className="w-4 h-4 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="w-8 h-8 bg-orange-100 dark:bg-orange-900/20 rounded-lg flex items-center justify-center mr-3">
+              <svg className="w-4 h-4 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
               </svg>
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-600">Under Review</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.underReview}</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Under Review</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.underReview}</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-4 border border-gray-200">
+        <div className="bg-white dark:bg-slate-800 rounded-lg shadow p-4 border border-gray-200 dark:border-slate-700">
           <div className="flex items-center">
-            <div className="w-8 h-8 bg-cyan-100 rounded-lg flex items-center justify-center mr-3">
-              <svg className="w-4 h-4 text-cyan-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="w-8 h-8 bg-cyan-100 dark:bg-cyan-900/20 rounded-lg flex items-center justify-center mr-3">
+              <svg className="w-4 h-4 text-cyan-600 dark:text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-600">Scheduled</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.scheduled}</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Scheduled</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.scheduled}</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-4 border border-gray-200">
+        <div className="bg-white dark:bg-slate-800 rounded-lg shadow p-4 border border-gray-200 dark:border-slate-700">
           <div className="flex items-center">
-            <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
-              <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/20 rounded-lg flex items-center justify-center mr-3">
+              <svg className="w-4 h-4 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
               </svg>
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-600">In Progress</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.inProgress}</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">In Progress</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.inProgress}</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-4 border border-gray-200">
+        <div className="bg-white dark:bg-slate-800 rounded-lg shadow p-4 border border-gray-200 dark:border-slate-700">
           <div className="flex items-center">
-            <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center mr-3">
-              <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="w-8 h-8 bg-green-100 dark:bg-green-900/20 rounded-lg flex items-center justify-center mr-3">
+              <svg className="w-4 h-4 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-600">Completed</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.completed}</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Completed</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.completed}</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-4 border border-gray-200">
+        <div className="bg-white dark:bg-slate-800 rounded-lg shadow p-4 border border-gray-200 dark:border-slate-700">
           <div className="flex items-center">
-            <div className="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center mr-3">
-              <svg className="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="w-8 h-8 bg-red-100 dark:bg-red-900/20 rounded-lg flex items-center justify-center mr-3">
+              <svg className="w-4 h-4 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
               </svg>
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-600">High Priority</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.highPriority}</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">High Priority</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.highPriority}</p>
             </div>
           </div>
         </div>
       </div>
 
       {/* Filters and Search */}
-      <div className="bg-white rounded-lg shadow-lg p-6 border border-gray-200">
-        <h2 className="text-xl font-semibold text-gray-900 mb-6">Filters & Search</h2>
+      <div className="bg-white dark:bg-slate-800 rounded-lg shadow-lg p-6 border border-gray-200 dark:border-slate-700">
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">Filters & Search</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Search</label>
-            <input
-              type="text"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-              placeholder="Search cases..."
-              value={filters.search}
-              onChange={(e) => handleFilterChange('search', e.target.value)}
-            />
-          </div>
-
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
             <select
@@ -592,7 +581,7 @@ const CaseList = () => {
               <div className="space-y-4">
                 {/* Title */}
                 <div>
-                  <h4 className="text-xl font-semibold text-gray-900 group-hover:text-indigo-700 transition-colors overflow-hidden">
+                  <h4 className="text-xl font-semibold text-gray-900 dark:text-white group-hover:text-indigo-700 dark:group-hover:text-indigo-300 transition-colors overflow-hidden">
                     {caseItem.title}
                   </h4>
                   {caseItem.description && (
@@ -738,7 +727,7 @@ const CaseList = () => {
           <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
           </svg>
-          <h3 className="mt-2 text-sm font-medium text-gray-900">No cases found</h3>
+          <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">No cases found</h3>
           <p className="mt-1 text-sm text-gray-500">
             {Object.values(filters).some(filter => filter !== '') ? 'Try adjusting your filters.' : 'Get started by filing a new case.'}
           </p>
