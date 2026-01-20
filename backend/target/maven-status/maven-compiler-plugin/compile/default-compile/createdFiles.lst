@@ -7,6 +7,7 @@ com/example/dcm/model/Case$Status.class
 com/example/dcm/config/SecurityConfig.class
 com/example/dcm/repository/UserRepository.class
 com/example/dcm/model/Case$CaseType.class
+com/example/dcm/service/CaseService$1.class
 com/example/dcm/repository/CaseRepository.class
 com/example/dcm/model/Case.class
 com/example/dcm/controller/AuthController.class

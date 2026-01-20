@@ -466,7 +466,7 @@ const CaseList = () => {
         <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">Filters & Search</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
+            <label className="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">Status</label>
             <select
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
               value={filters.status}
@@ -483,7 +483,7 @@ const CaseList = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Case Type</label>
+            <label className="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">Case Type</label>
             <select
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
               value={filters.caseType}
@@ -499,7 +499,7 @@ const CaseList = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Priority</label>
+            <label className="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">Priority</label>
             <select
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
               value={filters.priority}
@@ -727,7 +727,7 @@ const CaseList = () => {
           <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
           </svg>
-          <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">No cases found</h3>
+          <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-gray-900">No cases found</h3>
           <p className="mt-1 text-sm text-gray-500">
             {Object.values(filters).some(filter => filter !== '') ? 'Try adjusting your filters.' : 'Get started by filing a new case.'}
           </p>

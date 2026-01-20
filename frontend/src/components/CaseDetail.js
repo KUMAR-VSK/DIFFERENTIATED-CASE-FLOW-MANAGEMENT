@@ -426,7 +426,7 @@ const CaseDetail = () => {
                     </div>
                     <div className="space-y-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Status</label>
+                        <label className="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">Status</label>
                         <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(caseData.status)}`}>
                           {caseData.status.replace('_', ' ')}
                         </span>

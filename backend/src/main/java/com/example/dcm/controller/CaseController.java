@@ -214,4 +214,16 @@ public class CaseController {
             return ResponseEntity.notFound().build();
         }
     }
+
+    // Populate existing cases with sample documents (admin only)
+    @PostMapping("/populate-documents")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<String> populateExistingCasesWithDocuments() {
+        try {
+            caseService.populateExistingCasesWithDocuments();
+            return ResponseEntity.ok("Existing cases have been populated with sample documents.");
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Failed to populate documents: " + e.getMessage());
+        }
+    }
 }

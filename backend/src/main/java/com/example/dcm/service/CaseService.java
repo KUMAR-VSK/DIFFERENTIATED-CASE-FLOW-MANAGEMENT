@@ -43,6 +43,9 @@ public class CaseService {
         int calculatedPriority = priorityEngine.calculatePriority(caseEntity);
         caseEntity.setPriority(calculatedPriority);
 
+        // Add sample documents to new cases
+        addSampleDocuments(caseEntity);
+
         Case savedCase = caseRepository.save(caseEntity);
 
         // Recalculate priorities for all existing cases to maintain relative priority accuracy
@@ -290,6 +293,66 @@ public class CaseService {
 
         caseEntity.setNotes(notes);
         return caseRepository.save(caseEntity);
+    }
+
+    // Add sample documents to new cases
+    private void addSampleDocuments(Case caseEntity) {
+        // Create sample document metadata based on case type
+        List<java.util.Map<String, Object>> sampleDocuments = new java.util.ArrayList<>();
+
+        // Base documents for all cases
+        sampleDocuments.add(createDocumentMap("case-evidence-001.pdf", "Case Evidence Document", "pdf", 245760, "/sample-documents/case-evidence-001.pdf.html"));
+        sampleDocuments.add(createDocumentMap("witness-statement.txt", "Witness Statement", "txt", 5120, "/sample-documents/witness-statement.txt"));
+
+        // Additional documents based on case type
+        switch (caseEntity.getCaseType()) {
+            case CRIMINAL:
+                sampleDocuments.add(createDocumentMap("court-order-2024.docx", "Court Order 2024", "docx", 153600, "/sample-documents/court-order-2024.docx.html"));
+                break;
+            case CIVIL:
+                sampleDocuments.add(createDocumentMap("court-order-2024.docx", "Civil Court Order", "docx", 153600, "/sample-documents/court-order-2024.docx.html"));
+                break;
+            case FAMILY:
+                sampleDocuments.add(createDocumentMap("court-order-2024.docx", "Family Court Order", "docx", 153600, "/sample-documents/court-order-2024.docx.html"));
+                break;
+            default:
+                // For other case types, just use the base documents
+                break;
+        }
+
+        // Convert to JSON string
+        try {
+            String documentsJson = new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(sampleDocuments);
+            caseEntity.setDocuments(documentsJson);
+        } catch (Exception e) {
+            // If JSON serialization fails, leave documents as null
+            caseEntity.setDocuments(null);
+        }
+    }
+
+    // Helper method to create document map
+    private java.util.Map<String, Object> createDocumentMap(String originalFileName, String description, String fileType, long fileSize, String url) {
+        java.util.Map<String, Object> doc = new java.util.HashMap<>();
+        doc.put("id", java.util.UUID.randomUUID().toString());
+        doc.put("originalFileName", originalFileName);
+        doc.put("description", description);
+        doc.put("fileType", fileType);
+        doc.put("fileSize", fileSize);
+        doc.put("url", url);
+        doc.put("uploadDate", LocalDateTime.now().toString());
+        return doc;
+    }
+
+    // Populate existing cases with sample documents (for data migration)
+    public void populateExistingCasesWithDocuments() {
+        List<Case> existingCases = caseRepository.findAll();
+        for (Case caseEntity : existingCases) {
+            // Only add documents if the case doesn't already have them
+            if (caseEntity.getDocuments() == null || caseEntity.getDocuments().trim().isEmpty()) {
+                addSampleDocuments(caseEntity);
+                caseRepository.save(caseEntity);
+            }
+        }
     }
 
     // Get case by ID

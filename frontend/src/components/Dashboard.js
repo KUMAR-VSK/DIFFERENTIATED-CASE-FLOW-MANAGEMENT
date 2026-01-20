@@ -96,7 +96,7 @@ const Dashboard = () => {
             <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-gray-100 dark:border-slate-700 p-6 hover:shadow-2xl transition-all duration-300 group">
               <div className="flex items-center justify-between">
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-600 mb-1">Total Cases</p>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">Total Cases</p>
                   <p className="text-4xl font-bold text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
                     {stats.totalCases}
                   </p>
