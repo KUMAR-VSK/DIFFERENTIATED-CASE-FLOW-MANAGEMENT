@@ -98,15 +98,6 @@ public class Case {
         updatedAt = LocalDateTime.now();
     }
 
-    // Generate unique case number in format: CASE-YYYY-NNNN
-    private String generateCaseNumber() {
-        String year = String.valueOf(LocalDateTime.now().getYear());
-        // Use timestamp-based sequence for better uniqueness
-        long timestamp = System.currentTimeMillis();
-        // Take last 4 digits of timestamp for sequence (more predictable and unique)
-        int sequence = (int) (timestamp % 10000);
-        return String.format("CASE-%s-%04d", year, sequence);
-    }
 
     // Generate sequential case number starting from 1
     private String generateSequentialCaseNumber() {
