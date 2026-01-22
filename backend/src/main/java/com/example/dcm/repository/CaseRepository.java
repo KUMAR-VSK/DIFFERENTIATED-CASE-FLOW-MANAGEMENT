@@ -48,4 +48,8 @@ public interface CaseRepository extends JpaRepository<Case, Long> {
     // Find the maximum case sequence number for sequential case numbering
     @Query("SELECT MAX(c.caseSequence) FROM Case c")
     Integer findMaxCaseSequence();
+
+    // Get recent cases sorted by filing date (descending)
+    @Query("SELECT c FROM Case c ORDER BY c.filingDate DESC")
+    List<Case> findTop5ByOrderByFilingDateDesc();
 }

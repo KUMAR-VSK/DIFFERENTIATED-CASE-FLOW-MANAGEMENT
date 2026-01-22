@@ -38,6 +38,14 @@ public class CaseController {
         return ResponseEntity.ok(cases);
     }
 
+    // Get recent cases (sorted by creation date, descending)
+    @GetMapping("/recent")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('JUDGE') or hasRole('CLERK')")
+    public ResponseEntity<List<Case>> getRecentCases() {
+        List<Case> cases = caseService.getRecentCases();
+        return ResponseEntity.ok(cases);
+    }
+
     // Get all cases for case management (includes filed cases)
     @GetMapping("/management")
     @PreAuthorize("hasRole('ADMIN') or hasRole('JUDGE') or hasRole('CLERK')")
