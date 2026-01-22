@@ -8,9 +8,10 @@ The Differentiated Case Flow Management System is a full-stack web application t
 
 ## ✨ Key Features
 
-### 🔢 Auto-Incrementing Case Numbers
-- **Automatic Generation**: Unique case numbers in `CASE-YYYY-NNNN` format
-- **Timestamp-Based**: Ensures uniqueness and chronological ordering
+### 🔢 Sequential Case Number Generation
+- **Sequential Generation**: Unique case numbers in `CASE-YYYY-NNNN` format starting from 0001
+- **Auto-Increment**: Each new case gets the next sequential number (0001, 0002, 0003, etc.)
+- **Database-Driven**: Numbers are generated based on the highest existing sequence in the database
 - **User-Friendly Display**: Shows generated numbers with copy-to-clipboard functionality
 
 ### 🎨 Modern UI/UX
