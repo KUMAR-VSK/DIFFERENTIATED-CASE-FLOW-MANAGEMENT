@@ -10,8 +10,8 @@ const CaseForm = () => {
   // Generate preview case number for new cases
   const generatePreviewCaseNumber = () => {
     const year = new Date().getFullYear();
-    const timestamp = Date.now();
-    const sequence = (timestamp % 10000).toString().padStart(4, '0');
+    // Start from 0001 and increment for preview
+    const sequence = '0001';
     return `CASE-${year}-${sequence}`;
   };
 
