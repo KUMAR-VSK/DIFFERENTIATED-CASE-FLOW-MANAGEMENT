@@ -27,6 +27,9 @@ public class Case {
     @Column(name = "case_number", unique = true, nullable = false)
     private String caseNumber;
 
+    @Column(name = "case_sequence", unique = true, nullable = false)
+    private Integer caseSequence;
+
     @Column(nullable = false)
     private String title;
 
@@ -86,7 +89,7 @@ public class Case {
 
         // Auto-generate case number if not provided
         if (caseNumber == null || caseNumber.trim().isEmpty()) {
-            caseNumber = generateCaseNumber();
+            caseNumber = generateSequentialCaseNumber();
         }
     }
 
@@ -103,6 +106,13 @@ public class Case {
         // Take last 4 digits of timestamp for sequence (more predictable and unique)
         int sequence = (int) (timestamp % 10000);
         return String.format("CASE-%s-%04d", year, sequence);
+    }
+
+    // Generate sequential case number starting from 1
+    private String generateSequentialCaseNumber() {
+        String year = String.valueOf(LocalDateTime.now().getYear());
+        // This will be set by the service layer based on the highest existing sequence
+        return String.format("CASE-%s-%04d", year, caseSequence);
     }
 
     public enum CaseType {
@@ -128,6 +138,9 @@ public class Case {
     // Getters and Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
+
+    public Integer getCaseSequence() { return caseSequence; }
+    public void setCaseSequence(Integer caseSequence) { this.caseSequence = caseSequence; }
 
     public String getCaseNumber() { return caseNumber; }
     public void setCaseNumber(String caseNumber) { this.caseNumber = caseNumber; }

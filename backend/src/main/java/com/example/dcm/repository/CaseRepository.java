@@ -44,4 +44,8 @@ public interface CaseRepository extends JpaRepository<Case, Long> {
     // All cases with eager loading of users to avoid serialization issues
     @Query("SELECT c FROM Case c LEFT JOIN FETCH c.filingClerk LEFT JOIN FETCH c.assignedJudge")
     List<Case> findAllCasesWithUsers();
+
+    // Find the maximum case sequence number for sequential case numbering
+    @Query("SELECT MAX(c.caseSequence) FROM Case c")
+    Integer findMaxCaseSequence();
 }

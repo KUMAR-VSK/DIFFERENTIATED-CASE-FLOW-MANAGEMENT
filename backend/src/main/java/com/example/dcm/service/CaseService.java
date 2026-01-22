@@ -43,6 +43,9 @@ public class CaseService {
         int calculatedPriority = priorityEngine.calculatePriority(caseEntity);
         caseEntity.setPriority(calculatedPriority);
 
+        // Generate sequential case number
+        generateSequentialCaseNumber(caseEntity);
+
         // Add sample documents to new cases
         addSampleDocuments(caseEntity);
 
@@ -56,6 +59,24 @@ public class CaseService {
         caseRepository.saveAll(allCases);
 
         return savedCase;
+    }
+
+    // Generate sequential case number starting from 1
+    private void generateSequentialCaseNumber(Case caseEntity) {
+        // Get the highest existing case sequence for the current year
+        Integer maxSequence = caseRepository.findMaxCaseSequence();
+        
+        // If no cases exist yet, start from 1
+        if (maxSequence == null) {
+            caseEntity.setCaseSequence(1);
+        } else {
+            // Increment the highest sequence by 1
+            caseEntity.setCaseSequence(maxSequence + 1);
+        }
+
+        // Generate the case number format: CASE-YYYY-NNNN
+        String year = String.valueOf(java.time.LocalDateTime.now().getYear());
+        caseEntity.setCaseNumber(String.format("CASE-%s-%04d", year, caseEntity.getCaseSequence()));
     }
 
     // Update case status

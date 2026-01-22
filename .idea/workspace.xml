@@ -5,18 +5,24 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="861e1977-76d2-47cc-9020-f2e46b490820" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/dcm/controller/CaseController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/dcm/controller/CaseController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/dcm/service/CaseService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/dcm/service/CaseService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/example/dcm/controller/CaseController.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/example/dcm/controller/CaseController.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/example/dcm/model/Case$CaseType.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/example/dcm/model/Case$CaseType.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/example/dcm/model/Case$Status.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/example/dcm/model/Case$Status.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/example/dcm/model/Case.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/example/dcm/model/Case.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/example/dcm/service/CaseService$CaseStatistics.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/example/dcm/service/CaseService$CaseStatistics.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/example/dcm/service/CaseService.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/example/dcm/service/CaseService.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/CaseDetail.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/CaseDetail.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/CaseList.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/CaseList.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/Dashboard.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/Dashboard.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/dcm/model/Case.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/dcm/model/Case.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/example/dcm/DcmApplication.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/example/dcm/config/SecurityConfig.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/example/dcm/controller/AuthController.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/example/dcm/controller/CaseController.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/example/dcm/model/Case$CaseType.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/example/dcm/model/Case$Status.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/example/dcm/model/Case.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/example/dcm/model/User$Role.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/example/dcm/model/User.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/example/dcm/repository/CaseRepository.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/example/dcm/repository/UserRepository.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/example/dcm/service/CaseService$1.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/example/dcm/service/CaseService$CaseStatistics.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/example/dcm/service/CaseService.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/example/dcm/service/PriorityEngine$1.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/example/dcm/service/PriorityEngine.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/example/dcm/service/UserService.class" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
