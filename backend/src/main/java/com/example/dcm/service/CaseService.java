@@ -381,11 +381,6 @@ public class CaseService {
         return caseRepository.findById(id);
     }
 
-    // Get recent cases (sorted by creation date, descending)
-    public List<Case> getRecentCases() {
-        return caseRepository.findTop5ByOrderByFilingDateDesc();
-    }
-
     // Inner class for statistics
     public static class CaseStatistics {
         private final long totalCases;
