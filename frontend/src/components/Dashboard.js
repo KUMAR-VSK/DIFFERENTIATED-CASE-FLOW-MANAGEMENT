@@ -18,13 +18,13 @@ const Dashboard = () => {
       }
 
       try {
-        const [statsResponse, casesResponse] = await Promise.all([
+        const [statsResponse, recentCasesResponse] = await Promise.all([
           axios.get('http://localhost:8080/api/cases/statistics'),
-          axios.get('http://localhost:8080/api/cases'),
+          axios.get('http://localhost:8080/api/cases/recent'),
         ]);
 
         setStats(statsResponse.data);
-        setRecentCases(casesResponse.data.slice(0, 5));
+        setRecentCases(recentCasesResponse.data);
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
       } finally {
