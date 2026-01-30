@@ -20,7 +20,7 @@ const Dashboard = () => {
       try {
         const [statsResponse, casesResponse] = await Promise.all([
           axios.get('http://localhost:8080/api/cases/statistics'),
-          axios.get('http://localhost:8080/api/cases'),
+          axios.get('http://localhost:8080/api/cases/recent'),
         ]);
 
         setStats(statsResponse.data);
