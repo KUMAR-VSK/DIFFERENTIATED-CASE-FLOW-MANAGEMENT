@@ -75,4 +75,51 @@ public class UserService implements UserDetailsService {
             createUser(admin);
         }
     }
+
+    // Update user
+    public User updateUser(Long id, User userDetails) {
+        User existingUser = userRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("User not found with id: " + id));
+
+        // Update fields
+        if (userDetails.getFirstName() != null) {
+            existingUser.setFirstName(userDetails.getFirstName());
+        }
+        if (userDetails.getLastName() != null) {
+            existingUser.setLastName(userDetails.getLastName());
+        }
+        if (userDetails.getEmail() != null) {
+            // Check email uniqueness if changed
+            if (!existingUser.getEmail().equals(userDetails.getEmail()) && 
+                userRepository.existsByEmail(userDetails.getEmail())) {
+                throw new IllegalArgumentException("Email already exists");
+            }
+            existingUser.setEmail(userDetails.getEmail());
+        }
+        if (userDetails.getPassword() != null && !userDetails.getPassword().isEmpty()) {
+            existingUser.setPassword(passwordEncoder.encode(userDetails.getPassword()));
+        }
+        if (userDetails.getRole() != null) {
+            existingUser.setRole(userDetails.getRole());
+        }
+
+        return userRepository.save(existingUser);
+    }
+
+    // Update user role
+    public User updateUserRole(Long id, User.Role role) {
+        User existingUser = userRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("User not found with id: " + id));
+
+        existingUser.setRole(role);
+        return userRepository.save(existingUser);
+    }
+
+    // Delete user
+    public void deleteUser(Long id) {
+        if (!userRepository.existsById(id)) {
+            throw new IllegalArgumentException("User not found with id: " + id);
+        }
+        userRepository.deleteById(id);
+    }
 }
