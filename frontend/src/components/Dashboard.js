@@ -4,7 +4,7 @@ import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 
 const Dashboard = () => {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
         const [stats, setStats] = useState(null);
         const [statsError, setStatsError] = useState(false);
   const [recentCases, setRecentCases] = useState([]);
@@ -12,28 +12,63 @@ const Dashboard = () => {
 
   useEffect(() => {
     const fetchDashboardData = async () => {
-      if (!user) {
+      if (!user || authLoading) {
         setLoading(false);
         return;
       }
 
       try {
-        const [statsResponse, casesResponse] = await Promise.all([
+        const requests = [
           axios.get('http://localhost:8080/api/cases/statistics'),
+          axios.get('http://localhost:8080/api/cases/court-stats'),
           axios.get('http://localhost:8080/api/cases/recent'),
-        ]);
+        ];
 
-        setStats(statsResponse.data);
-        setRecentCases(casesResponse.data.slice(0, 5));
+        // Only fetch escalated cases if user has ADMIN or JUDGE role
+        if (user.role === 'ADMIN' || user.role === 'JUDGE') {
+          requests.push(axios.get('http://localhost:8080/api/cases/escalated'));
+        }
+
+        const responses = await Promise.allSettled(requests);
+
+        // Handle statistics response
+        if (responses[0].status === 'fulfilled') {
+          setStats(prev => ({ ...prev, ...responses[0].value.data }));
+          setStatsError(false);
+        } else {
+          setStatsError(true);
+        }
+
+        // Handle court stats response
+        if (responses[1].status === 'fulfilled') {
+          setStats(prev => ({ ...prev, ...responses[1].value.data }));
+        }
+
+        // Handle recent cases response
+        if (responses[2].status === 'fulfilled') {
+          setRecentCases(responses[2].value.data.slice(0, 5));
+        }
+
+        // Handle escalated cases response (if requested)
+        if (responses.length > 3 && responses[3].status === 'fulfilled') {
+          // Escalated cases data can be used if needed
+        }
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
+        // Check if it's a 403 error
+        if (error.response?.status === 403) {
+          setStatsError(true);
+        }
       } finally {
         setLoading(false);
       }
     };
 
-    fetchDashboardData();
-  }, [user]);
+    // Add a small delay to ensure auth headers are set
+    const timer = setTimeout(fetchDashboardData, 100);
+
+    return () => clearTimeout(timer);
+  }, [user, authLoading]);
 
   if (loading) {
     return (
@@ -162,6 +197,216 @@ const Dashboard = () => {
             </div>
           </div>
         )}
+
+        {/* Court Level Distribution */}
+
+        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-gray-100 dark:border-slate-700 overflow-hidden mb-8">
+          <div className="bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 px-6 py-5">
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
+                <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold text-white">Court Level Distribution</h3>
+            </div>
+            <p className="text-violet-100 text-sm mt-1">Active cases by court level</p>
+          </div>
+          <div className="p-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-slate-700 dark:to-slate-600 rounded-xl p-6 border border-blue-200 dark:border-blue-600">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
+                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
+                  </div>
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">Entry Level</span>
+                </div>
+                <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">District Court</h4>
+                <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">All new cases are filed here</p>
+                <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">{stats?.districtCourtCases || 0}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Active cases</p>
+              </div>
+
+              <div className="bg-gradient-to-br from-amber-50 to-orange-100 dark:from-slate-700 dark:to-slate-600 rounded-xl p-6 border border-amber-200 dark:border-amber-600">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-500 rounded-xl flex items-center justify-center shadow-lg">
+                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
+                  </div>
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200">Appellate Level</span>
+                </div>
+                <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">High Court</h4>
+                <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">Cases escalated from District Court</p>
+                <p className="text-3xl font-bold text-amber-600 dark:text-amber-400">{stats?.highCourtCases || 0}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Active cases</p>
+              </div>
+
+              <div className="bg-gradient-to-br from-red-50 to-rose-100 dark:from-slate-700 dark:to-slate-600 rounded-xl p-6 border border-red-200 dark:border-red-600">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="w-12 h-12 bg-gradient-to-br from-red-500 to-rose-500 rounded-xl flex items-center justify-center shadow-lg">
+                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
+                  </div>
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">Final Level</span>
+                </div>
+                <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">Supreme Court</h4>
+                <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">Highest appellate authority</p>
+                <p className="text-3xl font-bold text-red-600 dark:text-red-400">{stats?.supremeCourtCases || 0}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Active cases</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Escalation Status */}
+        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-gray-100 dark:border-slate-700 overflow-hidden mb-8">
+          <div className="bg-gradient-to-r from-orange-500 via-red-500 to-pink-500 px-6 py-5">
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
+                <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold text-white">Escalation Status</h3>
+            </div>
+            <p className="text-orange-100 text-sm mt-1">Cases pending escalation review</p>
+          </div>
+          <div className="p-6">
+            <div className="flex items-center justify-between p-4 bg-orange-50 dark:bg-orange-900/20 rounded-xl border border-orange-200 dark:border-orange-700">
+              <div className="flex items-center space-x-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-amber-500 rounded-xl flex items-center justify-center shadow-lg">
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                </div>
+                <div>
+                  <h4 className="text-lg font-semibold text-gray-900 dark:text-white">Cases Eligible for Escalation</h4>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">Cases that meet escalation criteria</p>
+                </div>
+              </div>
+              <div className="text-right">
+                <p className="text-4xl font-bold text-orange-600 dark:text-orange-400">{stats?.escalationEligible || 0}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Pending review</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-gray-100 dark:border-slate-700 overflow-hidden mb-8">
+          <div className="bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 px-6 py-5">
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
+                <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold text-white">Court Level Distribution</h3>
+            </div>
+            <p className="text-violet-100 text-sm mt-1">Active cases by court level</p>
+          </div>
+          <div className="p-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* District Court */}
+              <div className="bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-slate-700 dark:to-slate-600 rounded-xl p-6 border border-blue-200 dark:border-blue-600">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
+                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
+                  </div>
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                    Entry Level
+                  </span>
+                </div>
+                <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">District Court</h4>
+                <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">All new cases are filed here</p>
+                <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">
+                  {stats?.districtCourtCases || 0}
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Active cases</p>
+              </div>
+
+              {/* High Court */}
+              <div className="bg-gradient-to-br from-amber-50 to-orange-100 dark:from-slate-700 dark:to-slate-600 rounded-xl p-6 border border-amber-200 dark:border-amber-600">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-500 rounded-xl flex items-center justify-center shadow-lg">
+                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
+                  </div>
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200">
+                    Appellate Level
+                  </span>
+                </div>
+                <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">High Court</h4>
+                <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">Cases escalated from District Court</p>
+                <p className="text-3xl font-bold text-amber-600 dark:text-amber-400">
+                  {stats?.highCourtCases || 0}
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Active cases</p>
+              </div>
+
+              {/* Supreme Court */}
+              <div className="bg-gradient-to-br from-red-50 to-rose-100 dark:from-slate-700 dark:to-slate-600 rounded-xl p-6 border border-red-200 dark:border-red-600">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="w-12 h-12 bg-gradient-to-br from-red-500 to-rose-500 rounded-xl flex items-center justify-center shadow-lg">
+                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
+                  </div>
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
+                    Final Level
+                  </span>
+                </div>
+                <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">Supreme Court</h4>
+                <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">Highest appellate authority</p>
+                <p className="text-3xl font-bold text-red-600 dark:text-red-400">
+                  {stats?.supremeCourtCases || 0}
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Active cases</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Escalation Status */}
+        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-gray-100 dark:border-slate-700 overflow-hidden mb-8">
+          <div className="bg-gradient-to-r from-orange-500 via-red-500 to-pink-500 px-6 py-5">
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
+                <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold text-white">Escalation Status</h3>
+            </div>
+            <p className="text-orange-100 text-sm mt-1">Cases pending escalation review</p>
+          </div>
+          <div className="p-6">
+            <div className="flex items-center justify-between p-4 bg-orange-50 dark:bg-orange-900/20 rounded-xl border border-orange-200 dark:border-orange-700">
+              <div className="flex items-center space-x-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-amber-500 rounded-xl flex items-center justify-center shadow-lg">
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                </div>
+                <div>
+                  <h4 className="text-lg font-semibold text-gray-900 dark:text-white">Cases Eligible for Escalation</h4>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">Cases that meet escalation criteria</p>
+                </div>
+              </div>
+              <div className="text-right">
+                <p className="text-4xl font-bold text-orange-600 dark:text-orange-400">
+                  {stats?.escalationEligible || 0}
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Pending review</p>
+              </div>
+            </div>
+          </div>
+        </div>
 
         {/* Recent Cases */}
         <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-gray-100 dark:border-slate-700 overflow-hidden mb-8">

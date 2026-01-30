@@ -671,8 +671,8 @@ const CaseDetail = () => {
                       </div>
                     )}
 
-                    {/* Add Notes - JUDGE only */}
-                    {user.role === 'JUDGE' ? (
+                    {/* Add Notes - ADMIN/JUDGE/CLERK */}
+                    {(user.role === 'ADMIN' || user.role === 'JUDGE' || user.role === 'CLERK') ? (
                       <button
                         onClick={() => setShowNoteModal(true)}
                         disabled={actionLoading}
@@ -688,7 +688,7 @@ const CaseDetail = () => {
                         <svg className="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                         </svg>
-                        Add Notes (Judge Only)
+                        Add Notes (Admin/Judge/Clerk)
                       </div>
                     )}
 
@@ -696,7 +696,7 @@ const CaseDetail = () => {
                     <div className="mt-4 p-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-md border border-indigo-200 dark:border-indigo-800">
                       <h4 className="text-sm font-medium text-indigo-800 dark:text-indigo-200 mb-2">Available Actions:</h4>
                       <ul className="text-xs text-indigo-700 dark:text-indigo-300 space-y-1">
-                        <li>• <strong>Admins/Judges:</strong> Update status, schedule hearings</li>
+                        <li>• <strong>Admins/Judges/Clerks:</strong> Update status, schedule hearings, add notes</li>
                         <li>• <strong>Judges:</strong> Add case notes</li>
                         <li>• <strong>All Roles:</strong> View case details and history</li>
                       </ul>
@@ -788,14 +788,14 @@ const CaseDetail = () => {
                   </svg>
                   Case Notes ({notes.length})
                 </h2>
-                {user.role === 'JUDGE' && (
+                {user.role === 'ADMIN' || user.role === 'JUDGE' || user.role === 'CLERK' ? (
                   <button
                     onClick={() => setShowNoteModal(true)}
                     className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors duration-200"
                   >
                     Add Note
                   </button>
-                )}
+                ) : null}
               </div>
 
               {notes.length === 0 ? (

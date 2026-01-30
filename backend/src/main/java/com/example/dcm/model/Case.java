@@ -44,6 +44,19 @@ public class Case {
     @Column(nullable = false)
     private Status status;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "court_level", nullable = false)
+    private CourtLevel courtLevel;
+
+    @Column(name = "original_case_id")
+    private Long originalCaseId; // For escalated cases, points to original
+
+    @Column(name = "escalation_reason")
+    private String escalationReason;
+
+    @Column(name = "escalation_date")
+    private LocalDateTime escalationDate;
+
     @Column(name = "filing_date", nullable = false)
     private LocalDateTime filingDate;
 
@@ -99,11 +112,22 @@ public class Case {
     }
 
 
-    // Generate sequential case number starting from 1
+    // Generate sequential case number starting from 1 with court level suffix
     private String generateSequentialCaseNumber() {
         String year = String.valueOf(LocalDateTime.now().getYear());
-        // This will be set by the service layer based on the highest existing sequence
-        return String.format("CASE-%s-%04d", year, caseSequence);
+        String baseNumber = String.format("CASE-%s-%04d", year, caseSequence);
+
+        // Add court level suffix for escalated cases
+        if (courtLevel != null && courtLevel != CourtLevel.DISTRICT) {
+            String suffix = switch (courtLevel) {
+                case HIGH -> "-HC";
+                case SUPREME -> "-SC";
+                default -> "";
+            };
+            baseNumber += suffix;
+        }
+
+        return baseNumber;
     }
 
     public enum CaseType {
@@ -111,7 +135,37 @@ public class Case {
     }
 
     public enum Status {
-        FILED, UNDER_REVIEW, SCHEDULED, IN_PROGRESS, COMPLETED, DISMISSED
+        FILED, UNDER_REVIEW, SCHEDULED, IN_PROGRESS, COMPLETED, DISMISSED, ESCALATED
+    }
+
+    public enum CourtLevel {
+        DISTRICT("District Court"),
+        HIGH("High Court"),
+        SUPREME("Supreme Court");
+
+        private final String displayName;
+
+        CourtLevel(String displayName) {
+            this.displayName = displayName;
+        }
+
+        public String getDisplayName() {
+            return displayName;
+        }
+
+        // Get next court level for escalation
+        public CourtLevel getNextLevel() {
+            return switch (this) {
+                case DISTRICT -> HIGH;
+                case HIGH -> SUPREME;
+                case SUPREME -> null; // Supreme Court is final level
+            };
+        }
+
+        // Check if this is the final court level
+        public boolean isFinalLevel() {
+            return this == SUPREME;
+        }
     }
 
     // Constructors
@@ -123,6 +177,7 @@ public class Case {
         this.description = description;
         this.caseType = caseType;
         this.status = Status.FILED;
+        this.courtLevel = CourtLevel.DISTRICT; // All new cases start in District Court
         this.priority = 5; // Default medium priority
     }
 
@@ -147,6 +202,18 @@ public class Case {
 
     public Status getStatus() { return status; }
     public void setStatus(Status status) { this.status = status; }
+
+    public CourtLevel getCourtLevel() { return courtLevel; }
+    public void setCourtLevel(CourtLevel courtLevel) { this.courtLevel = courtLevel; }
+
+    public Long getOriginalCaseId() { return originalCaseId; }
+    public void setOriginalCaseId(Long originalCaseId) { this.originalCaseId = originalCaseId; }
+
+    public String getEscalationReason() { return escalationReason; }
+    public void setEscalationReason(String escalationReason) { this.escalationReason = escalationReason; }
+
+    public LocalDateTime getEscalationDate() { return escalationDate; }
+    public void setEscalationDate(LocalDateTime escalationDate) { this.escalationDate = escalationDate; }
 
     public LocalDateTime getFilingDate() { return filingDate; }
     public void setFilingDate(LocalDateTime filingDate) { this.filingDate = filingDate; }

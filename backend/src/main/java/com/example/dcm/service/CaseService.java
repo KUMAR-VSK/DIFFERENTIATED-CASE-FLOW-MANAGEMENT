@@ -28,44 +28,55 @@ public class CaseService {
 
     // Create a new case
     public Case createCase(Case caseEntity, String clerkUsername) {
-        // Set default status if not provided
-        if (caseEntity.getStatus() == null) {
-            caseEntity.setStatus(Case.Status.FILED);
+        try {
+            // Set default status if not provided
+            if (caseEntity.getStatus() == null) {
+                caseEntity.setStatus(Case.Status.FILED);
+            }
+
+            // Set default court level if not provided (all new cases start at District Court)
+            if (caseEntity.getCourtLevel() == null) {
+                caseEntity.setCourtLevel(Case.CourtLevel.DISTRICT);
+            }
+
+            // Set filing clerk
+            Optional<User> clerk = userRepository.findByUsername(clerkUsername);
+            if (clerk.isPresent()) {
+                caseEntity.setFilingClerk(clerk.get());
+            }
+
+            // Calculate initial priority
+            int calculatedPriority = priorityEngine.calculatePriority(caseEntity);
+            caseEntity.setPriority(calculatedPriority);
+
+            // Generate sequential case number
+            generateSequentialCaseNumber(caseEntity);
+
+            // Add sample documents to new cases
+            addSampleDocuments(caseEntity);
+
+            Case savedCase = caseRepository.save(caseEntity);
+
+            // Recalculate priorities for all existing cases to maintain relative priority accuracy
+            List<Case> allCases = caseRepository.findAll();
+            priorityEngine.recalculateAllPriorities(allCases);
+
+            // Save all updated cases
+            caseRepository.saveAll(allCases);
+
+            return savedCase;
+        } catch (Exception e) {
+            // Log the error for debugging
+            e.printStackTrace();
+            throw new RuntimeException("Failed to create case: " + e.getMessage(), e);
         }
-
-        // Set filing clerk
-        Optional<User> clerk = userRepository.findByUsername(clerkUsername);
-        if (clerk.isPresent()) {
-            caseEntity.setFilingClerk(clerk.get());
-        }
-
-        // Calculate initial priority
-        int calculatedPriority = priorityEngine.calculatePriority(caseEntity);
-        caseEntity.setPriority(calculatedPriority);
-
-        // Generate sequential case number
-        generateSequentialCaseNumber(caseEntity);
-
-        // Add sample documents to new cases
-        addSampleDocuments(caseEntity);
-
-        Case savedCase = caseRepository.save(caseEntity);
-
-        // Recalculate priorities for all existing cases to maintain relative priority accuracy
-        List<Case> allCases = caseRepository.findAll();
-        priorityEngine.recalculateAllPriorities(allCases);
-
-        // Save all updated cases
-        caseRepository.saveAll(allCases);
-
-        return savedCase;
     }
 
-    // Generate sequential case number starting from 1
+    // Generate sequential case number - FIXED: Only called on successful submission
     private void generateSequentialCaseNumber(Case caseEntity) {
         // Get the highest existing case sequence for the current year
         Integer maxSequence = caseRepository.findMaxCaseSequence();
-        
+
         // If no cases exist yet, start from 1
         if (maxSequence == null) {
             caseEntity.setCaseSequence(1);
@@ -76,7 +87,19 @@ public class CaseService {
 
         // Generate the case number format: CASE-YYYY-NNNN
         String year = String.valueOf(java.time.LocalDateTime.now().getYear());
-        caseEntity.setCaseNumber(String.format("CASE-%s-%04d", year, caseEntity.getCaseSequence()));
+        String baseNumber = String.format("CASE-%s-%04d", year, caseEntity.getCaseSequence());
+
+        // Add court level suffix for escalated cases
+        if (caseEntity.getCourtLevel() != null && caseEntity.getCourtLevel() != Case.CourtLevel.DISTRICT) {
+            String suffix = switch (caseEntity.getCourtLevel()) {
+                case HIGH -> "-HC";
+                case SUPREME -> "-SC";
+                default -> "";
+            };
+            baseNumber += suffix;
+        }
+
+        caseEntity.setCaseNumber(baseNumber);
     }
 
     // Update case status
@@ -384,6 +407,153 @@ public class CaseService {
     // Get recent cases (sorted by creation date, descending)
     public List<Case> getRecentCases() {
         return caseRepository.findTop5ByOrderByFilingDateDesc();
+    }
+
+    // ========== COURT ESCALATION METHODS ==========
+
+    /**
+     * Check if a case qualifies for escalation
+     */
+    public boolean checkEscalationConditions(Case caseEntity) {
+        // Condition 1: Judge marks as unresolved (status = UNRESOLVED - need to add this status)
+        // For now, we'll use DISMISSED status as a trigger for appeal
+        if (caseEntity.getStatus() == Case.Status.DISMISSED) {
+            return true;
+        }
+
+        // Condition 2: Case exceeds maximum allowed resolution time
+        if (caseEntity.getEstimatedDurationDays() != null && caseEntity.getFilingDate() != null) {
+            LocalDateTime maxResolutionDate = caseEntity.getFilingDate()
+                    .plusDays(caseEntity.getEstimatedDurationDays() * 2L); // Double as buffer
+            if (LocalDateTime.now().isAfter(maxResolutionDate)) {
+                return true;
+            }
+        }
+
+        // Condition 3: Manual escalation flag (could be added)
+        // For now, return false as this needs frontend support
+        return false;
+    }
+
+    /**
+     * Escalate a case to the next court level
+     */
+    public Case escalateCase(Long caseId, String reason) {
+        Case caseEntity = caseRepository.findById(caseId)
+                .orElseThrow(() -> new IllegalArgumentException("Case not found"));
+
+        Case.CourtLevel currentLevel = caseEntity.getCourtLevel();
+        if (currentLevel == null) {
+            currentLevel = Case.CourtLevel.DISTRICT;
+        }
+
+        // Check if can escalate further
+        if (currentLevel.isFinalLevel()) {
+            throw new IllegalStateException("Case is already at the highest court level (Supreme Court)");
+        }
+
+        // Get next court level
+        Case.CourtLevel nextLevel = currentLevel.getNextLevel();
+        if (nextLevel == null) {
+            throw new IllegalStateException("Cannot escalate beyond Supreme Court");
+        }
+
+        // Update case with new court level
+        caseEntity.setCourtLevel(nextLevel);
+        caseEntity.setEscalationReason(reason);
+        caseEntity.setEscalationDate(LocalDateTime.now());
+        caseEntity.setStatus(Case.Status.ESCALATED);
+
+        // Apply priority multiplier for higher court (increase by 2 points, max 10)
+        int newPriority = Math.min(caseEntity.getPriority() + 2, 10);
+        caseEntity.setPriority(newPriority);
+
+        // Generate new case number with court level suffix
+        generateSequentialCaseNumber(caseEntity);
+
+        // Clear assigned judge (new court will assign their own judge)
+        caseEntity.setAssignedJudge(null);
+
+        return caseRepository.save(caseEntity);
+    }
+
+    /**
+     * Get cases by court level
+     */
+    public List<Case> getCasesByCourtLevel(Case.CourtLevel courtLevel) {
+        return caseRepository.findByCourtLevel(courtLevel);
+    }
+
+    /**
+     * Get all escalated cases
+     */
+    public List<Case> getEscalatedCases() {
+        return caseRepository.findByStatus(Case.Status.ESCALATED);
+    }
+
+    /**
+     * Get cases eligible for escalation
+     */
+    public List<Case> getCasesEligibleForEscalation() {
+        return caseRepository.findAll().stream()
+                .filter(c -> c.getCourtLevel() != Case.CourtLevel.SUPREME)
+                .filter(this::checkEscalationConditions)
+                .toList();
+    }
+
+    /**
+     * Get court level distribution statistics
+     */
+    public CourtLevelStats getCourtLevelStats() {
+        List<Case> allCases = caseRepository.findAll();
+        
+        long districtCases = allCases.stream()
+                .filter(c -> c.getCourtLevel() == null || c.getCourtLevel() == Case.CourtLevel.DISTRICT)
+                .count();
+        
+        long highCourtCases = allCases.stream()
+                .filter(c -> c.getCourtLevel() == Case.CourtLevel.HIGH)
+                .count();
+        
+        long supremeCourtCases = allCases.stream()
+                .filter(c -> c.getCourtLevel() == Case.CourtLevel.SUPREME)
+                .count();
+        
+        long escalatedCases = allCases.stream()
+                .filter(c -> c.getStatus() == Case.Status.ESCALATED)
+                .count();
+        
+        long escalationEligible = allCases.stream()
+                .filter(c -> c.getCourtLevel() != Case.CourtLevel.SUPREME)
+                .filter(this::checkEscalationConditions)
+                .count();
+
+        return new CourtLevelStats(districtCases, highCourtCases, supremeCourtCases, escalatedCases, escalationEligible);
+    }
+
+    // Inner class for court level statistics
+    public static class CourtLevelStats {
+        private final long districtCourtCases;
+        private final long highCourtCases;
+        private final long supremeCourtCases;
+        private final long escalatedCases;
+        private final long escalationEligible;
+
+        public CourtLevelStats(long districtCourtCases, long highCourtCases, long supremeCourtCases, 
+                              long escalatedCases, long escalationEligible) {
+            this.districtCourtCases = districtCourtCases;
+            this.highCourtCases = highCourtCases;
+            this.supremeCourtCases = supremeCourtCases;
+            this.escalatedCases = escalatedCases;
+            this.escalationEligible = escalationEligible;
+        }
+
+        // Getters
+        public long getDistrictCourtCases() { return districtCourtCases; }
+        public long getHighCourtCases() { return highCourtCases; }
+        public long getSupremeCourtCases() { return supremeCourtCases; }
+        public long getEscalatedCases() { return escalatedCases; }
+        public long getEscalationEligible() { return escalationEligible; }
     }
 
     // Inner class for statistics

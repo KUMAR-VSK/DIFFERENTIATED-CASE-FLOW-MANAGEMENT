@@ -52,4 +52,10 @@ public interface CaseRepository extends JpaRepository<Case, Long> {
     // Get recent cases sorted by filing date (descending)
     @Query("SELECT c FROM Case c ORDER BY c.filingDate DESC")
     List<Case> findTop5ByOrderByFilingDateDesc();
+
+    // Find cases by court level
+    List<Case> findByCourtLevel(Case.CourtLevel courtLevel);
+
+    // Find cases by original case ID (for tracking escalations)
+    List<Case> findByOriginalCaseId(Long originalCaseId);
 }

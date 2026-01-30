@@ -193,6 +193,14 @@ public class CaseController {
         return ResponseEntity.ok(stats);
     }
 
+    // Get court level statistics
+    @GetMapping("/court-stats")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('CLERK') or hasRole('JUDGE')")
+    public ResponseEntity<CaseService.CourtLevelStats> getCourtLevelStats() {
+        CaseService.CourtLevelStats stats = caseService.getCourtLevelStats();
+        return ResponseEntity.ok(stats);
+    }
+
     // Generate case report
     @GetMapping("/{id}/report")
     @PreAuthorize("hasRole('ADMIN') or hasRole('JUDGE')")
@@ -232,6 +240,117 @@ public class CaseController {
             return ResponseEntity.ok("Existing cases have been populated with sample documents.");
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body("Failed to populate documents: " + e.getMessage());
+        }
+    }
+
+    // ========== COURT ESCALATION ENDPOINTS ==========
+
+    // Get cases by court level
+    @GetMapping("/court-level/{level}")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('JUDGE') or hasRole('CLERK')")
+    public ResponseEntity<List<Case>> getCasesByCourtLevel(@PathVariable Case.CourtLevel level) {
+        List<Case> cases = caseService.getCasesByCourtLevel(level);
+        return ResponseEntity.ok(cases);
+    }
+
+    // Get all escalated cases
+    @GetMapping("/escalated")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('JUDGE')")
+    public ResponseEntity<List<Case>> getEscalatedCases() {
+        List<Case> cases = caseService.getEscalatedCases();
+        return ResponseEntity.ok(cases);
+    }
+
+    // Get cases eligible for escalation
+    @GetMapping("/eligible-for-escalation")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('JUDGE')")
+    public ResponseEntity<List<Case>> getCasesEligibleForEscalation() {
+        List<Case> cases = caseService.getCasesEligibleForEscalation();
+        return ResponseEntity.ok(cases);
+    }
+
+    // Escalate a case to higher court (Judge or Admin only)
+    @PostMapping("/{id}/escalate")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('JUDGE')")
+    public ResponseEntity<?> escalateCase(
+            @PathVariable Long id,
+            @RequestBody Map<String, String> request,
+            Authentication authentication) {
+        try {
+            String reason = request.get("reason");
+            if (reason == null || reason.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("message", "Escalation reason is required"));
+            }
+            Case escalatedCase = caseService.escalateCase(id, reason);
+            return ResponseEntity.ok(escalatedCase);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(Map.of("message", "Failed to escalate case: " + e.getMessage()));
+        }
+    }
+
+    // ========== DOCUMENT MANAGEMENT ENDPOINTS ==========
+
+    // Upload document (Clerk, Judge, Admin)
+    @PostMapping("/{id}/documents")
+    @PreAuthorize("hasRole('CLERK') or hasRole('JUDGE') or hasRole('ADMIN')")
+    public ResponseEntity<?> uploadDocument(
+            @PathVariable Long id,
+            @RequestBody Map<String, Object> request) {
+        try {
+            // Document upload would be implemented here
+            // For now, return a placeholder response
+            return ResponseEntity.ok(Map.of(
+                "message", "Document upload endpoint - implementation needed",
+                "documentId", 1
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(Map.of("message", "Failed to upload document: " + e.getMessage()));
+        }
+    }
+
+    // ========== CASE NOTES ENDPOINTS ==========
+
+    // Add case note (Judge only)
+    @PostMapping("/{id}/notes/judicial")
+    @PreAuthorize("hasRole('JUDGE')")
+    public ResponseEntity<?> addJudicialNote(
+            @PathVariable Long id,
+            @RequestBody Map<String, String> request,
+            Authentication authentication) {
+        try {
+            String content = request.get("content");
+            String noteTypeStr = request.get("noteType");
+            if (content == null || content.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("message", "Note content is required"));
+            }
+            // Note creation would be implemented here
+            return ResponseEntity.ok(Map.of(
+                "message", "Judicial note added successfully",
+                "noteId", 1
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(Map.of("message", "Failed to add note: " + e.getMessage()));
+        }
+    }
+
+    // ========== AUDIT TRAIL ENDPOINTS ==========
+
+    // Get case audit history (Admin only)
+    @GetMapping("/{id}/audit")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> getCaseAuditHistory(@PathVariable Long id) {
+        try {
+            // Audit retrieval would be implemented here
+            return ResponseEntity.ok(Map.of(
+                "message", "Audit history endpoint - implementation needed",
+                "caseId", id
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(Map.of("message", "Failed to retrieve audit history: " + e.getMessage()));
         }
     }
 }

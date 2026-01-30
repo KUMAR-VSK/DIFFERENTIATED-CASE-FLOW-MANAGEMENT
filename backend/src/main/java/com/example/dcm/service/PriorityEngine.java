@@ -34,6 +34,21 @@ public class PriorityEngine {
                 break;
         }
 
+        // Court level multiplier - higher courts get priority boost
+        if (caseEntity.getCourtLevel() != null) {
+            switch (caseEntity.getCourtLevel()) {
+                case SUPREME:
+                    basePriority += 3; // Supreme Court cases get significant boost
+                    break;
+                case HIGH:
+                    basePriority += 2; // High Court cases get moderate boost
+                    break;
+                case DISTRICT:
+                    basePriority += 0; // District Court is baseline
+                    break;
+            }
+        }
+
         // Resource requirements
         if (caseEntity.getResourceRequirement() != null) {
             String req = caseEntity.getResourceRequirement().toLowerCase();
@@ -52,6 +67,11 @@ public class PriorityEngine {
             } else if (caseEntity.getEstimatedDurationDays() > 90) {
                 basePriority -= 1; // Long cases might be deprioritized
             }
+        }
+
+        // Escalation boost - cases that have been escalated get priority boost
+        if (caseEntity.getEscalationDate() != null) {
+            basePriority += 1; // Escalated cases get a boost
         }
 
         // Ensure priority stays within 1-10 range
