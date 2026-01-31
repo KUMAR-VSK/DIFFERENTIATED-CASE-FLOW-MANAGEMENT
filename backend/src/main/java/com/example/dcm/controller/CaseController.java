@@ -129,6 +129,32 @@ public class CaseController {
         return ResponseEntity.ok(cases);
     }
 
+    // Get cases accessible to a judge based on their court level (new endpoint for court-level authorization)
+    @GetMapping("/judge/{judgeId}/court-level")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('JUDGE')")
+    public ResponseEntity<List<Case>> getCasesByJudgeCourtLevel(@PathVariable Long judgeId) {
+        try {
+            List<Case> cases = caseService.getCasesByJudgeCourtLevel(judgeId);
+            return ResponseEntity.ok(cases);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(null);
+        }
+    }
+
+    // Check if judge can access a specific case (new endpoint for authorization)
+    @GetMapping("/judge/{judgeId}/case/{caseId}/access")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('JUDGE')")
+    public ResponseEntity<Map<String, Boolean>> canJudgeAccessCase(
+            @PathVariable Long judgeId, 
+            @PathVariable Long caseId) {
+        try {
+            boolean canAccess = caseService.canJudgeAccessCase(judgeId, caseId);
+            return ResponseEntity.ok(Map.of("canAccess", canAccess));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("canAccess", false));
+        }
+    }
+
     // Get unscheduled cases
     @GetMapping("/unscheduled")
     @PreAuthorize("hasRole('ADMIN') or hasRole('JUDGE')")

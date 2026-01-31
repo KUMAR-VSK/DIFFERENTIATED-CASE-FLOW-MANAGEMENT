@@ -4,11 +4,13 @@ com/example/dcm/service/UserService.class
 com/example/dcm/service/CaseService.class
 com/example/dcm/model/CaseNote$NoteType.class
 com/example/dcm/repository/CaseAuditRepository.class
+com/example/dcm/controller/DocumentController$DocumentInfo.class
 com/example/dcm/model/Document$DocumentType.class
 com/example/dcm/repository/CaseRepository.class
 com/example/dcm/model/Document.class
 com/example/dcm/model/CaseNote.class
 com/example/dcm/model/User$Role.class
+com/example/dcm/controller/DocumentController.class
 com/example/dcm/DcmApplication.class
 com/example/dcm/service/CaseService$CaseStatistics.class
 com/example/dcm/model/CaseAudit$ActionType.class
@@ -20,6 +22,7 @@ com/example/dcm/config/SecurityConfig.class
 com/example/dcm/repository/UserRepository.class
 com/example/dcm/model/Case$CaseType.class
 com/example/dcm/service/CaseService$1.class
+com/example/dcm/model/User$CourtLevel.class
 com/example/dcm/service/CaseService$CourtLevelStats.class
 com/example/dcm/model/Case.class
 com/example/dcm/controller/AuthController.class

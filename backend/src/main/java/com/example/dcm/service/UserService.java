@@ -115,6 +115,37 @@ public class UserService implements UserDetailsService {
         return userRepository.save(existingUser);
     }
 
+    // Update user court level (for judges only)
+    public User updateUserCourtLevel(Long id, User.CourtLevel courtLevel) {
+        User existingUser = userRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("User not found with id: " + id));
+
+        if (existingUser.getRole() != User.Role.JUDGE) {
+            throw new IllegalArgumentException("Court level can only be set for judges");
+        }
+
+        existingUser.setCourtLevel(courtLevel);
+        return userRepository.save(existingUser);
+    }
+
+    // Create judge with court level
+    public User createJudge(String username, String password, String email, String firstName, String lastName, User.CourtLevel courtLevel) {
+        // Validate uniqueness
+        if (userRepository.existsByUsername(username)) {
+            throw new IllegalArgumentException("Username already exists");
+        }
+        if (userRepository.existsByEmail(email)) {
+            throw new IllegalArgumentException("Email already exists");
+        }
+
+        User judge = new User(username, passwordEncoder.encode(password), email, User.Role.JUDGE);
+        judge.setFirstName(firstName);
+        judge.setLastName(lastName);
+        judge.setCourtLevel(courtLevel);
+
+        return userRepository.save(judge);
+    }
+
     // Delete user
     public void deleteUser(Long id) {
         if (!userRepository.existsById(id)) {

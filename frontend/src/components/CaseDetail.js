@@ -42,6 +42,12 @@ const CaseDetail = () => {
   const [hearingDate, setHearingDate] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
   const [toast, setToast] = useState(null);
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [uploadLoading, setUploadLoading] = useState(false);
+  const [showEscalateModal, setShowEscalateModal] = useState(false);
+  const [escalationReason, setEscalationReason] = useState('');
+  const [escalationLoading, setEscalationLoading] = useState(false);
 
   useEffect(() => {
     const fetchCase = async () => {
@@ -203,6 +209,24 @@ const CaseDetail = () => {
       // Refresh case data to show updated notes
       const response = await axios.get(`http://localhost:8080/api/cases/${id}`);
       setCaseData(response.data);
+      
+      // Update notes state with newly parsed notes
+      const parsedNotes = parseNotes(response.data.notes);
+      setNotes(parsedNotes);
+      
+      // Update documents state with newly parsed documents
+      if (response.data.documents) {
+        try {
+          const parsedDocuments = JSON.parse(response.data.documents);
+          setDocuments(parsedDocuments);
+        } catch (error) {
+          console.error('Error parsing documents:', error);
+          setDocuments([]);
+        }
+      } else {
+        setDocuments([]);
+      }
+      
       setNewNote('');
       setShowNoteModal(false);
 
@@ -288,6 +312,97 @@ const CaseDetail = () => {
       showToast('Failed to generate PDF', 'error');
     } finally {
       setActionLoading(false);
+    }
+  };
+
+  const handleUploadDocument = async () => {
+    if (!selectedFile) {
+      showToast('Please select a file to upload', 'error');
+      return;
+    }
+
+    setUploadLoading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', selectedFile);
+      formData.append('caseId', id);
+
+      await axios.post('http://localhost:8080/api/documents/upload', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      // Refresh case data to show uploaded document
+      const response = await axios.get(`http://localhost:8080/api/cases/${id}`);
+      setCaseData(response.data);
+
+      // Update documents state with newly parsed documents
+      if (response.data.documents) {
+        try {
+          const parsedDocuments = JSON.parse(response.data.documents);
+          setDocuments(parsedDocuments);
+        } catch (error) {
+          console.error('Error parsing documents:', error);
+          setDocuments([]);
+        }
+      } else {
+        setDocuments([]);
+      }
+
+      setShowUploadModal(false);
+      setSelectedFile(null);
+      showToast('Document uploaded successfully');
+    } catch (error) {
+      console.error('Error uploading document:', error);
+      showToast('Failed to upload document', 'error');
+    } finally {
+      setUploadLoading(false);
+    }
+  };
+
+  const handleEscalateCase = async () => {
+    if (!escalationReason.trim()) {
+      showToast('Please enter a reason for escalation', 'error');
+      return;
+    }
+
+    setEscalationLoading(true);
+    try {
+      await axios.post(`http://localhost:8080/api/cases/${id}/escalate`, {
+        reason: escalationReason
+      });
+
+      // Refresh case data to show updated case
+      const response = await axios.get(`http://localhost:8080/api/cases/${id}`);
+      setCaseData(response.data);
+      
+      // Update notes state with newly parsed notes
+      const parsedNotes = parseNotes(response.data.notes);
+      setNotes(parsedNotes);
+      
+      // Update documents state with newly parsed documents
+      if (response.data.documents) {
+        try {
+          const parsedDocuments = JSON.parse(response.data.documents);
+          setDocuments(parsedDocuments);
+        } catch (error) {
+          console.error('Error parsing documents:', error);
+          setDocuments([]);
+        }
+      } else {
+        setDocuments([]);
+      }
+
+      setShowEscalateModal(false);
+      setEscalationReason('');
+      showToast('Case escalated successfully');
+    } catch (error) {
+      console.error('Error escalating case:', error);
+      const errorMessage = error.response?.data?.message || 'Failed to escalate case';
+      showToast(errorMessage, 'error');
+    } finally {
+      setEscalationLoading(false);
     }
   };
 
@@ -692,6 +807,27 @@ const CaseDetail = () => {
                       </div>
                     )}
 
+                    {/* Escalate Case - ADMIN/JUDGE only */}
+                    {(user.role === 'ADMIN' || user.role === 'JUDGE') ? (
+                      <button
+                        onClick={() => setShowEscalateModal(true)}
+                        disabled={actionLoading || caseData.courtLevel === 'HIGH'}
+                        className="w-full bg-red-600 text-white px-4 py-3 rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 text-sm font-medium flex items-center justify-center shadow-md"
+                      >
+                        <svg className="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 10l7-7m0 0l7 7m-7-7v18" />
+                        </svg>
+                        {caseData.courtLevel === 'HIGH' ? 'Already at Highest Court' : 'Escalate to High Court'}
+                      </button>
+                    ) : (
+                      <div className="w-full bg-gray-100 dark:bg-slate-700 text-gray-400 dark:text-gray-500 px-4 py-3 rounded-lg text-sm font-medium flex items-center justify-center border-2 border-dashed border-gray-300 dark:border-gray-600">
+                        <svg className="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 10l7-7m0 0l7 7m-7-7v18" />
+                        </svg>
+                        Escalate (Admin/Judge Only)
+                      </div>
+                    )}
+
                     {/* Help Text */}
                     <div className="mt-4 p-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-md border border-indigo-200 dark:border-indigo-800">
                       <h4 className="text-sm font-medium text-indigo-800 dark:text-indigo-200 mb-2">Available Actions:</h4>
@@ -718,7 +854,10 @@ const CaseDetail = () => {
                   Case Documents ({documents.length})
                 </h2>
                 {(user.role === 'CLERK' || user.role === 'ADMIN') && (
-                  <button className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors duration-200">
+                  <button 
+                    onClick={() => setShowUploadModal(true)}
+                    className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors duration-200"
+                  >
                     Upload Document
                   </button>
                 )}
@@ -1393,6 +1532,100 @@ const CaseDetail = () => {
                   className="px-4 py-2 text-sm font-medium text-white bg-purple-600 border border-transparent rounded-md hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {actionLoading ? 'Adding...' : 'Add Note'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Upload Document Modal */}
+      {showUploadModal && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 dark:bg-black/70 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white dark:bg-slate-800 dark:border-slate-700 transition-colors">
+            <div className="mt-3">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Upload Document</h3>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                  Select File
+                </label>
+                <input
+                  type="file"
+                  onChange={(e) => setSelectedFile(e.target.files[0])}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-slate-700 text-gray-900 dark:text-white"
+                />
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                  Upload a document for this case (PDF, DOC, DOCX, TXT)
+                </p>
+              </div>
+              <div className="flex justify-end gap-3">
+                <button
+                  onClick={() => {
+                    setShowUploadModal(false);
+                    setSelectedFile(null);
+                  }}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-md hover:bg-gray-200 dark:hover:bg-slate-600"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleUploadDocument}
+                  disabled={!selectedFile || uploadLoading}
+                  className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {uploadLoading ? 'Uploading...' : 'Upload'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Escalate Case Modal */}
+      {showEscalateModal && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 dark:bg-black/70 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white dark:bg-slate-800 dark:border-slate-700 transition-colors">
+            <div className="mt-3">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Escalate Case to High Court</h3>
+              <div className="mb-4">
+                <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-md p-3 mb-4">
+                  <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                    <strong>Current Court Level:</strong> {caseData.courtLevel}
+                  </p>
+                  <p className="text-sm text-yellow-800 dark:text-yellow-200 mt-1">
+                    <strong>New Court Level:</strong> HIGH
+                  </p>
+                </div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                  Reason for Escalation
+                </label>
+                <textarea
+                  value={escalationReason}
+                  onChange={(e) => setEscalationReason(e.target.value)}
+                  rows={4}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 bg-white dark:bg-slate-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
+                  placeholder="Enter the reason for escalating this case to High Court..."
+                />
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                  Provide a detailed explanation for why this case needs to be escalated to a higher court.
+                </p>
+              </div>
+              <div className="flex justify-end gap-3">
+                <button
+                  onClick={() => {
+                    setShowEscalateModal(false);
+                    setEscalationReason('');
+                  }}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-md hover:bg-gray-200 dark:hover:bg-slate-600"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleEscalateCase}
+                  disabled={!escalationReason.trim() || escalationLoading}
+                  className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {escalationLoading ? 'Escalating...' : 'Confirm Escalation'}
                 </button>
               </div>
             </div>

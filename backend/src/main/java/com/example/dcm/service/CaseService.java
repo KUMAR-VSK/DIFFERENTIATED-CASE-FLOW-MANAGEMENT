@@ -161,6 +161,66 @@ public class CaseService {
         return caseRepository.findByAssignedJudge(judge);
     }
 
+    // Get cases accessible to a judge based on their court level
+    public List<Case> getCasesByJudgeCourtLevel(Long judgeId) {
+        User judge = userRepository.findById(judgeId)
+                .orElseThrow(() -> new IllegalArgumentException("Judge not found"));
+
+        if (judge.getRole() != User.Role.JUDGE) {
+            throw new IllegalArgumentException("User is not a judge");
+        }
+
+        // Judges can only see cases at their court level
+        if (judge.getCourtLevel() == null) {
+            // If no court level set, default to District
+            return caseRepository.findByCourtLevel(Case.CourtLevel.DISTRICT);
+        }
+
+        // Convert User.CourtLevel to Case.CourtLevel
+        Case.CourtLevel caseCourtLevel = convertUserCourtLevelToCaseCourtLevel(judge.getCourtLevel());
+        return caseRepository.findByCourtLevel(caseCourtLevel);
+    }
+
+    // Check if judge can access a specific case
+    public boolean canJudgeAccessCase(Long judgeId, Long caseId) {
+        User judge = userRepository.findById(judgeId)
+                .orElseThrow(() -> new IllegalArgumentException("Judge not found"));
+
+        if (judge.getRole() != User.Role.JUDGE) {
+            return false;
+        }
+
+        Case caseEntity = caseRepository.findById(caseId)
+                .orElseThrow(() -> new IllegalArgumentException("Case not found"));
+
+        // Judges can only access cases at their court level
+        if (judge.getCourtLevel() == null) {
+            return caseEntity.getCourtLevel() == null || caseEntity.getCourtLevel() == Case.CourtLevel.DISTRICT;
+        }
+
+        // Convert User.CourtLevel to Case.CourtLevel for comparison
+        Case.CourtLevel caseCourtLevel = convertUserCourtLevelToCaseCourtLevel(judge.getCourtLevel());
+        return caseEntity.getCourtLevel() == caseCourtLevel;
+    }
+
+    // Helper method to convert User.CourtLevel to Case.CourtLevel
+    private Case.CourtLevel convertUserCourtLevelToCaseCourtLevel(User.CourtLevel userCourtLevel) {
+        if (userCourtLevel == null) {
+            return Case.CourtLevel.DISTRICT;
+        }
+        
+        switch (userCourtLevel) {
+            case DISTRICT:
+                return Case.CourtLevel.DISTRICT;
+            case HIGH:
+                return Case.CourtLevel.HIGH;
+            case SUPREME:
+                return Case.CourtLevel.SUPREME;
+            default:
+                return Case.CourtLevel.DISTRICT;
+        }
+    }
+
     // Get high priority cases
     public List<Case> getHighPriorityCases() {
         return caseRepository.findByPriorityGreaterThanEqual(8);

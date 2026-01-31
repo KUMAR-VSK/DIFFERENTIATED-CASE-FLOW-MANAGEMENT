@@ -37,6 +37,10 @@ public class User {
     @Column(nullable = false)
     private Role role;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "court_level")
+    private CourtLevel courtLevel;
+
     @Column(name = "first_name")
     private String firstName;
 
@@ -64,6 +68,10 @@ public class User {
         JUDGE, CLERK, ADMIN
     }
 
+    public enum CourtLevel {
+        DISTRICT, HIGH, SUPREME
+    }
+
     // Constructors
     public User() {}
 
@@ -89,6 +97,9 @@ public class User {
 
     public Role getRole() { return role; }
     public void setRole(Role role) { this.role = role; }
+
+    public CourtLevel getCourtLevel() { return courtLevel; }
+    public void setCourtLevel(CourtLevel courtLevel) { this.courtLevel = courtLevel; }
 
     public String getFirstName() { return firstName; }
     public void setFirstName(String firstName) { this.firstName = firstName; }

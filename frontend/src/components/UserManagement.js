@@ -14,7 +14,8 @@ const UserManagement = () => {
     email: '',
     firstName: '',
     lastName: '',
-    role: 'CLERK'
+    role: 'CLERK',
+    courtLevel: 'DISTRICT'
   });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -82,7 +83,8 @@ const UserManagement = () => {
       email: user.email,
       firstName: user.firstName,
       lastName: user.lastName,
-      role: user.role
+      role: user.role,
+      courtLevel: user.courtLevel || 'DISTRICT'
     });
     setShowForm(true);
   };
@@ -142,7 +144,8 @@ const UserManagement = () => {
       email: '',
       firstName: '',
       lastName: '',
-      role: 'CLERK'
+      role: 'CLERK',
+      courtLevel: 'DISTRICT'
     });
     setEditingUser(null);
     setShowForm(false);
@@ -339,6 +342,27 @@ const UserManagement = () => {
                   <option value="ADMIN">Admin</option>
                 </select>
               </div>
+
+              {/* Court Level Field - Only for Judges */}
+              {formData.role === 'JUDGE' && (
+                <div>
+                  <label htmlFor="courtLevel" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Court Level
+                  </label>
+                  <select
+                    id="courtLevel"
+                    name="courtLevel"
+                    required
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-slate-700 text-gray-900 dark:text-white"
+                    value={formData.courtLevel}
+                    onChange={handleInputChange}
+                  >
+                    <option value="DISTRICT">District Court</option>
+                    <option value="HIGH">High Court</option>
+                    <option value="SUPREME">Supreme Court</option>
+                  </select>
+                </div>
+              )}
             </div>
 
             <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200 dark:border-slate-700">

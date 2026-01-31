@@ -11,6 +11,7 @@
 /Users/kumarvs/Downloads/S8 PROJECT/backend/src/main/java/com/example/dcm/controller/AuthController.java
 /Users/kumarvs/Downloads/S8 PROJECT/backend/src/main/java/com/example/dcm/model/CaseNote.java
 /Users/kumarvs/Downloads/S8 PROJECT/backend/src/main/java/com/example/dcm/DcmApplication.java
+/Users/kumarvs/Downloads/S8 PROJECT/backend/src/main/java/com/example/dcm/controller/DocumentController.java
 /Users/kumarvs/Downloads/S8 PROJECT/backend/src/main/java/com/example/dcm/model/Case.java
 /Users/kumarvs/Downloads/S8 PROJECT/backend/src/main/java/com/example/dcm/config/SecurityConfig.java
 /Users/kumarvs/Downloads/S8 PROJECT/backend/src/main/java/com/example/dcm/service/CaseService.java
