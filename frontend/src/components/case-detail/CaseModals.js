@@ -250,7 +250,7 @@ export const EscalateModal = ({ show, onClose, reason, setReason, onEscalate, lo
                                 <strong>Current Court Level:</strong> {currentCourtLevel}
                             </p>
                             <p className="text-sm text-yellow-800 dark:text-yellow-200 mt-1">
-                                <strong>New Court Level:</strong> HIGH
+                                <strong>New Court Level:</strong> {currentCourtLevel === 'DISTRICT' ? 'HIGH' : 'SUPREME'}
                             </p>
                         </div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
@@ -261,7 +261,7 @@ export const EscalateModal = ({ show, onClose, reason, setReason, onEscalate, lo
                             onChange={(e) => setReason(e.target.value)}
                             rows={4}
                             className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 bg-white dark:bg-slate-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
-                            placeholder="Enter the reason for escalating this case to High Court..."
+                            placeholder={`Enter the reason for escalating this case to ${currentCourtLevel === 'DISTRICT' ? 'High' : 'Supreme'} Court...`}
                         />
                         <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
                             Provide a detailed explanation for why this case needs to be escalated to a higher court.
@@ -301,7 +301,7 @@ export const DeescalateModal = ({ show, onClose, reason, setReason, onDeescalate
                                 <strong>Current Court Level:</strong> {currentCourtLevel}
                             </p>
                             <p className="text-sm text-blue-800 dark:text-blue-200 mt-1">
-                                <strong>New Court Level:</strong> {currentCourtLevel === 'HIGH' ? 'DISTRICT' : 'SUBORDINATE'}
+                                <strong>New Court Level:</strong> {currentCourtLevel === 'SUPREME' ? 'HIGH' : 'DISTRICT'}
                             </p>
                         </div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">

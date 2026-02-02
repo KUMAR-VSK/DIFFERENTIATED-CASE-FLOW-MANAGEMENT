@@ -594,36 +594,49 @@ public class CaseService {
     }
 
     /**
-     * De-escalate a case to a lower court level (e.g., Supreme Court to District Court)
+     * De-escalate a case to a lower court level (e.g., Supreme Court to High Court)
      */
     public Case deescalateCase(Long caseId, String reason) {
         Case caseEntity = caseRepository.findById(caseId)
                 .orElseThrow(() -> new IllegalArgumentException("Case not found"));
 
         Case.CourtLevel currentLevel = caseEntity.getCourtLevel();
+        
+        // Check if case has a court level set
         if (currentLevel == null) {
-            currentLevel = Case.CourtLevel.DISTRICT;
+            throw new IllegalStateException("Case does not have a court level assigned");
         }
 
-        // Check if can de-escalate (must be at Supreme Court level)
-        if (currentLevel != Case.CourtLevel.SUPREME) {
-            throw new IllegalStateException("Case can only be de-escalated from Supreme Court level");
+        // Check if can de-escalate
+        Case.CourtLevel previousLevel = currentLevel.getPreviousLevel();
+        if (previousLevel == null) {
+            throw new IllegalStateException("Case is already at the lowest court level (District). Current level: " + currentLevel);
         }
 
-        // De-escalate to District Court (reset to base level)
-        Case.CourtLevel targetLevel = Case.CourtLevel.DISTRICT;
-
-        // Update case with new court level
-        caseEntity.setCourtLevel(targetLevel);
+        // De-escalate to previous level
+        caseEntity.setCourtLevel(previousLevel);
         caseEntity.setEscalationReason("De-escalated: " + reason);
         caseEntity.setEscalationDate(LocalDateTime.now());
-        caseEntity.setStatus(Case.Status.FILED); // Reset status to filed
+        
+        // If back to District, reset status to FILED, otherwise keep as ESCALATED or similar?
+        // Let's keep status as ESCALATED but maybe add a note, or if it goes back to District, maybe FILED/IN_PROGRESS.
+        // The prompt implies hierarchical movement.
+        // Existing logic set it to FILED if de-escalated. 
+        // If moving Supreme -> High, it is still technically an escalated case from District perspective, 
+        // but let's keep it simple: Status remains active or resets.
+        // Let's set to IN_PROGRESS if High Court, FILED if District.
+        if (previousLevel == Case.CourtLevel.DISTRICT) {
+            caseEntity.setStatus(Case.Status.FILED); // Reset to base state
+        } else {
+            // Moving to High Court, keep as ESCALATED or IN_PROGRESS
+            caseEntity.setStatus(Case.Status.ESCALATED);
+        }
 
-        // Reset priority to base level (decrease by 2 points, minimum 1)
+        // Decrease priority (decrease by 2 points, minimum 1)
         int newPriority = Math.max(caseEntity.getPriority() - 2, 1);
         caseEntity.setPriority(newPriority);
 
-        // Generate new case number without court level suffix
+        // Generate new case number with correct suffix
         generateSequentialCaseNumber(caseEntity);
 
         // Clear assigned judge (new court will assign their own judge)
@@ -651,8 +664,8 @@ public class CaseService {
      * Check if a case can be de-escalated
      */
     public boolean canDeescalateCase(Case caseEntity) {
-        // Can only de-escalate from Supreme Court
-        return caseEntity.getCourtLevel() == Case.CourtLevel.SUPREME;
+        // Can de-escalate if there is a previous level (i.e., not District)
+        return caseEntity.getCourtLevel() != null && caseEntity.getCourtLevel().getPreviousLevel() != null;
     }
 
     /**
@@ -669,8 +682,12 @@ public class CaseService {
         eligibility.setCanDeescalate(canDeescalateCase(caseEntity));
 
         // Check de-escalation reasons
-        if (caseEntity.getCourtLevel() == Case.CourtLevel.SUPREME) {
-            eligibility.getEligibilityReasons().add("Case is at Supreme Court level - eligible for de-escalation");
+        if (caseEntity.getCourtLevel() != null && caseEntity.getCourtLevel().getPreviousLevel() != null) {
+            if (caseEntity.getCourtLevel() == Case.CourtLevel.SUPREME) {
+                eligibility.getEligibilityReasons().add("Case is at Supreme Court level - eligible for de-escalation to High Court");
+            } else if (caseEntity.getCourtLevel() == Case.CourtLevel.HIGH) {
+                eligibility.getEligibilityReasons().add("Case is at High Court level - eligible for de-escalation to District Court");
+            }
         }
 
         return eligibility;

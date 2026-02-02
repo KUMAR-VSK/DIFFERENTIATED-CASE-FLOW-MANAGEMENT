@@ -166,6 +166,15 @@ public class Case {
         public boolean isFinalLevel() {
             return this == SUPREME;
         }
+
+        // Get previous court level for de-escalation
+        public CourtLevel getPreviousLevel() {
+            return switch (this) {
+                case SUPREME -> HIGH;
+                case HIGH -> DISTRICT;
+                case DISTRICT -> null; // District is lowest level
+            };
+        }
     }
 
     // Constructors
