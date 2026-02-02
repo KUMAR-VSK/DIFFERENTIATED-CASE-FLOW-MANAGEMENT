@@ -58,18 +58,8 @@ const CaseDetail = () => {
         const parsedNotes = parseNotes(response.data.notes);
         setNotes(parsedNotes);
 
-        // Parse documents from case data if available
-        if (response.data.documents) {
-          try {
-            const parsedDocuments = JSON.parse(response.data.documents);
-            setDocuments(parsedDocuments);
-          } catch (error) {
-            console.error('Error parsing documents:', error);
-            setDocuments([]);
-          }
-        } else {
-          setDocuments([]);
-        }
+        // Fetch documents from the new API endpoint
+        await fetchDocuments(id);
       } catch (error) {
         setError('Failed to load case details');
         console.error('Error fetching case:', error);
@@ -80,6 +70,16 @@ const CaseDetail = () => {
 
     fetchCase();
   }, [id]);
+
+  const fetchDocuments = async (caseId) => {
+    try {
+      const response = await axios.get(`http://localhost:8080/api/documents/case/${caseId}`);
+      setDocuments(response.data);
+    } catch (error) {
+      console.error('Error fetching documents:', error);
+      setDocuments([]);
+    }
+  };
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -333,22 +333,8 @@ const CaseDetail = () => {
         },
       });
 
-      // Refresh case data to show uploaded document
-      const response = await axios.get(`http://localhost:8080/api/cases/${id}`);
-      setCaseData(response.data);
-
-      // Update documents state with newly parsed documents
-      if (response.data.documents) {
-        try {
-          const parsedDocuments = JSON.parse(response.data.documents);
-          setDocuments(parsedDocuments);
-        } catch (error) {
-          console.error('Error parsing documents:', error);
-          setDocuments([]);
-        }
-      } else {
-        setDocuments([]);
-      }
+      // Refresh documents using the new API endpoint
+      await fetchDocuments(id);
 
       setShowUploadModal(false);
       setSelectedFile(null);

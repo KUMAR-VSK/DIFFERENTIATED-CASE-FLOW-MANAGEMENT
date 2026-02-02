@@ -23,6 +23,7 @@ import {
   Gavel as GavelIcon,
   AdminPanelSettings as AdminIcon,
   AccountBalance as JudgeIcon,
+  AccountBalance as AccountBalanceIcon,
   Assignment as ClerkIcon,
   Visibility as VisibilityIcon,
   VisibilityOff as VisibilityOffIcon,
@@ -86,7 +87,9 @@ const Login = () => {
 
   const demoCredentials = [
     { role: 'Admin', username: 'admin', password: 'admin123' },
-    { role: 'Judge', username: 'judge1', password: 'judge123' },
+    { role: 'District Judge', username: 'judge1', password: 'judge123' },
+    { role: 'High Court Judge', username: 'highcourt_judge', password: 'highcourt123' },
+    { role: 'Supreme Court Judge', username: 'supremecourt_judge', password: 'supremecourt123' },
     { role: 'Clerk', username: 'clerk1', password: 'clerk123' },
   ];
 
@@ -243,7 +246,9 @@ const Login = () => {
                         }}
                       >
                         {cred.role === 'Admin' && <AdminIcon />}
-                        {cred.role === 'Judge' && <JudgeIcon />}
+                        {cred.role === 'District Judge' && <JudgeIcon />}
+                        {cred.role === 'High Court Judge' && <AccountBalanceIcon />}
+                        {cred.role === 'Supreme Court Judge' && <GavelIcon />}
                         {cred.role === 'Clerk' && <ClerkIcon />}
                       </Avatar>
                       <Typography variant="subtitle2" fontWeight="bold">

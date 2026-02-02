@@ -21,6 +21,7 @@ com/example/dcm/model/Case$Status.class
 com/example/dcm/config/SecurityConfig.class
 com/example/dcm/repository/UserRepository.class
 com/example/dcm/model/Case$CaseType.class
+com/example/dcm/service/CaseService$EscalationEligibility.class
 com/example/dcm/service/CaseService$1.class
 com/example/dcm/model/User$CourtLevel.class
 com/example/dcm/service/CaseService$CourtLevelStats.class

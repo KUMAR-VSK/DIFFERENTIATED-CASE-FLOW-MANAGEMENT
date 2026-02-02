@@ -12,6 +12,7 @@ import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -149,6 +150,33 @@ public class DocumentController {
                 .header("Content-Type", contentType)
                 .header("Content-Disposition", "attachment; filename=\"" + filename + "\"")
                 .body(fileContent);
+    }
+
+    // Get documents by case ID
+    @GetMapping("/case/{caseId}")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('JUDGE') or hasRole('CLERK')")
+    public ResponseEntity<List<DocumentInfo>> getDocumentsByCaseId(@PathVariable Long caseId) {
+        try {
+            // Fetch documents from database
+            List<Document> documents = documentRepository.findByCaseEntityId(caseId);
+            
+            // Convert to DocumentInfo format
+            List<DocumentInfo> docInfos = new ArrayList<>();
+            for (Document doc : documents) {
+                DocumentInfo info = new DocumentInfo();
+                info.setId(doc.getId());
+                info.setOriginalFileName(doc.getOriginalFileName());
+                info.setFileType(doc.getFileType());
+                info.setFileSize(doc.getFileSize());
+                info.setUploadDate(doc.getUploadDate().toString());
+                info.setUrl("http://localhost:8080" + doc.getUrl());
+                docInfos.add(info);
+            }
+
+            return ResponseEntity.ok(docInfos);
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     // Inner class for document info JSON

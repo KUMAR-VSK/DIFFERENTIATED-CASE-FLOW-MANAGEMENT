@@ -198,6 +198,21 @@ CREATE TABLE cases (
 2. Update application.properties with database credentials
 3. Application will automatically create tables on startup
 
+### Default Demo Credentials
+
+The system comes pre-configured with demo users for testing different roles and court levels:
+
+#### Administrative Users
+- **Admin**: `admin` / `admin123` (Full system access)
+
+#### Judicial Users (Court-Level Specific)
+- **District Court Judge**: `judge1` / `judge123` (District Court cases only)
+- **High Court Judge**: `highcourt_judge` / `highcourt123` (High Court cases only)
+- **Supreme Court Judge**: `supremecourt_judge` / `supremecourt123` (Supreme Court cases only)
+
+#### Support Staff
+- **Clerk**: `clerk1` / `clerk123` (Case creation and basic operations)
+
 ## Usage Guide
 
 ### User Roles

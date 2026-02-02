@@ -100,9 +100,7 @@ const UserManagement = () => {
     
     setActionLoading(true);
     try {
-      await axios.put(`http://localhost:8080/api/auth/users/${selectedUserId}/role`, null, {
-        params: { role: newRole }
-      });
+      await axios.put(`http://localhost:8080/api/auth/users/${selectedUserId}/role`, newRole);
       setSuccess('User role updated successfully!');
       setShowRoleModal(false);
       setSelectedUserId(null);

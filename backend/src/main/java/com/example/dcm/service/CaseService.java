@@ -496,6 +496,62 @@ public class CaseService {
     }
 
     /**
+     * Check if a case can be escalated to Supreme Court specifically
+     * This method provides specific validation for High Court to Supreme Court escalation
+     */
+    public boolean canEscalateToSupremeCourt(Case caseEntity) {
+        // Must be at High Court level currently
+        if (caseEntity.getCourtLevel() != Case.CourtLevel.HIGH) {
+            return false;
+        }
+
+        // Must have been resolved at High Court level (not already escalated)
+        if (caseEntity.getStatus() == Case.Status.ESCALATED) {
+            return false;
+        }
+
+        // Must meet one of the escalation criteria
+        return checkEscalationConditions(caseEntity);
+    }
+
+    /**
+     * Get escalation eligibility details for a specific case
+     * Provides detailed information about why a case can or cannot be escalated
+     */
+    public EscalationEligibility getEscalationEligibility(Long caseId) {
+        Case caseEntity = caseRepository.findById(caseId)
+                .orElseThrow(() -> new IllegalArgumentException("Case not found"));
+
+        EscalationEligibility eligibility = new EscalationEligibility();
+        eligibility.setCaseId(caseId);
+        eligibility.setCurrentCourtLevel(caseEntity.getCourtLevel());
+        eligibility.setCurrentStatus(caseEntity.getStatus());
+        eligibility.setCanEscalate(!caseEntity.getCourtLevel().isFinalLevel());
+
+        // Check specific Supreme Court escalation eligibility
+        if (caseEntity.getCourtLevel() == Case.CourtLevel.HIGH) {
+            eligibility.setCanEscalateToSupremeCourt(canEscalateToSupremeCourt(caseEntity));
+        } else {
+            eligibility.setCanEscalateToSupremeCourt(false);
+        }
+
+        // Check escalation reasons
+        if (caseEntity.getStatus() == Case.Status.DISMISSED) {
+            eligibility.getEligibilityReasons().add("Case was dismissed - eligible for appeal");
+        }
+
+        if (caseEntity.getEstimatedDurationDays() != null && caseEntity.getFilingDate() != null) {
+            LocalDateTime maxResolutionDate = caseEntity.getFilingDate()
+                    .plusDays(caseEntity.getEstimatedDurationDays() * 2L);
+            if (LocalDateTime.now().isAfter(maxResolutionDate)) {
+                eligibility.getEligibilityReasons().add("Case exceeded maximum resolution time");
+            }
+        }
+
+        return eligibility;
+    }
+
+    /**
      * Escalate a case to the next court level
      */
     public Case escalateCase(Long caseId, String reason) {
@@ -638,5 +694,34 @@ public class CaseService {
         public long getScheduledCases() { return scheduledCases; }
         public long getCompletedCases() { return completedCases; }
         public double getAveragePriority() { return averagePriority; }
+    }
+
+    // Inner class for escalation eligibility
+    public static class EscalationEligibility {
+        private Long caseId;
+        private Case.CourtLevel currentCourtLevel;
+        private Case.Status currentStatus;
+        private boolean canEscalate;
+        private boolean canEscalateToSupremeCourt;
+        private List<String> eligibilityReasons = new java.util.ArrayList<>();
+
+        // Getters and Setters
+        public Long getCaseId() { return caseId; }
+        public void setCaseId(Long caseId) { this.caseId = caseId; }
+
+        public Case.CourtLevel getCurrentCourtLevel() { return currentCourtLevel; }
+        public void setCurrentCourtLevel(Case.CourtLevel currentCourtLevel) { this.currentCourtLevel = currentCourtLevel; }
+
+        public Case.Status getCurrentStatus() { return currentStatus; }
+        public void setCurrentStatus(Case.Status currentStatus) { this.currentStatus = currentStatus; }
+
+        public boolean isCanEscalate() { return canEscalate; }
+        public void setCanEscalate(boolean canEscalate) { this.canEscalate = canEscalate; }
+
+        public boolean isCanEscalateToSupremeCourt() { return canEscalateToSupremeCourt; }
+        public void setCanEscalateToSupremeCourt(boolean canEscalateToSupremeCourt) { this.canEscalateToSupremeCourt = canEscalateToSupremeCourt; }
+
+        public List<String> getEligibilityReasons() { return eligibilityReasons; }
+        public void setEligibilityReasons(List<String> eligibilityReasons) { this.eligibilityReasons = eligibilityReasons; }
     }
 }

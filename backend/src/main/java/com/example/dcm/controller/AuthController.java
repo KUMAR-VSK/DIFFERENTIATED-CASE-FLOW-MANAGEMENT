@@ -110,6 +110,20 @@ public class AuthController {
         }
     }
 
+    // Update user court level (admin only)
+    @PutMapping("/users/{id}/court-level")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<User> updateUserCourtLevel(@PathVariable Long id, @RequestBody User.CourtLevel courtLevel) {
+        try {
+            User updatedUser = userService.updateUserCourtLevel(id, courtLevel);
+            return ResponseEntity.ok(updatedUser);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
     // Delete user (admin only)
     @DeleteMapping("/users/{id}")
     @PreAuthorize("hasRole('ADMIN')")

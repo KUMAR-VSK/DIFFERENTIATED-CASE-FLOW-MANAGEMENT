@@ -318,6 +318,29 @@ public class CaseController {
         }
     }
 
+    // Check if a case can be escalated to Supreme Court (Admin or Judge only)
+    @GetMapping("/{id}/escalation-eligibility")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('JUDGE')")
+    public ResponseEntity<CaseService.EscalationEligibility> getEscalationEligibility(@PathVariable Long id) {
+        CaseService.EscalationEligibility eligibility = caseService.getEscalationEligibility(id);
+        return ResponseEntity.ok(eligibility);
+    }
+
+    // Check if a case can be escalated to Supreme Court specifically (Admin or Judge only)
+    @GetMapping("/{id}/can-escalate-to-supreme")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('JUDGE')")
+    public ResponseEntity<Map<String, Boolean>> canEscalateToSupremeCourt(@PathVariable Long id) {
+        try {
+            Case caseEntity = caseService.getCaseById(id)
+                    .orElseThrow(() -> new IllegalArgumentException("Case not found"));
+            
+            boolean canEscalate = caseService.canEscalateToSupremeCourt(caseEntity);
+            return ResponseEntity.ok(Map.of("canEscalateToSupremeCourt", canEscalate));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
     // ========== DOCUMENT MANAGEMENT ENDPOINTS ==========
 
     // Upload document (Clerk, Judge, Admin)

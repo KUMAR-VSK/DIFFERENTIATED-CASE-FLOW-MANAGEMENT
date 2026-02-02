@@ -21,12 +21,31 @@ public class DcmApplication {
             // Create default admin user
             userService.createDefaultAdminIfNotExists();
 
-            // Create sample judge
+            // Create sample District Court judge
             if (!userService.findByUsername("judge1").isPresent()) {
                 User judge = new User("judge1", "judge123", "judge1@dcm.com", User.Role.JUDGE);
                 judge.setFirstName("John");
                 judge.setLastName("Smith");
+                judge.setCourtLevel(User.CourtLevel.DISTRICT);
                 userService.createUser(judge);
+            }
+
+            // Create High Court judge
+            if (!userService.findByUsername("highcourt_judge").isPresent()) {
+                User highCourtJudge = new User("highcourt_judge", "highcourt123", "highcourt@dcm.com", User.Role.JUDGE);
+                highCourtJudge.setFirstName("Justice");
+                highCourtJudge.setLastName("Rajendra Kumar");
+                highCourtJudge.setCourtLevel(User.CourtLevel.HIGH);
+                userService.createUser(highCourtJudge);
+            }
+
+            // Create Supreme Court judge
+            if (!userService.findByUsername("supremecourt_judge").isPresent()) {
+                User supremeCourtJudge = new User("supremecourt_judge", "supremecourt123", "supremecourt@dcm.com", User.Role.JUDGE);
+                supremeCourtJudge.setFirstName("Chief Justice");
+                supremeCourtJudge.setLastName("Arun Mishra");
+                supremeCourtJudge.setCourtLevel(User.CourtLevel.SUPREME);
+                userService.createUser(supremeCourtJudge);
             }
 
             // Create sample clerk

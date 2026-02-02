@@ -111,8 +111,17 @@ The frontend will start on `http://localhost:3000`
 
 1. **Open your browser** and navigate to `http://localhost:3000`
 2. **Default Credentials**:
-   - **Username**: `admin`
-   - **Password**: `admin123`
+
+#### Administrative Users
+- **Admin**: `admin` / `admin123` (Full system access)
+
+#### Judicial Users (Court-Level Specific)
+- **District Court Judge**: `judge1` / `judge123` (District Court cases only)
+- **High Court Judge**: `highcourt_judge` / `highcourt123` (High Court cases only)
+- **Supreme Court Judge**: `supremecourt_judge` / `supremecourt123` (Supreme Court cases only)
+
+#### Support Staff
+- **Clerk**: `clerk1` / `clerk123` (Case creation and basic operations)
 
 ### Key Workflows
 
