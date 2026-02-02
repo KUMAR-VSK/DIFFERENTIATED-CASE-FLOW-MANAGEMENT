@@ -469,6 +469,20 @@ public class CaseService {
         return caseRepository.findTop5ByOrderByFilingDateDesc();
     }
 
+    // Get next case number preview (for filing form)
+    public String getNextCaseNumberPreview() {
+        // Get the highest existing case sequence
+        Integer maxSequence = caseRepository.findMaxCaseSequence();
+        
+        // Calculate next sequence number
+        int nextSequence = (maxSequence == null) ? 1 : maxSequence + 1;
+        
+        // Generate the preview case number format: CASE-YYYY-NNNN
+        String year = String.valueOf(java.time.LocalDateTime.now().getYear());
+        return String.format("CASE-%s-%04d", year, nextSequence);
+    }
+
+
     // ========== COURT ESCALATION METHODS ==========
 
     /**

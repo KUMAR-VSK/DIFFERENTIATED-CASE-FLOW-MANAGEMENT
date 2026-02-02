@@ -618,47 +618,96 @@ const CaseDetail = () => {
       />
 
       {toast && (
-        <div className="fixed top-4 right-4 z-50">
-          <div className={`max-w-sm w-full bg-white shadow-lg rounded-lg pointer-events-auto ring-1 ring-black ring-opacity-5 ${toast.type === 'error' ? 'border-red-200' : 'border-green-200'
-            }`}>
+        <div className="fixed top-6 right-6 z-[9999] animate-slide-in-right">
+          <div
+            className={`
+              min-w-[320px] max-w-md 
+              bg-white dark:bg-slate-800 
+              rounded-xl shadow-2xl 
+              border-l-4
+              ${toast.type === 'error'
+                ? 'border-l-red-500'
+                : 'border-l-green-500'
+              }
+              transform transition-all duration-300 ease-out
+              hover:scale-105
+            `}
+          >
             <div className="p-4">
-              <div className="flex items-start">
-                <div className="flex-shrink-0">
+              <div className="flex items-start gap-3">
+                {/* Icon */}
+                <div className={`
+                  flex-shrink-0 mt-0.5
+                  w-8 h-8 rounded-full flex items-center justify-center
+                  ${toast.type === 'error'
+                    ? 'bg-red-100 dark:bg-red-900/30'
+                    : 'bg-green-100 dark:bg-green-900/30'
+                  }
+                `}>
                   {toast.type === 'error' ? (
-                    <svg className="h-6 w-6 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                    <svg className="w-5 h-5 text-red-600 dark:text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   ) : (
-                    <svg className="h-6 w-6 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    <svg className="w-5 h-5 text-green-600 dark:text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
                   )}
                 </div>
-                <div className="ml-3 w-0 flex-1 pt-0.5">
-                  <p className={`text-sm font-medium ${toast.type === 'error' ? 'text-red-800' : 'text-green-800'
-                    }`}>
+
+                {/* Content */}
+                <div className="flex-1 min-w-0">
+                  <p className={`
+                    text-sm font-semibold mb-0.5
+                    ${toast.type === 'error'
+                      ? 'text-red-900 dark:text-red-100'
+                      : 'text-green-900 dark:text-green-100'
+                    }
+                  `}>
                     {toast.type === 'error' ? 'Error' : 'Success'}
                   </p>
-                  <p className={`mt-1 text-sm ${toast.type === 'error' ? 'text-red-700' : 'text-green-700'
-                    }`}>
+                  <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
                     {toast.message}
                   </p>
                 </div>
-                <div className="ml-4 flex-shrink-0 flex">
-                  <button
-                    onClick={() => setToast(null)}
-                    className={`inline-flex rounded-md p-1.5 focus:outline-none focus:ring-2 focus:ring-offset-2 ${toast.type === 'error'
-                      ? 'text-red-500 hover:bg-red-50 focus:ring-red-600'
-                      : 'text-green-500 hover:bg-green-50 focus:ring-green-600'
-                      }`}
-                  >
-                    <span className="sr-only">Dismiss</span>
-                    <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-                    </svg>
-                  </button>
-                </div>
+
+                {/* Close Button */}
+                <button
+                  onClick={() => setToast(null)}
+                  className={`
+                    flex-shrink-0 
+                    w-7 h-7 rounded-lg
+                    flex items-center justify-center
+                    transition-colors duration-200
+                    ${toast.type === 'error'
+                      ? 'text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30'
+                      : 'text-green-400 hover:bg-green-100 dark:hover:bg-green-900/30'
+                    }
+                    focus:outline-none focus:ring-2 
+                    ${toast.type === 'error' ? 'focus:ring-red-500' : 'focus:ring-green-500'}
+                  `}
+                  aria-label="Dismiss"
+                >
+                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                  </svg>
+                </button>
               </div>
+            </div>
+
+            {/* Progress bar */}
+            <div className={`
+              h-1 rounded-b-xl
+              ${toast.type === 'error' ? 'bg-red-500/20' : 'bg-green-500/20'}
+            `}>
+              <div
+                className={`
+                  h-full rounded-b-xl
+                  ${toast.type === 'error' ? 'bg-red-500' : 'bg-green-500'}
+                  animate-progress
+                `}
+                style={{ animationDuration: '4000ms' }}
+              />
             </div>
           </div>
         </div>

@@ -269,6 +269,21 @@ public class CaseController {
         }
     }
 
+    // Get next case number preview (for case filing form)
+    @GetMapping("/next-case-number")
+    public ResponseEntity<Map<String, Object>> getNextCaseNumber() {
+        try {
+            String nextCaseNumber = caseService.getNextCaseNumberPreview();
+            return ResponseEntity.ok(Map.of(
+                "nextCaseNumber", nextCaseNumber,
+                "format", "CASE-YYYY-NNNN"
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(Map.of("error", "Failed to get next case number"));
+        }
+    }
+
+
     // ========== COURT ESCALATION ENDPOINTS ==========
 
     // Get cases by court level
