@@ -58,7 +58,10 @@ const CaseDocuments = ({ documents, user, setShowUploadModal }) => {
                             </div>
                             <div className="mt-4 flex justify-end gap-3">
                                 <button
-                                    onClick={() => window.open(doc.url, '_blank')}
+                                    onClick={() => {
+                                        const url = doc.url.startsWith('http') ? doc.url : `http://localhost:8080${doc.url}`;
+                                        window.open(url, '_blank');
+                                    }}
                                     className="text-blue-600 hover:text-blue-800 text-sm font-medium"
                                 >
                                     View

@@ -200,7 +200,7 @@ public class CaseController {
 
     // Add or update case notes
     @PutMapping("/{id}/notes")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('JUDGE') or hasRole('CLERK')")
+    @PreAuthorize("hasRole('JUDGE')")
     public ResponseEntity<Case> updateCaseNotes(@PathVariable Long id, @RequestBody Map<String, String> request) {
         try {
             String notes = request.get("notes");

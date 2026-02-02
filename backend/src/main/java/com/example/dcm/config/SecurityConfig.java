@@ -32,6 +32,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(authz -> authz
                 .requestMatchers("/h2-console/**").permitAll()
                 .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/sample-documents/**").permitAll()
                 .anyRequest().authenticated()
             )
             .httpBasic(httpBasic -> {})

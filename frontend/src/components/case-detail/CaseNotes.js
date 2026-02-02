@@ -10,7 +10,7 @@ const CaseNotes = ({ notes, user, setShowNoteModal }) => {
                     </svg>
                     Case Notes ({notes.length})
                 </h2>
-                {user.role === 'ADMIN' || user.role === 'JUDGE' || user.role === 'CLERK' ? (
+                {user.role?.toUpperCase() === 'JUDGE' ? (
                     <button
                         onClick={() => setShowNoteModal(true)}
                         className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors duration-200"
