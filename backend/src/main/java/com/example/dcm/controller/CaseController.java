@@ -298,32 +298,43 @@ public class CaseController {
     // Escalate a case to higher court (Judge or Admin only)
     @PostMapping("/{id}/escalate")
     @PreAuthorize("hasRole('ADMIN') or hasRole('JUDGE')")
-    public ResponseEntity<?> escalateCase(
-            @PathVariable Long id,
-            @RequestBody Map<String, String> request,
-            Authentication authentication) {
+    public ResponseEntity<?> escalateCase(@PathVariable Long id, @RequestBody Map<String, String> request) {
         try {
             String reason = request.get("reason");
             if (reason == null || reason.trim().isEmpty()) {
-                return ResponseEntity.badRequest().body(Map.of("message", "Escalation reason is required"));
+                return ResponseEntity.badRequest().body(Map.of("error", "Escalation reason is required"));
             }
+
             Case escalatedCase = caseService.escalateCase(id, reason);
-            return ResponseEntity.ok(escalatedCase);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
-        } catch (IllegalStateException e) {
-            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+            
+            return ResponseEntity.ok(Map.of(
+                "message", "Case escalated successfully to " + escalatedCase.getCourtLevel().getDisplayName(),
+                "case", escalatedCase
+            ));
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().body(Map.of("message", "Failed to escalate case: " + e.getMessage()));
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
 
-    // Check if a case can be escalated to Supreme Court (Admin or Judge only)
-    @GetMapping("/{id}/escalation-eligibility")
+    // De-escalate a case to lower court (Admin or Judge only)
+    @PostMapping("/{id}/deescalate")
     @PreAuthorize("hasRole('ADMIN') or hasRole('JUDGE')")
-    public ResponseEntity<CaseService.EscalationEligibility> getEscalationEligibility(@PathVariable Long id) {
-        CaseService.EscalationEligibility eligibility = caseService.getEscalationEligibility(id);
-        return ResponseEntity.ok(eligibility);
+    public ResponseEntity<?> deescalateCase(@PathVariable Long id, @RequestBody Map<String, String> request) {
+        try {
+            String reason = request.get("reason");
+            if (reason == null || reason.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "De-escalation reason is required"));
+            }
+
+            Case deescalatedCase = caseService.deescalateCase(id, reason);
+            
+            return ResponseEntity.ok(Map.of(
+                "message", "Case de-escalated successfully to " + deescalatedCase.getCourtLevel().getDisplayName(),
+                "case", deescalatedCase
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
     }
 
     // Check if a case can be escalated to Supreme Court specifically (Admin or Judge only)
@@ -342,29 +353,6 @@ public class CaseController {
     }
 
     // ========== DE-ESCALATION ENDPOINTS ==========
-
-    // De-escalate a case to lower court (Admin or Judge only)
-    @PostMapping("/{id}/deescalate")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('JUDGE')")
-    public ResponseEntity<?> deescalateCase(
-            @PathVariable Long id,
-            @RequestBody Map<String, String> request,
-            Authentication authentication) {
-        try {
-            String reason = request.get("reason");
-            if (reason == null || reason.trim().isEmpty()) {
-                return ResponseEntity.badRequest().body(Map.of("message", "De-escalation reason is required"));
-            }
-            Case deescalatedCase = caseService.deescalateCase(id, reason);
-            return ResponseEntity.ok(deescalatedCase);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
-        } catch (IllegalStateException e) {
-            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().body(Map.of("message", "Failed to de-escalate case: " + e.getMessage()));
-        }
-    }
 
     // Check if a case can be de-escalated (Admin or Judge only)
     @GetMapping("/{id}/deescalation-eligibility")

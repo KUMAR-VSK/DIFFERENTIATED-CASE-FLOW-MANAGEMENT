@@ -845,13 +845,15 @@ const CaseDetail = () => {
                     {(user.role === 'ADMIN' || user.role === 'JUDGE') ? (
                       <button
                         onClick={() => setShowEscalateModal(true)}
-                        disabled={actionLoading || caseData.courtLevel === 'HIGH'}
+                        disabled={actionLoading || caseData.courtLevel === 'SUPREME'}
                         className="w-full bg-red-600 text-white px-4 py-3 rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 text-sm font-medium flex items-center justify-center shadow-md"
                       >
                         <svg className="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 10l7-7m0 0l7 7m-7-7v18" />
                         </svg>
-                        {caseData.courtLevel === 'HIGH' ? 'Already at Highest Court' : 'Escalate to High Court'}
+                        {caseData.courtLevel === 'SUPREME' ? 'Already at Supreme Court' : 
+                         caseData.courtLevel === 'HIGH' ? 'Escalate to Supreme Court' : 
+                         'Escalate to Higher Court'}
                       </button>
                     ) : (
                       <div className="w-full bg-gray-100 dark:bg-slate-700 text-gray-400 dark:text-gray-500 px-4 py-3 rounded-lg text-sm font-medium flex items-center justify-center border-2 border-dashed border-gray-300 dark:border-gray-600">
