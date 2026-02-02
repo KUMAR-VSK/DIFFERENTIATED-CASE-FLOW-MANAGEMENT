@@ -48,6 +48,9 @@ const CaseDetail = () => {
   const [showEscalateModal, setShowEscalateModal] = useState(false);
   const [escalationReason, setEscalationReason] = useState('');
   const [escalationLoading, setEscalationLoading] = useState(false);
+  const [showDeescalateModal, setShowDeescalateModal] = useState(false);
+  const [deescalationReason, setDeescalationReason] = useState('');
+  const [deescalationLoading, setDeescalationLoading] = useState(false);
 
   useEffect(() => {
     const fetchCase = async () => {
@@ -389,6 +392,51 @@ const CaseDetail = () => {
       showToast(errorMessage, 'error');
     } finally {
       setEscalationLoading(false);
+    }
+  };
+
+  const handleDeescalateCase = async () => {
+    if (!deescalationReason.trim()) {
+      showToast('Please enter a reason for de-escalation', 'error');
+      return;
+    }
+
+    setDeescalationLoading(true);
+    try {
+      await axios.post(`http://localhost:8080/api/cases/${id}/deescalate`, {
+        reason: deescalationReason
+      });
+
+      // Refresh case data to show updated case
+      const response = await axios.get(`http://localhost:8080/api/cases/${id}`);
+      setCaseData(response.data);
+      
+      // Update notes state with newly parsed notes
+      const parsedNotes = parseNotes(response.data.notes);
+      setNotes(parsedNotes);
+      
+      // Update documents state with newly parsed documents
+      if (response.data.documents) {
+        try {
+          const parsedDocuments = JSON.parse(response.data.documents);
+          setDocuments(parsedDocuments);
+        } catch (error) {
+          console.error('Error parsing documents:', error);
+          setDocuments([]);
+        }
+      } else {
+        setDocuments([]);
+      }
+
+      setShowDeescalateModal(false);
+      setDeescalationReason('');
+      showToast('Case de-escalated successfully');
+    } catch (error) {
+      console.error('Error de-escalating case:', error);
+      const errorMessage = error.response?.data?.message || 'Failed to de-escalate case';
+      showToast(errorMessage, 'error');
+    } finally {
+      setDeescalationLoading(false);
     }
   };
 
@@ -811,6 +859,27 @@ const CaseDetail = () => {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 10l7-7m0 0l7 7m-7-7v18" />
                         </svg>
                         Escalate (Admin/Judge Only)
+                      </div>
+                    )}
+
+                    {/* De-escalate Case - ADMIN/JUDGE only */}
+                    {(user.role === 'ADMIN' || user.role === 'JUDGE') ? (
+                      <button
+                        onClick={() => setShowDeescalateModal(true)}
+                        disabled={actionLoading || caseData.courtLevel === 'SUBORDINATE'}
+                        className="w-full bg-blue-600 text-white px-4 py-3 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 text-sm font-medium flex items-center justify-center shadow-md"
+                      >
+                        <svg className="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                        </svg>
+                        {caseData.courtLevel === 'SUBORDINATE' ? 'Already at Lowest Court' : 'De-escalate to Lower Court'}
+                      </button>
+                    ) : (
+                      <div className="w-full bg-gray-100 dark:bg-slate-700 text-gray-400 dark:text-gray-500 px-4 py-3 rounded-lg text-sm font-medium flex items-center justify-center border-2 border-dashed border-gray-300 dark:border-gray-600">
+                        <svg className="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                        </svg>
+                        De-escalate (Admin/Judge Only)
                       </div>
                     )}
 
@@ -1612,6 +1681,58 @@ const CaseDetail = () => {
                   className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {escalationLoading ? 'Escalating...' : 'Confirm Escalation'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* De-escalate Case Modal */}
+      {showDeescalateModal && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 dark:bg-black/70 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white dark:bg-slate-800 dark:border-slate-700 transition-colors">
+            <div className="mt-3">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">De-escalate Case to Lower Court</h3>
+              <div className="mb-4">
+                <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md p-3 mb-4">
+                  <p className="text-sm text-blue-800 dark:text-blue-200">
+                    <strong>Current Court Level:</strong> {caseData.courtLevel}
+                  </p>
+                  <p className="text-sm text-blue-800 dark:text-blue-200 mt-1">
+                    <strong>New Court Level:</strong> {caseData.courtLevel === 'HIGH' ? 'DISTRICT' : 'SUBORDINATE'}
+                  </p>
+                </div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                  Reason for De-escalation
+                </label>
+                <textarea
+                  value={deescalationReason}
+                  onChange={(e) => setDeescalationReason(e.target.value)}
+                  rows={4}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-slate-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
+                  placeholder="Enter the reason for de-escalating this case to a lower court..."
+                />
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                  Provide a detailed explanation for why this case should be de-escalated to a lower court.
+                </p>
+              </div>
+              <div className="flex justify-end gap-3">
+                <button
+                  onClick={() => {
+                    setShowDeescalateModal(false);
+                    setDeescalationReason('');
+                  }}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-md hover:bg-gray-200 dark:hover:bg-slate-600"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleDeescalateCase}
+                  disabled={!deescalationReason.trim() || deescalationLoading}
+                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {deescalationLoading ? 'De-escalating...' : 'Confirm De-escalation'}
                 </button>
               </div>
             </div>

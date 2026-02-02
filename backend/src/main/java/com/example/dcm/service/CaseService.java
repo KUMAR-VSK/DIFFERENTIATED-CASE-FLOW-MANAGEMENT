@@ -594,6 +594,89 @@ public class CaseService {
     }
 
     /**
+     * De-escalate a case to a lower court level (e.g., Supreme Court to District Court)
+     */
+    public Case deescalateCase(Long caseId, String reason) {
+        Case caseEntity = caseRepository.findById(caseId)
+                .orElseThrow(() -> new IllegalArgumentException("Case not found"));
+
+        Case.CourtLevel currentLevel = caseEntity.getCourtLevel();
+        if (currentLevel == null) {
+            currentLevel = Case.CourtLevel.DISTRICT;
+        }
+
+        // Check if can de-escalate (must be at Supreme Court level)
+        if (currentLevel != Case.CourtLevel.SUPREME) {
+            throw new IllegalStateException("Case can only be de-escalated from Supreme Court level");
+        }
+
+        // De-escalate to District Court (reset to base level)
+        Case.CourtLevel targetLevel = Case.CourtLevel.DISTRICT;
+
+        // Update case with new court level
+        caseEntity.setCourtLevel(targetLevel);
+        caseEntity.setEscalationReason("De-escalated: " + reason);
+        caseEntity.setEscalationDate(LocalDateTime.now());
+        caseEntity.setStatus(Case.Status.FILED); // Reset status to filed
+
+        // Reset priority to base level (decrease by 2 points, minimum 1)
+        int newPriority = Math.max(caseEntity.getPriority() - 2, 1);
+        caseEntity.setPriority(newPriority);
+
+        // Generate new case number without court level suffix
+        generateSequentialCaseNumber(caseEntity);
+
+        // Clear assigned judge (new court will assign their own judge)
+        caseEntity.setAssignedJudge(null);
+
+        return caseRepository.save(caseEntity);
+    }
+
+    /**
+     * Get previous court level for de-escalation
+     */
+    public Case.CourtLevel getPreviousCourtLevel(Case.CourtLevel currentLevel) {
+        if (currentLevel == null) {
+            return null;
+        }
+
+        return switch (currentLevel) {
+            case SUPREME -> Case.CourtLevel.HIGH;
+            case HIGH -> Case.CourtLevel.DISTRICT;
+            case DISTRICT -> null; // District is the lowest level
+        };
+    }
+
+    /**
+     * Check if a case can be de-escalated
+     */
+    public boolean canDeescalateCase(Case caseEntity) {
+        // Can only de-escalate from Supreme Court
+        return caseEntity.getCourtLevel() == Case.CourtLevel.SUPREME;
+    }
+
+    /**
+     * Get de-escalation eligibility details for a specific case
+     */
+    public DeescalationEligibility getDeescalationEligibility(Long caseId) {
+        Case caseEntity = caseRepository.findById(caseId)
+                .orElseThrow(() -> new IllegalArgumentException("Case not found"));
+
+        DeescalationEligibility eligibility = new DeescalationEligibility();
+        eligibility.setCaseId(caseId);
+        eligibility.setCurrentCourtLevel(caseEntity.getCourtLevel());
+        eligibility.setCurrentStatus(caseEntity.getStatus());
+        eligibility.setCanDeescalate(canDeescalateCase(caseEntity));
+
+        // Check de-escalation reasons
+        if (caseEntity.getCourtLevel() == Case.CourtLevel.SUPREME) {
+            eligibility.getEligibilityReasons().add("Case is at Supreme Court level - eligible for de-escalation");
+        }
+
+        return eligibility;
+    }
+
+    /**
      * Get cases by court level
      */
     public List<Case> getCasesByCourtLevel(Case.CourtLevel courtLevel) {
@@ -720,6 +803,31 @@ public class CaseService {
 
         public boolean isCanEscalateToSupremeCourt() { return canEscalateToSupremeCourt; }
         public void setCanEscalateToSupremeCourt(boolean canEscalateToSupremeCourt) { this.canEscalateToSupremeCourt = canEscalateToSupremeCourt; }
+
+        public List<String> getEligibilityReasons() { return eligibilityReasons; }
+        public void setEligibilityReasons(List<String> eligibilityReasons) { this.eligibilityReasons = eligibilityReasons; }
+    }
+
+    // Inner class for de-escalation eligibility
+    public static class DeescalationEligibility {
+        private Long caseId;
+        private Case.CourtLevel currentCourtLevel;
+        private Case.Status currentStatus;
+        private boolean canDeescalate;
+        private List<String> eligibilityReasons = new java.util.ArrayList<>();
+
+        // Getters and Setters
+        public Long getCaseId() { return caseId; }
+        public void setCaseId(Long caseId) { this.caseId = caseId; }
+
+        public Case.CourtLevel getCurrentCourtLevel() { return currentCourtLevel; }
+        public void setCurrentCourtLevel(Case.CourtLevel currentCourtLevel) { this.currentCourtLevel = currentCourtLevel; }
+
+        public Case.Status getCurrentStatus() { return currentStatus; }
+        public void setCurrentStatus(Case.Status currentStatus) { this.currentStatus = currentStatus; }
+
+        public boolean isCanDeescalate() { return canDeescalate; }
+        public void setCanDeescalate(boolean canDeescalate) { this.canDeescalate = canDeescalate; }
 
         public List<String> getEligibilityReasons() { return eligibilityReasons; }
         public void setEligibilityReasons(List<String> eligibilityReasons) { this.eligibilityReasons = eligibilityReasons; }

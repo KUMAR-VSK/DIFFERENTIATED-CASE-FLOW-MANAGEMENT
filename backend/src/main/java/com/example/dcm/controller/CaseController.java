@@ -341,6 +341,73 @@ public class CaseController {
         }
     }
 
+    // ========== DE-ESCALATION ENDPOINTS ==========
+
+    // De-escalate a case to lower court (Admin or Judge only)
+    @PostMapping("/{id}/deescalate")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('JUDGE')")
+    public ResponseEntity<?> deescalateCase(
+            @PathVariable Long id,
+            @RequestBody Map<String, String> request,
+            Authentication authentication) {
+        try {
+            String reason = request.get("reason");
+            if (reason == null || reason.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("message", "De-escalation reason is required"));
+            }
+            Case deescalatedCase = caseService.deescalateCase(id, reason);
+            return ResponseEntity.ok(deescalatedCase);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(Map.of("message", "Failed to de-escalate case: " + e.getMessage()));
+        }
+    }
+
+    // Check if a case can be de-escalated (Admin or Judge only)
+    @GetMapping("/{id}/deescalation-eligibility")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('JUDGE')")
+    public ResponseEntity<CaseService.DeescalationEligibility> getDeescalationEligibility(@PathVariable Long id) {
+        CaseService.DeescalationEligibility eligibility = caseService.getDeescalationEligibility(id);
+        return ResponseEntity.ok(eligibility);
+    }
+
+    // Check if a case can be de-escalated (Admin or Judge only)
+    @GetMapping("/{id}/can-deescalate")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('JUDGE')")
+    public ResponseEntity<Map<String, Boolean>> canDeescalateCase(@PathVariable Long id) {
+        try {
+            Case caseEntity = caseService.getCaseById(id)
+                    .orElseThrow(() -> new IllegalArgumentException("Case not found"));
+            
+            boolean canDeescalate = caseService.canDeescalateCase(caseEntity);
+            return ResponseEntity.ok(Map.of("canDeescalate", canDeescalate));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    // Get previous court level for de-escalation (Admin or Judge only)
+    @GetMapping("/{id}/previous-court-level")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('JUDGE')")
+    public ResponseEntity<Map<String, Object>> getPreviousCourtLevel(@PathVariable Long id) {
+        try {
+            Case caseEntity = caseService.getCaseById(id)
+                    .orElseThrow(() -> new IllegalArgumentException("Case not found"));
+            
+            Case.CourtLevel previousLevel = caseService.getPreviousCourtLevel(caseEntity.getCourtLevel());
+            return ResponseEntity.ok(Map.of(
+                "currentCourtLevel", caseEntity.getCourtLevel(),
+                "previousCourtLevel", previousLevel,
+                "canDeescalate", previousLevel != null
+            ));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
     // ========== DOCUMENT MANAGEMENT ENDPOINTS ==========
 
     // Upload document (Clerk, Judge, Admin)

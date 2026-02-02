@@ -56,19 +56,28 @@ const UserManagement = () => {
 
     try {
       setActionLoading(true);
+      
+      // Prepare data for API request
+      const requestData = {
+        ...formData,
+        // Ensure court level is only sent for judges
+        courtLevel: formData.role === 'JUDGE' ? formData.courtLevel : undefined
+      };
+
       if (editingUser) {
         // Update existing user
-        await axios.put(`http://localhost:8080/api/auth/users/${editingUser.id}`, formData);
+        await axios.put(`http://localhost:8080/api/auth/users/${editingUser.id}`, requestData);
         setSuccess('User updated successfully!');
       } else {
         // Create new user
-        await axios.post('http://localhost:8080/api/auth/users', formData);
+        await axios.post('http://localhost:8080/api/auth/users', requestData);
         setSuccess('User created successfully!');
       }
       
       resetForm();
       fetchUsers();
     } catch (error) {
+      console.error('Error saving user:', error);
       setError(error.response?.data?.message || error.response?.data || 'Failed to save user');
     } finally {
       setActionLoading(false);
