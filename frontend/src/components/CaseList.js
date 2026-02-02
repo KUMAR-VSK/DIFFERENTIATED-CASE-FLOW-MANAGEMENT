@@ -287,6 +287,21 @@ const CaseList = () => {
     }
   };
 
+  const getCourtLevelColor = (courtLevel) => {
+    switch (courtLevel) {
+      case 'SUBORDINATE':
+        return 'bg-gray-100 text-gray-800 border-gray-200';
+      case 'DISTRICT':
+        return 'bg-blue-100 text-blue-800 border-blue-200';
+      case 'HIGH':
+        return 'bg-purple-100 text-purple-800 border-purple-200';
+      case 'SUPREME':
+        return 'bg-red-100 text-red-800 border-red-200';
+      default:
+        return 'bg-gray-100 text-gray-800 border-gray-200';
+    }
+  };
+
   const getPriorityColor = (priority) => {
     if (priority >= 9) return 'bg-red-100 text-red-800 border-red-200';
     if (priority >= 7) return 'bg-orange-100 text-orange-800 border-orange-200';
@@ -651,6 +666,20 @@ const CaseList = () => {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                     <span>Judge: {caseItem.assignedJudge.firstName} {caseItem.assignedJudge.lastName}</span>
+                  </div>
+                )}
+
+                {/* Court Level */}
+                {caseItem.courtLevel && (
+                  <div className="flex items-center space-x-2 text-sm text-gray-500">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
+                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${
+                      getCourtLevelColor(caseItem.courtLevel)
+                    }`}>
+                      {caseItem.courtLevel}
+                    </span>
                   </div>
                 )}
 
