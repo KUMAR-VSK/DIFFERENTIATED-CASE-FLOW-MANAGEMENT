@@ -135,10 +135,13 @@ const CaseDetail = () => {
       return;
     }
 
-    // datetime-local gives us a string like "2026-02-11T14:30"
-    // We need to convert this to an ISO string for the backend
-    const today = new Date();
+    // datetime-local gives us a string like "2026-02-13T14:30"
+    // This is EXACTLY what the backend LocalDateTime expects!
+    // DO NOT convert to Date object or use toISOString() - it causes timezone shifts
+
+    // Validate the date is in the future
     const selectedDate = new Date(hearingDate);
+    const today = new Date();
 
     if (selectedDate <= today) {
       showToast('Hearing date must be in the future', 'error');
@@ -147,11 +150,10 @@ const CaseDetail = () => {
 
     setActionLoading(true);
     try {
-      // Format as ISO string without milliseconds and Z (backend expects LocalDateTime)
-      const isoString = selectedDate.toISOString().split('.')[0];
-
+      // Send the datetime-local string directly - no conversion needed!
+      // Format is already "YYYY-MM-DDTHH:MM" which matches LocalDateTime
       await axios.put(`http://localhost:8080/api/cases/${id}/schedule`, {
-        hearingDate: isoString
+        hearingDate: hearingDate  // Send the string directly!
       });
 
       // Refresh case data
