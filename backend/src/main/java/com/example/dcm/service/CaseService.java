@@ -226,6 +226,11 @@ public class CaseService {
         return caseRepository.findByPriorityGreaterThanEqual(8);
     }
 
+    // Get all scheduled hearings for calendar view
+    public List<Case> getAllScheduledHearings() {
+        return caseRepository.findAllScheduledHearings();
+    }
+
     // Update case priority
     public Case updatePriority(Long caseId) {
         Case caseEntity = caseRepository.findById(caseId)

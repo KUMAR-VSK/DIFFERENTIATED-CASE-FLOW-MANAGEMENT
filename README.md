@@ -64,6 +64,16 @@ The Differentiated Case Flow Management System is a full-stack web application t
 - **Hearing Scheduling**: Schedule and track hearing dates
 - **Search & Filter**: Advanced filtering by status, type, priority, and court level
 
+### 📅 Interactive Hearing Calendar
+- **Visual Schedule**: Beautiful calendar view of all scheduled hearings
+- **Multiple Views**: Month, Week, Day, and List view modes
+- **Color-Coded Priority**: Red (High), Orange (Medium), Green (Low) for instant priority recognition
+- **Court Level Indicators**: Color-coded borders for District, High, and Supreme courts
+- **Quick Details**: Click any hearing to view case information in a modal
+- **Statistics Dashboard**: Real-time stats for total hearings, high priority, and upcoming this week
+- **Dark Mode Compatible**: Fully themed calendar with smooth dark mode transitions
+- **Responsive Design**: Works seamlessly on desktop, tablet, and mobile devices
+
 ## 🛠 Technology Stack
 
 ### Backend

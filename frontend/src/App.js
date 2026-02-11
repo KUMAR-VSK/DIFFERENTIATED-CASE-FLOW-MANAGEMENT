@@ -12,6 +12,7 @@ import CaseDetail from './components/CaseDetail';
 import Reports from './components/Reports';
 import Navigation from './components/Navigation';
 import UserManagement from './components/UserManagement';
+import HearingCalendar from './components/HearingCalendar';
 
 // Protected Route Component
 const ProtectedRoute = ({ children, allowedRoles = [] }) => {
@@ -96,6 +97,14 @@ function App() {
                   element={
                     <ProtectedRoute>
                       <Reports />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/calendar"
+                  element={
+                    <ProtectedRoute>
+                      <HearingCalendar />
                     </ProtectedRoute>
                   }
                 />

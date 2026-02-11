@@ -111,3 +111,74 @@
 .animate-progress {
   animation: progress 4s linear forwards;
 }
+
+/* FullCalendar Dark Mode Styles */
+.dark .fc {
+  color: #e2e8f0;
+}
+
+.dark .fc-theme-standard td,
+.dark .fc-theme-standard th {
+  border-color: #475569;
+}
+
+.dark .fc-theme-standard .fc-scrollgrid {
+  border-color: #475569;
+}
+
+.dark .fc .fc-col-header-cell {
+  background-color: #1e293b;
+  color: #e2e8f0;
+}
+
+.dark .fc .fc-daygrid-day {
+  background-color: #0f172a;
+}
+
+.dark .fc .fc-daygrid-day:hover {
+  background-color: #1e293b;
+}
+
+.dark .fc .fc-daygrid-day-number {
+  color: #cbd5e1;
+}
+
+.dark .fc .fc-toolbar-title {
+  color: #f1f5f9;
+}
+
+.dark .fc-button {
+  background-color: #475569 !important;
+  border-color: #64748b !important;
+  color: #f1f5f9 !important;
+}
+
+.dark .fc-button:hover {
+  background-color: #64748b !important;
+}
+
+.dark .fc-button-active {
+  background-color: #3b82f6 !important;
+  border-color: #3b82f6 !important;
+}
+
+.dark .fc-today-button:disabled {
+  opacity: 0.5;
+}
+
+.dark .fc .fc-list-event:hover td {
+  background-color: #1e293b;
+}
+
+.dark .fc .fc-list-day-cushion {
+  background-color: #1e293b;
+}
+
+.dark .fc .fc-popover {
+  background-color: #1e293b;
+  border-color: #475569;
+}
+
+.dark .fc .fc-event {
+  border-width: 2px;
+}

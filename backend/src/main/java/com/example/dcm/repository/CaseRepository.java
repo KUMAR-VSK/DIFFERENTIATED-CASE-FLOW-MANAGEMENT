@@ -58,4 +58,8 @@ public interface CaseRepository extends JpaRepository<Case, Long> {
 
     // Find cases by original case ID (for tracking escalations)
     List<Case> findByOriginalCaseId(Long originalCaseId);
+
+    // Find all cases with scheduled hearings for calendar view
+    @Query("SELECT c FROM Case c WHERE c.hearingDate IS NOT NULL ORDER BY c.hearingDate ASC")
+    List<Case> findAllScheduledHearings();
 }

@@ -171,6 +171,14 @@ public class CaseController {
         return ResponseEntity.ok(cases);
     }
 
+    // Get all scheduled hearings for calendar view
+    @GetMapping("/hearings")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('JUDGE') or hasRole('CLERK')")
+    public ResponseEntity<List<Case>> getAllHearings() {
+        List<Case> cases = caseService.getAllScheduledHearings();
+        return ResponseEntity.ok(cases);
+    }
+
     // Update case priority
     @PutMapping("/{id}/priority")
     @PreAuthorize("hasRole('ADMIN') or hasRole('CLERK')")

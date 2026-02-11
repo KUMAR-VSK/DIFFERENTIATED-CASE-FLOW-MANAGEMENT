@@ -75,6 +75,12 @@ const Navigation = () => {
                 >
                   Cases
                 </Link>
+                <Link
+                  to="/calendar"
+                  className="text-slate-300 hover:text-white hover:bg-slate-800 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200"
+                >
+                  📅 Calendar
+                </Link>
                 {user.role === 'ADMIN' && (
                   <Link
                     to="/users"
@@ -106,11 +112,10 @@ const Navigation = () => {
               {/* Theme Toggle Button */}
               <button
                 onClick={toggleDarkMode}
-                className={`p-2 rounded-md transition-all duration-200 ${
-                  darkMode
-                    ? 'text-yellow-400 bg-slate-800 hover:bg-slate-700 hover:text-yellow-300'
-                    : 'text-slate-300 hover:text-white hover:bg-slate-800'
-                }`}
+                className={`p-2 rounded-md transition-all duration-200 ${darkMode
+                  ? 'text-yellow-400 bg-slate-800 hover:bg-slate-700 hover:text-yellow-300'
+                  : 'text-slate-300 hover:text-white hover:bg-slate-800'
+                  }`}
                 title={darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
               >
                 {darkMode ? (
@@ -163,6 +168,12 @@ const Navigation = () => {
               className="text-slate-300 hover:text-white hover:bg-slate-800 block px-3 py-2 rounded-md text-base font-medium transition-all duration-200"
             >
               Cases
+            </Link>
+            <Link
+              to="/calendar"
+              className="text-slate-300 hover:text-white hover:bg-slate-800 block px-3 py-2 rounded-md text-base font-medium transition-all duration-200"
+            >
+              📅 Calendar
             </Link>
           </div>
         </div>
