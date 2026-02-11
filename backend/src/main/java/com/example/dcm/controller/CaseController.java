@@ -480,4 +480,48 @@ public class CaseController {
             return ResponseEntity.internalServerError().body(Map.of("message", "Failed to retrieve audit history: " + e.getMessage()));
         }
     }
+
+    // ========== PRIORITY AGING ENDPOINTS ==========
+
+    // Manually recalculate priorities for all cases (applies aging)
+    @PostMapping("/recalculate-priorities")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> recalculateAllPriorities() {
+        try {
+            int updatedCount = caseService.recalculateAllCasePriorities();
+            return ResponseEntity.ok(Map.of(
+                "message", "Priorities recalculated successfully",
+                "updatedCases", updatedCount
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(Map.of("message", "Failed to recalculate priorities: " + e.getMessage()));
+        }
+    }
+
+    // Get priority aging information for a specific case
+    @GetMapping("/{id}/priority-aging")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('JUDGE') or hasRole('CLERK')")
+    public ResponseEntity<?> getCasePriorityAging(@PathVariable Long id) {
+        try {
+            Map<String, Object> agingInfo = caseService.getCasePriorityAgingInfo(id);
+            return ResponseEntity.ok(agingInfo);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(Map.of("message", "Failed to get priority aging info: " + e.getMessage()));
+        }
+    }
+
+    // Get priority aging configuration
+    @GetMapping("/priority-aging-config")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('JUDGE') or hasRole('CLERK')")
+    public ResponseEntity<?> getPriorityAgingConfig() {
+        return ResponseEntity.ok(Map.of(
+            "agingInterval", 30,
+            "description", "Cases gain 1 priority point every 30 days",
+            "formula", "Priority += floor(DaysSinceFiling / 30)",
+            "maxPriority", 10,
+            "minPriority", 1
+        ));
+    }
 }

@@ -1,5 +1,6 @@
 import React from 'react';
 import { getStatusColor, getCaseTypeColor, getPriorityColor } from '../../utils/caseHelpers';
+import PriorityAgingBadge from './PriorityAgingBadge';
 
 const CaseOverview = ({
     caseData,
@@ -159,7 +160,7 @@ const CaseOverview = ({
                             </span>
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Priority Level</label>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Priority Level</label>
                             <div className="flex items-center gap-3">
                                 <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border ${getPriorityColor(caseData.priority)}`}>
                                     Priority {caseData.priority}/10
@@ -179,6 +180,11 @@ const CaseOverview = ({
                                     </div>
                                 )}
                             </div>
+                            {/* Priority Aging Badge */}
+                            <PriorityAgingBadge
+                                caseId={caseData.id}
+                                currentPriority={caseData.priority}
+                            />
                         </div>
                         {caseData.resourceRequirement && (
                             <div>

@@ -868,4 +868,73 @@ public class CaseService {
         public List<String> getEligibilityReasons() { return eligibilityReasons; }
         public void setEligibilityReasons(List<String> eligibilityReasons) { this.eligibilityReasons = eligibilityReasons; }
     }
+
+    // ========== PRIORITY AGING SERVICE METHODS ==========
+
+    /**
+     * Manually recalculate priorities for all active cases
+     * Applies the Dynamic Priority Aging formula to all cases
+     */
+    public int recalculateAllCasePriorities() {
+        List<Case> allCases = caseRepository.findAll();
+        int updatedCount = 0;
+
+        for (Case caseEntity : allCases) {
+            // Skip completed and dismissed cases
+            if (caseEntity.getStatus() != Case.Status.COMPLETED &&
+                caseEntity.getStatus() != Case.Status.DISMISSED) {
+                
+                // Recalculate base priority
+                int basePriority = priorityEngine.calculatePriority(caseEntity);
+                caseEntity.setPriority(basePriority);
+                
+                // Apply aging adjustment
+                int adjustedPriority = priorityEngine.adjustPriorityForAge(caseEntity);
+                caseEntity.setPriority(adjustedPriority);
+                
+                updatedCount++;
+            }
+        }
+
+        // Save all updated cases
+        caseRepository.saveAll(allCases);
+        
+        return updatedCount;
+    }
+
+    /**
+     * Get detailed priority aging information for a specific case
+     */
+    public Map<String, Object> getCasePriorityAgingInfo(Long caseId) {
+        Case caseEntity = caseRepository.findById(caseId)
+                .orElseThrow(() -> new IllegalArgumentException("Case not found"));
+
+        // Calculate base priority (without aging)
+        int basePriority = priorityEngine.calculatePriority(caseEntity);
+        
+        // Get aging boost
+        int agingBoost = priorityEngine.getAgingBoost(caseEntity);
+        
+        // Get case age
+        long caseAgeDays = priorityEngine.getCaseAgeDays(caseEntity);
+        
+        // Calculate adjusted priority
+        int adjustedPriority = priorityEngine.adjustPriorityForAge(caseEntity);
+        
+        // Build response
+        Map<String, Object> agingInfo = new java.util.HashMap<>();
+        agingInfo.put("caseId", caseId);
+        agingInfo.put("caseNumber", caseEntity.getCaseNumber());
+        agingInfo.put("filingDate", caseEntity.getFilingDate());
+        agingInfo.put("caseAgeDays", caseAgeDays);
+        agingInfo.put("basePriority", basePriority);
+        agingInfo.put("agingBoost", agingBoost);
+        agingInfo.put("adjustedPriority", adjustedPriority);
+        agingInfo.put("currentPriority", caseEntity.getPriority());
+        agingInfo.put("status", caseEntity.getStatus());
+        agingInfo.put("agingFormula", "Priority += floor(DaysSinceFiling / 30)");
+        agingInfo.put("nextAgingBoostIn", 30 - (caseAgeDays % 30));
+        
+        return agingInfo;
+    }
 }

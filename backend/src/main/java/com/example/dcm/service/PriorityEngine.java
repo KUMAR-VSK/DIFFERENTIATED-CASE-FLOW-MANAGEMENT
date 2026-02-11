@@ -79,26 +79,56 @@ public class PriorityEngine {
     }
 
     // Dynamic priority adjustment based on case age and status
+    // Implements Priority Aging: Priority += floor(DaysSinceFiling / 30)
+    // This ensures older cases automatically gain priority over time
     public int adjustPriorityForAge(Case caseEntity) {
-        int currentPriority = caseEntity.getPriority();
+        int basePriority = caseEntity.getPriority();
 
-        // If case is old and still under review, increase priority
-        if (caseEntity.getStatus() == Case.Status.UNDER_REVIEW ||
-            caseEntity.getStatus() == Case.Status.FILED) {
-
-            long daysSinceFiling = java.time.Duration.between(
-                caseEntity.getFilingDate(),
-                java.time.LocalDateTime.now()
-            ).toDays();
-
-            if (daysSinceFiling > 30) {
-                currentPriority = Math.min(10, currentPriority + 1);
-            } else if (daysSinceFiling > 90) {
-                currentPriority = Math.min(10, currentPriority + 2);
-            }
+        // Only apply aging to active cases (not completed or dismissed)
+        if (caseEntity.getStatus() == Case.Status.COMPLETED ||
+            caseEntity.getStatus() == Case.Status.DISMISSED) {
+            return basePriority;
         }
 
-        return currentPriority;
+        // Calculate days since filing
+        long daysSinceFiling = java.time.Duration.between(
+            caseEntity.getFilingDate(),
+            java.time.LocalDateTime.now()
+        ).toDays();
+
+        // Apply Dynamic Priority Aging formula: Priority += floor(DaysSinceFiling / 30)
+        // Cases gain 1 priority point every 30 days
+        int agingBoost = (int) Math.floor(daysSinceFiling / 30.0);
+        int adjustedPriority = basePriority + agingBoost;
+
+        // Ensure priority stays within 1-10 range
+        return Math.max(1, Math.min(10, adjustedPriority));
+    }
+
+    // Get the aging boost amount for a case (for display purposes)
+    public int getAgingBoost(Case caseEntity) {
+        if (caseEntity.getFilingDate() == null) {
+            return 0;
+        }
+
+        long daysSinceFiling = java.time.Duration.between(
+            caseEntity.getFilingDate(),
+            java.time.LocalDateTime.now()
+        ).toDays();
+
+        return (int) Math.floor(daysSinceFiling / 30.0);
+    }
+
+    // Get case age in days
+    public long getCaseAgeDays(Case caseEntity) {
+        if (caseEntity.getFilingDate() == null) {
+            return 0;
+        }
+
+        return java.time.Duration.between(
+            caseEntity.getFilingDate(),
+            java.time.LocalDateTime.now()
+        ).toDays();
     }
 
     // Recalculate priorities for all cases when a new case is added
