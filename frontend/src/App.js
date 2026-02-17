@@ -13,6 +13,9 @@ import Reports from './components/Reports';
 import Navigation from './components/Navigation';
 import UserManagement from './components/UserManagement';
 import HearingCalendar from './components/HearingCalendar';
+import CaseFlowVisualization from './components/CaseFlowVisualization';
+import CaseTemplatesChecklists from './components/CaseTemplatesChecklists';
+import AdvancedDocumentManager from './components/AdvancedDocumentManager';
 
 // Protected Route Component
 const ProtectedRoute = ({ children, allowedRoles = [] }) => {
@@ -105,6 +108,30 @@ function App() {
                   element={
                     <ProtectedRoute>
                       <HearingCalendar />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/flow-visualization"
+                  element={
+                    <ProtectedRoute allowedRoles={['ADMIN', 'JUDGE']}>
+                      <CaseFlowVisualization />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/templates"
+                  element={
+                    <ProtectedRoute>
+                      <CaseTemplatesChecklists />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/documents/:caseId?"
+                  element={
+                    <ProtectedRoute>
+                      <AdvancedDocumentManager />
                     </ProtectedRoute>
                   }
                 />

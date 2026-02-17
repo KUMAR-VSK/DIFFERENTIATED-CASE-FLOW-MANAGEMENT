@@ -19,6 +19,9 @@ public interface CaseAuditRepository extends JpaRepository<CaseAudit, Long> {
     // Find all audit entries for a case ordered by date (newest first)
     List<CaseAudit> findByCaseEntityOrderByCreatedAtDesc(Case caseEntity);
 
+    // Find all audit entries for a case ordered by date (oldest first)
+    List<CaseAudit> findByCaseEntityOrderByCreatedAtAsc(Case caseEntity);
+
     // Find audit entries by case ID
     List<CaseAudit> findByCaseEntityId(Long caseId);
 

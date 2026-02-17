@@ -10,6 +10,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
@@ -17,7 +18,18 @@ import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "cases")
+@Table(name = "cases", indexes = {
+    @Index(name = "idx_case_number", columnList = "case_number"),
+    @Index(name = "idx_status", columnList = "status"),
+    @Index(name = "idx_case_type", columnList = "caseType"),
+    @Index(name = "idx_court_level", columnList = "court_level"),
+    @Index(name = "idx_priority", columnList = "priority"),
+    @Index(name = "idx_filing_date", columnList = "filing_date"),
+    @Index(name = "idx_hearing_date", columnList = "hearing_date"),
+    @Index(name = "idx_assigned_judge", columnList = "assigned_judge_id"),
+    @Index(name = "idx_status_priority", columnList = "status, priority"),
+    @Index(name = "idx_court_status", columnList = "court_level, status")
+})
 public class Case {
 
     @Id
