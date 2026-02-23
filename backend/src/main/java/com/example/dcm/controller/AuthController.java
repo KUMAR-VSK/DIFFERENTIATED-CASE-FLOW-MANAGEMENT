@@ -55,6 +55,16 @@ public class AuthController {
         return ResponseEntity.ok(users);
     }
 
+    // Get all registered advocates (admin + clerk can access to assign to cases)
+    @GetMapping("/advocates")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('CLERK')")
+    public ResponseEntity<List<User>> getAllAdvocates() {
+        List<User> advocates = userService.getAllUsers().stream()
+                .filter(u -> u.getRole() == User.Role.ADVOCATE)
+                .collect(java.util.stream.Collectors.toList());
+        return ResponseEntity.ok(advocates);
+    }
+
     // Create new user (admin only)
     @PostMapping("/users")
     @PreAuthorize("hasRole('ADMIN')")
@@ -67,12 +77,16 @@ public class AuthController {
         }
     }
 
-    // Register new user (public)
+    // Register new user (public) - supports CLERK, ADVOCATE roles
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody User user) {
         try {
-            // Set default role to CLERK for new registrations
-            user.setRole(User.Role.CLERK);
+            // Allow CLERK (default) or ADVOCATE roles via self-registration
+            // All other roles must be assigned by ADMIN
+            if (user.getRole() == null || 
+                (user.getRole() != User.Role.CLERK && user.getRole() != User.Role.ADVOCATE)) {
+                user.setRole(User.Role.CLERK); // default
+            }
             User createdUser = userService.createUser(user);
             return ResponseEntity.ok(createdUser);
         } catch (IllegalArgumentException e) {

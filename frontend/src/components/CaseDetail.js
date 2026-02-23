@@ -65,6 +65,7 @@ const CaseDetail = () => {
   const [showDeescalateModal, setShowDeescalateModal] = useState(false);
   const [deescalationReason, setDeescalationReason] = useState('');
   const [deescalationLoading, setDeescalationLoading] = useState(false);
+  const [advocates, setAdvocates] = useState([]);
 
   useEffect(() => {
     const fetchCase = async () => {
@@ -87,6 +88,15 @@ const CaseDetail = () => {
 
     fetchCase();
   }, [id]);
+
+  // Fetch list of advocates for admin use
+  useEffect(() => {
+    if (user.role === 'ADMIN') {
+      axios.get('http://localhost:8080/api/auth/users')
+        .then(res => setAdvocates(res.data.filter(u => u.role === 'ADVOCATE')))
+        .catch(() => setAdvocates([]));
+    }
+  }, [user.role]);
 
   const fetchDocuments = async (caseId) => {
     try {
@@ -418,6 +428,21 @@ const CaseDetail = () => {
     }
   };
 
+  const handleAssignAdvocate = async (advocateId) => {
+    if (!advocateId) return;
+    try {
+      await axios.put(`http://localhost:8080/api/cases/${id}/assign-advocate`, null, {
+        params: { advocateId }
+      });
+      const response = await axios.get(`http://localhost:8080/api/cases/${id}`);
+      setCaseData(response.data);
+      showToast('Advocate assigned successfully');
+    } catch (error) {
+      console.error('Error assigning advocate:', error);
+      showToast('Failed to assign advocate', 'error');
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -516,6 +541,8 @@ const CaseDetail = () => {
               notes={notes}
               user={user}
               actionLoading={actionLoading}
+              advocates={advocates}
+              onAssignAdvocate={handleAssignAdvocate}
               setShowStatusModal={setShowStatusModal}
               setShowHearingModal={setShowHearingModal}
               setShowNoteModal={setShowNoteModal}

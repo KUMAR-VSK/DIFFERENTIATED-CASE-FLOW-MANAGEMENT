@@ -21,6 +21,8 @@ const Navigation = () => {
         return 'bg-blue-50 text-blue-700 border-blue-200 ring-1 ring-blue-200';
       case 'CLERK':
         return 'bg-emerald-50 text-emerald-700 border-emerald-200 ring-1 ring-emerald-200';
+      case 'ADVOCATE':
+        return 'bg-purple-50 text-purple-700 border-purple-200 ring-1 ring-purple-200';
       default:
         return 'bg-gray-50 text-gray-700 border-gray-200 ring-1 ring-gray-200';
     }
@@ -73,14 +75,16 @@ const Navigation = () => {
                   to="/cases"
                   className="text-slate-300 hover:text-white hover:bg-slate-800 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200"
                 >
-                  Cases
+                  {user.role === 'ADVOCATE' ? '⚖️ My Cases' : 'Cases'}
                 </Link>
-                <Link
-                  to="/calendar"
-                  className="text-slate-300 hover:text-white hover:bg-slate-800 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200"
-                >
-                  📅 Calendar
-                </Link>
+                {user.role !== 'ADVOCATE' && (
+                  <Link
+                    to="/calendar"
+                    className="text-slate-300 hover:text-white hover:bg-slate-800 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200"
+                  >
+                    📅 Calendar
+                  </Link>
+                )}
                 {(user.role === 'ADMIN' || user.role === 'JUDGE') && (
                   <Link
                     to="/flow-visualization"
@@ -89,12 +93,14 @@ const Navigation = () => {
                     📊 Flow
                   </Link>
                 )}
-                <Link
-                  to="/templates"
-                  className="text-slate-300 hover:text-white hover:bg-slate-800 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200"
-                >
-                  ✅ Workflows
-                </Link>
+                {user.role !== 'ADVOCATE' && (
+                  <Link
+                    to="/templates"
+                    className="text-slate-300 hover:text-white hover:bg-slate-800 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200"
+                  >
+                    ✅ Workflows
+                  </Link>
+                )}
                 {user.role === 'ADMIN' && (
                   <Link
                     to="/users"

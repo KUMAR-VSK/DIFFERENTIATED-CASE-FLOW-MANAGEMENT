@@ -939,6 +939,15 @@ public class CaseService {
         return agingInfo;
     }
 
+    // ========== UTILITY METHODS ==========
+
+    /**
+     * Get user by username (for controller-level auth checks)
+     */
+    public User getUserByUsername(String username) {
+        return userRepository.findByUsername(username).orElse(null);
+    }
+
     // ========== ADVOCATE METHODS ==========
 
     /**

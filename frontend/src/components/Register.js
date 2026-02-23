@@ -12,6 +12,10 @@ import {
   Grid,
   Avatar,
   InputAdornment,
+  MenuItem,
+  Select,
+  FormControl,
+  InputLabel,
   ThemeProvider,
   createTheme,
 } from '@mui/material';
@@ -21,6 +25,8 @@ import {
   Lock as LockIcon,
   CheckCircle as CheckCircleIcon,
   PersonAdd as PersonAddIcon,
+  Gavel as GavelIcon,
+  Badge as BadgeIcon,
 } from '@mui/icons-material';
 
 // Create Material UI theme
@@ -50,7 +56,8 @@ const Register = () => {
     confirmPassword: '',
     email: '',
     firstName: '',
-    lastName: ''
+    lastName: '',
+    role: 'CLERK',
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -108,7 +115,8 @@ const Register = () => {
         password: formData.password,
         email: formData.email.trim(),
         firstName: formData.firstName.trim(),
-        lastName: formData.lastName.trim()
+        lastName: formData.lastName.trim(),
+        role: formData.role,
       };
 
       const result = await register(userData);
@@ -307,6 +315,39 @@ const Register = () => {
                   ),
                 }}
               />
+
+              {/* Role Selection */}
+              <Grid item xs={12}>
+                <FormControl fullWidth>
+                  <InputLabel id="role-label">Register As</InputLabel>
+                  <Select
+                    labelId="role-label"
+                    id="role"
+                    name="role"
+                    value={formData.role}
+                    label="Register As"
+                    onChange={handleChange}
+                    startAdornment={
+                      <InputAdornment position="start">
+                        {formData.role === 'ADVOCATE' ? <GavelIcon color="action" /> : <BadgeIcon color="action" />}
+                      </InputAdornment>
+                    }
+                  >
+                    <MenuItem value="CLERK">
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <BadgeIcon fontSize="small" sx={{ color: '#2e7d32' }} />
+                        Court Clerk — File & manage cases
+                      </Box>
+                    </MenuItem>
+                    <MenuItem value="ADVOCATE">
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <GavelIcon fontSize="small" sx={{ color: '#1565c0' }} />
+                        Advocate — View your assigned cases only
+                      </Box>
+                    </MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
 
               <Button
                 type="submit"

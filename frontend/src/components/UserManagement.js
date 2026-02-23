@@ -56,7 +56,7 @@ const UserManagement = () => {
 
     try {
       setActionLoading(true);
-      
+
       // Prepare data for API request
       const requestData = {
         ...formData,
@@ -73,7 +73,7 @@ const UserManagement = () => {
         await axios.post('http://localhost:8080/api/auth/users', requestData);
         setSuccess('User created successfully!');
       }
-      
+
       resetForm();
       fetchUsers();
     } catch (error) {
@@ -106,7 +106,7 @@ const UserManagement = () => {
 
   const handleSaveRole = async () => {
     if (!selectedUserId || !newRole) return;
-    
+
     setActionLoading(true);
     try {
       await axios.put(`http://localhost:8080/api/auth/users/${selectedUserId}/role`, newRole);
@@ -129,7 +129,7 @@ const UserManagement = () => {
 
   const handleDelete = async () => {
     if (!userToDelete) return;
-    
+
     setActionLoading(true);
     try {
       await axios.delete(`http://localhost:8080/api/auth/users/${userToDelete.id}`);
@@ -166,6 +166,8 @@ const UserManagement = () => {
         return 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800';
       case 'CLERK':
         return 'bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-300 dark:border-emerald-800';
+      case 'ADVOCATE':
+        return 'bg-purple-100 text-purple-800 border-purple-200 dark:bg-purple-900/30 dark:text-purple-300 dark:border-purple-800';
       default:
         return 'bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600';
     }
@@ -253,7 +255,7 @@ const UserManagement = () => {
               </svg>
             </button>
           </div>
-          
+
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
@@ -344,9 +346,10 @@ const UserManagement = () => {
                   value={formData.role}
                   onChange={handleInputChange}
                 >
-                  <option value="CLERK">Clerk</option>
+                  <option value="CLERK">Court Clerk</option>
                   <option value="JUDGE">Judge</option>
-                  <option value="ADMIN">Admin</option>
+                  <option value="ADMIN">Administrator</option>
+                  <option value="ADVOCATE">Advocate</option>
                 </select>
               </div>
 
@@ -534,9 +537,10 @@ const UserManagement = () => {
                   onChange={(e) => setNewRole(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-slate-700 text-gray-900 dark:text-white"
                 >
-                  <option value="CLERK">Clerk</option>
+                  <option value="CLERK">Court Clerk</option>
                   <option value="JUDGE">Judge</option>
-                  <option value="ADMIN">Admin</option>
+                  <option value="ADMIN">Administrator</option>
+                  <option value="ADVOCATE">Advocate</option>
                 </select>
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
                   Current role will be changed to the selected role.
@@ -578,7 +582,7 @@ const UserManagement = () => {
               </div>
               <h3 className="text-lg font-medium text-gray-900 dark:text-white text-center mb-2">Delete User</h3>
               <p className="text-sm text-gray-600 dark:text-gray-400 text-center mb-6">
-                Are you sure you want to delete <strong className="text-gray-900 dark:text-white">{userToDelete?.username}</strong>? 
+                Are you sure you want to delete <strong className="text-gray-900 dark:text-white">{userToDelete?.username}</strong>?
                 This action cannot be undone.
               </p>
               <div className="flex justify-end gap-3">

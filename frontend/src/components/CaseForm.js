@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
+import { useAuth } from '../context/AuthContext';
 
 const CaseForm = () => {
   const navigate = useNavigate();
   const { id } = useParams();
+  const { user } = useAuth();
   const isEditing = Boolean(id);
 
   const [formData, setFormData] = useState({
@@ -15,6 +17,9 @@ const CaseForm = () => {
     resourceRequirement: '',
     estimatedDurationDays: '',
   });
+  const [selectedAdvocateId, setSelectedAdvocateId] = useState('');
+  const [advocates, setAdvocates] = useState([]);
+  const [advocatesLoading, setAdvocatesLoading] = useState(true);
   const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -22,6 +27,22 @@ const CaseForm = () => {
   const [createdCaseNumber, setCreatedCaseNumber] = useState(null);
   const [showSuccess, setShowSuccess] = useState(false);
   const [previewCaseNumber, setPreviewCaseNumber] = useState('Loading...');
+
+  // Fetch registered advocates for the clerk to assign
+  React.useEffect(() => {
+    const fetchAdvocates = async () => {
+      try {
+        const response = await axios.get('http://localhost:8080/api/auth/users');
+        const advocateList = response.data.filter(u => u.role === 'ADVOCATE');
+        setAdvocates(advocateList);
+      } catch (err) {
+        console.error('Could not load advocates', err);
+      } finally {
+        setAdvocatesLoading(false);
+      }
+    };
+    fetchAdvocates();
+  }, []);
 
   // Fetch next case number for preview (only for new cases)
   React.useEffect(() => {
@@ -59,6 +80,11 @@ const CaseForm = () => {
           resourceRequirement: data.resourceRequirement || '',
           estimatedDurationDays: data.estimatedDurationDays || '',
         });
+
+        // Restore pre-assigned advocate if any
+        if (data.assignedAdvocate) {
+          setSelectedAdvocateId(String(data.assignedAdvocate.id));
+        }
 
         // Parse documents if they exist
         if (data.documents) {
@@ -185,8 +211,11 @@ const CaseForm = () => {
 
         navigate('/cases', { state: { refresh: true } });
       } else {
-        // Create new case
-        const response = await axios.post('http://localhost:8080/api/cases', payload);
+        // Create new case — pass advocateId as a query param if selected
+        const createUrl = selectedAdvocateId
+          ? `http://localhost:8080/api/cases?advocateId=${selectedAdvocateId}`
+          : 'http://localhost:8080/api/cases';
+        const response = await axios.post(createUrl, payload);
         const createdCase = response.data;
 
         // Upload files
@@ -398,6 +427,85 @@ const CaseForm = () => {
                   <p className="text-xs text-gray-500 mt-1">Optional detailed description</p>
                 </div>
               </div>
+            </div>
+
+            {/* Advocate Assignment Section */}
+            <div className="bg-purple-50 dark:bg-purple-900/10 rounded-lg p-6 border border-purple-200 dark:border-purple-800">
+              <div className="flex items-center mb-4">
+                <div className="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center mr-3">
+                  <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-purple-900 dark:text-purple-100">Assign Advocate</h3>
+                  <p className="text-xs text-purple-600 dark:text-purple-400 mt-0.5">Select the advocate who will represent this case</p>
+                </div>
+              </div>
+
+              {advocatesLoading ? (
+                <div className="flex items-center space-x-2 text-purple-600 text-sm">
+                  <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                  </svg>
+                  <span>Loading registered advocates...</span>
+                </div>
+              ) : advocates.length === 0 ? (
+                <div className="flex items-start space-x-3 p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-lg">
+                  <svg className="h-5 w-5 text-amber-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                  <div>
+                    <p className="text-sm font-medium text-amber-800 dark:text-amber-200">No advocates registered yet</p>
+                    <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">Ask advocates to register using the sign-up page, then you can assign them to cases. You can still file the case now and assign an advocate later.</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <select
+                    id="advocate-select"
+                    value={selectedAdvocateId}
+                    onChange={(e) => setSelectedAdvocateId(e.target.value)}
+                    className="w-full px-4 py-3 border border-purple-300 dark:border-purple-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-white dark:bg-slate-700 text-gray-900 dark:text-white text-sm"
+                  >
+                    <option value="">— No advocate assigned (assign later) —</option>
+                    {advocates.map(adv => (
+                      <option key={adv.id} value={String(adv.id)}>
+                        {adv.firstName} {adv.lastName}  ·  @{adv.username}  ·  {adv.email}
+                      </option>
+                    ))}
+                  </select>
+
+                  {selectedAdvocateId && (() => {
+                    const adv = advocates.find(a => String(a.id) === selectedAdvocateId);
+                    return adv ? (
+                      <div className="flex items-center space-x-3 p-3 bg-white dark:bg-slate-800 rounded-lg border border-purple-200 dark:border-purple-700">
+                        <div className="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0">
+                          {adv.firstName.charAt(0)}{adv.lastName.charAt(0)}
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-gray-900 dark:text-white">{adv.firstName} {adv.lastName}</p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">@{adv.username} · {adv.email}</p>
+                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300 mt-1">
+                            ⚖️ Advocate
+                          </span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setSelectedAdvocateId('')}
+                          className="ml-auto text-gray-400 hover:text-red-500 transition-colors"
+                          title="Remove advocate selection"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      </div>
+                    ) : null;
+                  })()}
+                </div>
+              )}
             </div>
 
             {/* Additional Details Section */}

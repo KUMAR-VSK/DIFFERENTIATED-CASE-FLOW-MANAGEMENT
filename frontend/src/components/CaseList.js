@@ -23,7 +23,13 @@ const CaseList = () => {
 
   const fetchCases = async () => {
     try {
-      const response = await axios.get('http://localhost:8080/api/cases/management');
+      let response;
+      if (user.role === 'ADVOCATE') {
+        // Advocates can only see cases assigned to them
+        response = await axios.get(`http://localhost:8080/api/cases/advocate/${user.id}`);
+      } else {
+        response = await axios.get('http://localhost:8080/api/cases/management');
+      }
       setCases(response.data);
       setFilteredCases(response.data);
     } catch (error) {
@@ -156,8 +162,14 @@ const CaseList = () => {
               </svg>
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Case Directory</h1>
-              <p className="text-gray-500 dark:text-gray-400 mt-1">Manage and track judicial cases</p>
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+                {user.role === 'ADVOCATE' ? 'My Assigned Cases' : 'Case Directory'}
+              </h1>
+              <p className="text-gray-500 dark:text-gray-400 mt-1">
+                {user.role === 'ADVOCATE'
+                  ? 'Cases where you are the assigned advocate'
+                  : 'Manage and track judicial cases'}
+              </p>
             </div>
           </div>
           <div className="flex gap-3">
@@ -183,6 +195,23 @@ const CaseList = () => {
             )}
           </div>
         </div>
+
+        {/* Advocate Scoped View Banner */}
+        {user.role === 'ADVOCATE' && (
+          <div className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-700 rounded-xl p-4 flex items-start space-x-3">
+            <div className="flex-shrink-0 w-8 h-8 bg-purple-100 dark:bg-purple-800 rounded-full flex items-center justify-center">
+              <svg className="w-4 h-4 text-purple-600 dark:text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-purple-800 dark:text-purple-200">Advocate View — Restricted Access</p>
+              <p className="text-xs text-purple-600 dark:text-purple-400 mt-0.5">
+                You can only view cases where you have been assigned as the advocate by an administrator. Contact an admin to be assigned to additional cases.
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* Quick Stats Grid */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -349,7 +378,7 @@ const CaseList = () => {
                           <div className="w-20 h-1.5 bg-gray-200 dark:bg-gray-600 rounded-full overflow-hidden">
                             <div
                               className={`h-full rounded-full ${caseItem.priority > 7 ? 'bg-red-500' :
-                                  caseItem.priority > 4 ? 'bg-amber-500' : 'bg-green-500'
+                                caseItem.priority > 4 ? 'bg-amber-500' : 'bg-green-500'
                                 }`}
                               style={{ width: `${caseItem.priority * 10}%` }}
                             ></div>
@@ -425,8 +454,8 @@ const CaseList = () => {
                     key={i}
                     onClick={() => paginate(i + 1)}
                     className={`w-8 h-8 rounded-lg text-sm font-medium ${currentPage === i + 1
-                        ? 'bg-indigo-600 text-white shadow-sm'
-                        : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-700'
+                      ? 'bg-indigo-600 text-white shadow-sm'
+                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-700'
                       }`}
                   >
                     {i + 1}

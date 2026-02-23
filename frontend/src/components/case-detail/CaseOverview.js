@@ -8,6 +8,8 @@ const CaseOverview = ({
     notes,
     user,
     actionLoading,
+    advocates,
+    onAssignAdvocate,
     setShowStatusModal,
     setShowHearingModal,
     setShowNoteModal,
@@ -97,7 +99,7 @@ const CaseOverview = ({
                 </div>
 
                 {/* Assigned Personnel */}
-                {(caseData.assignedJudge || caseData.filingClerk) && (
+                {(caseData.assignedJudge || caseData.filingClerk || caseData.assignedAdvocate) && (
                     <div className="bg-white dark:bg-slate-800 rounded-lg p-6 border border-gray-200 dark:border-slate-700 transition-colors duration-300">
                         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-6 flex items-center">
                             <svg className="h-5 w-5 text-gray-600 dark:text-gray-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
@@ -138,6 +140,24 @@ const CaseOverview = ({
                                                 {caseData.assignedJudge.firstName} {caseData.assignedJudge.lastName}
                                             </p>
                                             <p className="text-sm text-gray-600 dark:text-gray-300">@{caseData.assignedJudge.username}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                            {caseData.assignedAdvocate && (
+                                <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-4 border-l-4 border-purple-400 dark:border-purple-500">
+                                    <div className="flex items-center">
+                                        <div className="bg-purple-500 dark:bg-purple-600 rounded-full p-2 mr-3">
+                                            <svg className="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <h4 className="text-sm font-medium text-purple-600 dark:text-purple-400">Assigned Advocate</h4>
+                                            <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                                                {caseData.assignedAdvocate.firstName} {caseData.assignedAdvocate.lastName}
+                                            </p>
+                                            <p className="text-sm text-gray-600 dark:text-gray-300">@{caseData.assignedAdvocate.username}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -364,13 +384,59 @@ const CaseOverview = ({
                             </div>
                         )}
 
+                        {/* Advocate Read-Only Notice */}
+                        {user.role === 'ADVOCATE' && (
+                            <div className="w-full bg-purple-50 dark:bg-purple-900/20 border-2 border-purple-200 dark:border-purple-700 text-purple-700 dark:text-purple-300 px-4 py-4 rounded-lg text-sm flex items-start space-x-3">
+                                <svg className="h-5 w-5 text-purple-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                </svg>
+                                <div>
+                                    <p className="font-semibold">Advocate — Read-Only View</p>
+                                    <p className="text-xs mt-1 text-purple-600 dark:text-purple-400">You can view this case's details, documents, timeline and notes. Case management actions are restricted to court staff.</p>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Admin: Assign Advocate */}
+                        {user.role === 'ADMIN' && (
+                            <div className="border border-purple-200 dark:border-purple-800 rounded-lg p-3 bg-purple-50 dark:bg-purple-900/10">
+                                <h4 className="text-sm font-semibold text-purple-800 dark:text-purple-200 mb-2 flex items-center">
+                                    <svg className="h-4 w-4 mr-1 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
+                                    </svg>
+                                    Assign Advocate
+                                </h4>
+                                {caseData.assignedAdvocate ? (
+                                    <p className="text-xs text-purple-700 dark:text-purple-300 mb-2">
+                                        Current: <strong>{caseData.assignedAdvocate.firstName} {caseData.assignedAdvocate.lastName}</strong>
+                                    </p>
+                                ) : (
+                                    <p className="text-xs text-purple-600 dark:text-purple-400 mb-2">No advocate assigned yet.</p>
+                                )}
+                                <select
+                                    className="w-full text-xs px-2 py-1.5 border border-purple-300 dark:border-purple-700 rounded-md bg-white dark:bg-slate-800 text-gray-700 dark:text-gray-300 focus:ring-1 focus:ring-purple-500"
+                                    defaultValue=""
+                                    onChange={(e) => onAssignAdvocate && onAssignAdvocate(e.target.value)}
+                                >
+                                    <option value="">Select an advocate…</option>
+                                    {(advocates || []).map(adv => (
+                                        <option key={adv.id} value={adv.id}>
+                                            {adv.firstName} {adv.lastName} (@{adv.username})
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                        )}
+
                         {/* Help Text */}
                         <div className="mt-4 p-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-md border border-indigo-200 dark:border-indigo-800">
                             <h4 className="text-sm font-medium text-indigo-800 dark:text-indigo-200 mb-2">Available Actions:</h4>
                             <ul className="text-xs text-indigo-700 dark:text-indigo-300 space-y-1">
                                 <li>• <strong>Admins/Judges/Clerks:</strong> Update status, schedule hearings, add notes</li>
                                 <li>• <strong>Judges:</strong> Add case notes</li>
-                                <li>• <strong>All Roles:</strong> View case details and history</li>
+                                <li>• <strong>Admin:</strong> Assign advocates to cases</li>
+                                <li>• <strong>Advocates:</strong> View-only access to assigned cases</li>
                             </ul>
                         </div>
                     </div>

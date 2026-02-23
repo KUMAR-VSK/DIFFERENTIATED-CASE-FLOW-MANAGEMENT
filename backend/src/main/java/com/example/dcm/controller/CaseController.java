@@ -56,25 +56,32 @@ public class CaseController {
 
     // Get case by ID
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('JUDGE') or hasRole('CLERK')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('JUDGE') or hasRole('CLERK') or hasRole('ADVOCATE')")
     public ResponseEntity<Case> getCaseById(@PathVariable Long id) {
         Optional<Case> caseOptional = caseService.getCaseById(id);
         return caseOptional.map(ResponseEntity::ok)
                           .orElse(ResponseEntity.notFound().build());
     }
 
-    // Create new case (clerks only)
+    // Create new case (clerks only) - optionally assign advocate at filing time
     @PostMapping
     @PreAuthorize("hasRole('CLERK') or hasRole('ADMIN')")
-    public ResponseEntity<?> createCase(@RequestBody Case caseEntity, Authentication authentication) {
+    public ResponseEntity<?> createCase(
+            @RequestBody Case caseEntity,
+            @RequestParam(required = false) Long advocateId,
+            Authentication authentication) {
         try {
             String username = authentication.getName();
             Case savedCase = caseService.createCase(caseEntity, username);
+            // If clerk selected an advocate at filing time, assign immediately
+            if (advocateId != null) {
+                savedCase = caseService.assignAdvocate(savedCase.getId(), advocateId);
+            }
             return ResponseEntity.ok(savedCase);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         } catch (Exception e) {
-            e.printStackTrace(); // Add stack trace for debugging
+            e.printStackTrace();
             return ResponseEntity.internalServerError().body(Map.of("message", "Internal server error: " + e.getMessage()));
         }
     }
@@ -221,7 +228,7 @@ public class CaseController {
 
     // Get case statistics (allow multiple roles)
     @GetMapping("/statistics")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('CLERK') or hasRole('JUDGE')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('CLERK') or hasRole('JUDGE') or hasRole('ADVOCATE')")
     public ResponseEntity<CaseService.CaseStatistics> getCaseStatistics() {
         CaseService.CaseStatistics stats = caseService.getCaseStatistics();
         return ResponseEntity.ok(stats);
@@ -229,7 +236,7 @@ public class CaseController {
 
     // Get court level statistics
     @GetMapping("/court-stats")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('CLERK') or hasRole('JUDGE')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('CLERK') or hasRole('JUDGE') or hasRole('ADVOCATE')")
     public ResponseEntity<CaseService.CourtLevelStats> getCourtLevelStats() {
         CaseService.CourtLevelStats stats = caseService.getCourtLevelStats();
         return ResponseEntity.ok(stats);
