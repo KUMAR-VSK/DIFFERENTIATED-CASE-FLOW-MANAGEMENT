@@ -65,7 +65,7 @@ public class User {
     }
 
     public enum Role {
-        JUDGE, CLERK, ADMIN
+        JUDGE, CLERK, ADMIN, ADVOCATE
     }
 
     public enum CourtLevel {

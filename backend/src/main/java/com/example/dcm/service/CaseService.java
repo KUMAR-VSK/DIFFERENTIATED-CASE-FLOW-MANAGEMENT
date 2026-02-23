@@ -938,4 +938,67 @@ public class CaseService {
         
         return agingInfo;
     }
+
+    // ========== ADVOCATE METHODS ==========
+
+    /**
+     * Assign an advocate to a case (Admin only)
+     */
+    public Case assignAdvocate(Long caseId, Long advocateId) {
+        Case caseEntity = caseRepository.findById(caseId)
+                .orElseThrow(() -> new IllegalArgumentException("Case not found"));
+
+        User advocate = userRepository.findById(advocateId)
+                .orElseThrow(() -> new IllegalArgumentException("Advocate not found"));
+
+        if (advocate.getRole() != User.Role.ADVOCATE) {
+            throw new IllegalArgumentException("User is not an advocate");
+        }
+
+        caseEntity.setAssignedAdvocate(advocate);
+        return caseRepository.save(caseEntity);
+    }
+
+    /**
+     * Remove advocate from a case (Admin only)
+     */
+    public Case removeAdvocate(Long caseId) {
+        Case caseEntity = caseRepository.findById(caseId)
+                .orElseThrow(() -> new IllegalArgumentException("Case not found"));
+
+        caseEntity.setAssignedAdvocate(null);
+        return caseRepository.save(caseEntity);
+    }
+
+    /**
+     * Get all cases assigned to an advocate (only their cases)
+     */
+    public List<Case> getCasesByAdvocate(Long advocateId) {
+        User advocate = userRepository.findById(advocateId)
+                .orElseThrow(() -> new IllegalArgumentException("Advocate not found"));
+
+        if (advocate.getRole() != User.Role.ADVOCATE) {
+            throw new IllegalArgumentException("User is not an advocate");
+        }
+
+        return caseRepository.findByAssignedAdvocateWithUsers(advocate);
+    }
+
+    /**
+     * Check if an advocate can access a specific case
+     */
+    public boolean canAdvocateAccessCase(Long advocateId, Long caseId) {
+        User advocate = userRepository.findById(advocateId)
+                .orElseThrow(() -> new IllegalArgumentException("Advocate not found"));
+
+        if (advocate.getRole() != User.Role.ADVOCATE) {
+            return false;
+        }
+
+        Case caseEntity = caseRepository.findById(caseId)
+                .orElseThrow(() -> new IllegalArgumentException("Case not found"));
+
+        return caseEntity.getAssignedAdvocate() != null &&
+               caseEntity.getAssignedAdvocate().getId().equals(advocateId);
+    }
 }

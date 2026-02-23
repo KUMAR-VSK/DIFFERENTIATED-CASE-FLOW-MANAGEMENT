@@ -95,6 +95,10 @@ public class Case {
     private User assignedJudge;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "assigned_advocate_id")
+    private User assignedAdvocate;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "filing_clerk_id")
     private User filingClerk;
 
@@ -259,6 +263,9 @@ public class Case {
 
     public User getAssignedJudge() { return assignedJudge; }
     public void setAssignedJudge(User assignedJudge) { this.assignedJudge = assignedJudge; }
+
+    public User getAssignedAdvocate() { return assignedAdvocate; }
+    public void setAssignedAdvocate(User assignedAdvocate) { this.assignedAdvocate = assignedAdvocate; }
 
     public User getFilingClerk() { return filingClerk; }
     public void setFilingClerk(User filingClerk) { this.filingClerk = filingClerk; }

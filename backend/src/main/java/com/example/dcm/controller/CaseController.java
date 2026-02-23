@@ -481,6 +481,67 @@ public class CaseController {
         }
     }
 
+    // ========== ADVOCATE ENDPOINTS ==========
+
+    // Assign an advocate to a case (Admin only)
+    @PutMapping("/{id}/assign-advocate")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> assignAdvocate(@PathVariable Long id, @RequestParam Long advocateId) {
+        try {
+            Case updatedCase = caseService.assignAdvocate(id, advocateId);
+            return ResponseEntity.ok(updatedCase);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    // Remove advocate from a case (Admin only)
+    @PutMapping("/{id}/remove-advocate")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> removeAdvocate(@PathVariable Long id) {
+        try {
+            Case updatedCase = caseService.removeAdvocate(id);
+            return ResponseEntity.ok(updatedCase);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    // Get all cases for a specific advocate (only their assigned cases)
+    @GetMapping("/advocate/{advocateId}")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('ADVOCATE')")
+    public ResponseEntity<?> getCasesByAdvocate(@PathVariable Long advocateId, Authentication authentication) {
+        try {
+            // Advocates can only view their OWN cases – prevent querying other advocates
+            if (authentication != null) {
+                String username = authentication.getName();
+                com.example.dcm.model.User currentUser = caseService.getUserByUsername(username);
+                if (currentUser != null && currentUser.getRole() == com.example.dcm.model.User.Role.ADVOCATE
+                        && !currentUser.getId().equals(advocateId)) {
+                    return ResponseEntity.status(403).body(Map.of("error", "Access denied: Advocates can only view their own cases"));
+                }
+            }
+            List<Case> cases = caseService.getCasesByAdvocate(advocateId);
+            return ResponseEntity.ok(cases);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    // Check if advocate can access a specific case
+    @GetMapping("/advocate/{advocateId}/case/{caseId}/access")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('ADVOCATE')")
+    public ResponseEntity<Map<String, Boolean>> canAdvocateAccessCase(
+            @PathVariable Long advocateId,
+            @PathVariable Long caseId) {
+        try {
+            boolean canAccess = caseService.canAdvocateAccessCase(advocateId, caseId);
+            return ResponseEntity.ok(Map.of("canAccess", canAccess));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("canAccess", false));
+        }
+    }
+
     // ========== PRIORITY AGING ENDPOINTS ==========
 
     // Manually recalculate priorities for all cases (applies aging)

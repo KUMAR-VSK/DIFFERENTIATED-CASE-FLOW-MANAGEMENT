@@ -29,7 +29,7 @@ public class ExportService {
             // Create header row with styling
             Row headerRow = sheet.createRow(0);
             CellStyle headerStyle = workbook.createCellStyle();
-            Font headerFont = workbook.createFont();
+            org.apache.poi.ss.usermodel.Font headerFont = workbook.createFont();
             headerFont.setBold(true);
             headerFont.setFontHeightInPoints((short) 12);
             headerStyle.setFont(headerFont);
@@ -95,14 +95,14 @@ public class ExportService {
             document.open();
 
             // Add title
-            Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18, BaseColor.BLACK);
+            com.itextpdf.text.Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18, BaseColor.BLACK);
             Paragraph title = new Paragraph("Case Management Report", titleFont);
             title.setAlignment(Element.ALIGN_CENTER);
             title.setSpacingAfter(20);
             document.add(title);
 
             // Add generation date
-            Font dateFont = FontFactory.getFont(FontFactory.HELVETICA, 10, BaseColor.GRAY);
+            com.itextpdf.text.Font dateFont = FontFactory.getFont(FontFactory.HELVETICA, 10, BaseColor.GRAY);
             Paragraph date = new Paragraph("Generated: " + java.time.LocalDateTime.now().format(DATE_FORMATTER), dateFont);
             date.setAlignment(Element.ALIGN_RIGHT);
             date.setSpacingAfter(10);
@@ -119,7 +119,7 @@ public class ExportService {
             table.setWidths(columnWidths);
 
             // Add header cells
-            Font headerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10, BaseColor.WHITE);
+            com.itextpdf.text.Font headerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10, BaseColor.WHITE);
             String[] headers = {
                 "Case Number", "Title", "Type", "Status", "Court Level",
                 "Priority", "Filing Date", "Hearing Date", "Judge"
@@ -134,7 +134,7 @@ public class ExportService {
             }
 
             // Add data rows
-            Font dataFont = FontFactory.getFont(FontFactory.HELVETICA, 8);
+            com.itextpdf.text.Font dataFont = FontFactory.getFont(FontFactory.HELVETICA, 8);
             for (Case caseItem : cases) {
                 table.addCell(new Phrase(caseItem.getCaseNumber(), dataFont));
                 table.addCell(new Phrase(truncate(caseItem.getTitle(), 40), dataFont));
@@ -161,7 +161,7 @@ public class ExportService {
 
             // Add summary
             document.add(new Paragraph("\n"));
-            Font summaryFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10);
+            com.itextpdf.text.Font summaryFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10);
             document.add(new Paragraph("Total Cases: " + cases.size(), summaryFont));
 
         } finally {
@@ -183,15 +183,15 @@ public class ExportService {
             document.open();
 
             // Title
-            Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 20, BaseColor.BLACK);
+            com.itextpdf.text.Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 20, BaseColor.BLACK);
             Paragraph title = new Paragraph("Case Details Report", titleFont);
             title.setAlignment(Element.ALIGN_CENTER);
             title.setSpacingAfter(20);
             document.add(title);
 
             // Case number
-            Font headerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 14);
-            Font normalFont = FontFactory.getFont(FontFactory.HELVETICA, 12);
+            com.itextpdf.text.Font headerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 14);
+            com.itextpdf.text.Font normalFont = FontFactory.getFont(FontFactory.HELVETICA, 12);
 
             document.add(new Paragraph("Case Number: " + caseItem.getCaseNumber(), headerFont));
             document.add(new Paragraph(" ", normalFont)); // Spacing
@@ -232,8 +232,8 @@ public class ExportService {
     }
 
     private void addLabelValue(Document document, String label, String value) throws DocumentException {
-        Font labelFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12);
-        Font valueFont = FontFactory.getFont(FontFactory.HELVETICA, 12);
+        com.itextpdf.text.Font labelFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12);
+        com.itextpdf.text.Font valueFont = FontFactory.getFont(FontFactory.HELVETICA, 12);
         
         Paragraph p = new Paragraph();
         p.add(new Chunk(label + ": ", labelFont));

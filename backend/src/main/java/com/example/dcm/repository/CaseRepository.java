@@ -63,4 +63,11 @@ public interface CaseRepository extends JpaRepository<Case, Long>, JpaSpecificat
     // Find all cases with scheduled hearings for calendar view
     @Query("SELECT c FROM Case c WHERE c.hearingDate IS NOT NULL ORDER BY c.hearingDate ASC")
     List<Case> findAllScheduledHearings();
+
+    // Find cases assigned to a specific advocate
+    List<Case> findByAssignedAdvocate(User advocate);
+
+    // Find cases assigned to advocate with eager loading
+    @Query("SELECT c FROM Case c LEFT JOIN FETCH c.filingClerk LEFT JOIN FETCH c.assignedJudge LEFT JOIN FETCH c.assignedAdvocate WHERE c.assignedAdvocate = :advocate")
+    List<Case> findByAssignedAdvocateWithUsers(@Param("advocate") User advocate);
 }

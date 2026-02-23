@@ -249,14 +249,14 @@ const CaseDetail = () => {
   const handleExportReport = async () => {
     setActionLoading(true);
     try {
-      const response = await axios.get(`http://localhost:8080/api/cases/${id}/report`, {
+      const response = await axios.get(`http://localhost:8080/api/export/case/${id}/pdf`, {
         responseType: 'blob'
       });
 
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', `case-report-${id}.txt`);
+      link.setAttribute('download', `case-report-${id}.pdf`);
       document.body.appendChild(link);
       link.click();
       link.remove();
@@ -274,7 +274,7 @@ const CaseDetail = () => {
   const handleGeneratePDF = async () => {
     setActionLoading(true);
     try {
-      const response = await axios.get(`http://localhost:8080/api/cases/${id}/pdf`, {
+      const response = await axios.get(`http://localhost:8080/api/export/case/${id}/pdf`, {
         responseType: 'blob'
       });
 
