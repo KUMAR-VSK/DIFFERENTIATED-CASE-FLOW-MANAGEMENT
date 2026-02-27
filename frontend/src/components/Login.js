@@ -12,7 +12,6 @@ import {
   Card,
   CardContent,
   Avatar,
-  IconButton,
   InputAdornment,
   ThemeProvider,
   createTheme,
@@ -25,8 +24,6 @@ import {
   AccountBalance as JudgeIcon,
   AccountBalance as AccountBalanceIcon,
   Assignment as ClerkIcon,
-  Visibility as VisibilityIcon,
-  VisibilityOff as VisibilityOffIcon,
   Login as LoginIcon,
 } from '@mui/icons-material';
 

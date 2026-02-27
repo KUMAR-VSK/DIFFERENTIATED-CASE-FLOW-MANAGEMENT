@@ -3,6 +3,7 @@ import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 
 const CaseFlowVisualization = () => {
+    // eslint-disable-next-line no-unused-vars
     const { user } = useAuth();
     const [flowData, setFlowData] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -10,15 +11,20 @@ const CaseFlowVisualization = () => {
 
     useEffect(() => {
         fetchFlowData();
-    }, []);
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     const fetchFlowData = async () => {
         try {
-            const credentials = btoa(`${user.username}:${localStorage.getItem('password')}`);
+            // AuthContext sets axios.defaults.headers.common['Authorization'] automatically.
+            // We read credentials directly from localStorage as a reliable fallback
+            // in case the axios defaults haven't been applied yet (effect ordering).
+            const storedCreds = JSON.parse(localStorage.getItem('credentials') || '{}');
+            const authHeader = storedCreds.username
+                ? `Basic ${btoa(`${storedCreds.username}:${storedCreds.password}`)}`
+                : axios.defaults.headers.common['Authorization'];
+
             const response = await axios.get('http://localhost:8080/api/analytics/case-flow', {
-                headers: {
-                    'Authorization': `Basic ${credentials}`
-                }
+                headers: { 'Authorization': authHeader }
             });
             setFlowData(response.data);
         } catch (error) {
@@ -89,8 +95,8 @@ const CaseFlowVisualization = () => {
                         key={metric}
                         onClick={() => setSelectedMetric(metric)}
                         className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-all ${selectedMetric === metric
-                                ? 'bg-blue-600 text-white shadow-lg'
-                                : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                            ? 'bg-blue-600 text-white shadow-lg'
+                            : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                             }`}
                     >
                         {metric.charAt(0).toUpperCase() + metric.slice(1).replace(/([A-Z])/g, ' $1')}

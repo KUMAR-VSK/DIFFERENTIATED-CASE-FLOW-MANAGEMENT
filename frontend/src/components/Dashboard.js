@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext';
 const Dashboard = () => {
   const { user, loading: authLoading } = useAuth();
   const [stats, setStats] = useState(null);
+  // eslint-disable-next-line no-unused-vars
   const [statsError, setStatsError] = useState(false);
   const [recentCases, setRecentCases] = useState([]);
   const [loading, setLoading] = useState(true);

@@ -1,12 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
-import { useAuth } from '../context/AuthContext';
 
 const CaseForm = () => {
   const navigate = useNavigate();
   const { id } = useParams();
-  const { user } = useAuth();
   const isEditing = Boolean(id);
 
   const [formData, setFormData] = useState({
@@ -32,8 +30,8 @@ const CaseForm = () => {
   React.useEffect(() => {
     const fetchAdvocates = async () => {
       try {
-        const response = await axios.get('http://localhost:8080/api/auth/users');
-        const advocateList = response.data.filter(u => u.role === 'ADVOCATE');
+        const response = await axios.get('http://localhost:8080/api/auth/advocates');
+        const advocateList = response.data;
         setAdvocates(advocateList);
       } catch (err) {
         console.error('Could not load advocates', err);

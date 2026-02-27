@@ -92,8 +92,8 @@ const CaseDetail = () => {
   // Fetch list of advocates for admin use
   useEffect(() => {
     if (user.role === 'ADMIN') {
-      axios.get('http://localhost:8080/api/auth/users')
-        .then(res => setAdvocates(res.data.filter(u => u.role === 'ADVOCATE')))
+      axios.get('http://localhost:8080/api/auth/advocates')
+        .then(res => setAdvocates(res.data))
         .catch(() => setAdvocates([]));
     }
   }, [user.role]);
