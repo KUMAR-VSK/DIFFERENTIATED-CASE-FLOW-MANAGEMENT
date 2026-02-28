@@ -569,7 +569,7 @@ const CaseDetail = () => {
           )}
 
           {activeTab === 'timeline' && (
-            <CaseTimeline caseData={caseData} />
+            <CaseTimeline caseData={caseData} notes={notes} documents={documents} />
           )}
 
           {activeTab === 'analytics' && (

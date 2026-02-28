@@ -38,6 +38,37 @@ const CaseTimeline = ({ caseData, notes, documents }) => {
                     </div>
                 )
             });
+        }            // Escalation event
+        if (caseData.escalationDate && caseData.escalationReason && !caseData.escalationReason.toLowerCase().includes('de-escalated')) {
+            events.push({
+                type: 'ESCALATION',
+                date: new Date(caseData.escalationDate),
+                title: 'Case Escalated',
+                description: caseData.escalationReason,
+                icon: (
+                    <div className="bg-red-500 rounded-full p-2 mr-4 ring-4 ring-white dark:ring-slate-900">
+                        <svg className="h-4 w-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-9V7a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2z" clipRule="evenodd" />
+                        </svg>
+                    </div>
+                )
+            });
+        }
+        // De-escalation event
+        if (caseData.escalationDate && caseData.escalationReason && caseData.escalationReason.toLowerCase().includes('de-escalated')) {
+            events.push({
+                type: 'DEESCALATION',
+                date: new Date(caseData.escalationDate),
+                title: 'Case De-escalated',
+                description: caseData.escalationReason,
+                icon: (
+                    <div className="bg-blue-500 rounded-full p-2 mr-4 ring-4 ring-white dark:ring-slate-900">
+                        <svg className="h-4 w-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm-1-9V7a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2z" clipRule="evenodd" />
+                        </svg>
+                    </div>
+                )
+            });
         }
 
         // 3. Hearing Scheduled
