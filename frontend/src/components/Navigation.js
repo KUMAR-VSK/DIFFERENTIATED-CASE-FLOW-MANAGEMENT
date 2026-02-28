@@ -85,22 +85,8 @@ const Navigation = () => {
                     📅 Calendar
                   </Link>
                 )}
-                {(user.role === 'ADMIN' || user.role === 'JUDGE') && (
-                  <Link
-                    to="/flow-visualization"
-                    className="text-slate-300 hover:text-white hover:bg-slate-800 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200"
-                  >
-                    📊 Flow
-                  </Link>
-                )}
-                {user.role !== 'ADVOCATE' && (
-                  <Link
-                    to="/templates"
-                    className="text-slate-300 hover:text-white hover:bg-slate-800 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200"
-                  >
-                    ✅ Workflows
-                  </Link>
-                )}
+
+
                 {user.role === 'ADMIN' && (
                   <Link
                     to="/users"
