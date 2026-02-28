@@ -114,6 +114,10 @@ const CaseDetail = () => {
   };
 
   const handleUpdateStatus = async () => {
+    if (caseData.status === 'COMPLETED') {
+      showToast('Case is completed and cannot be updated', 'error');
+      return;
+    }
     if (!selectedStatus) {
       showToast('Please select a status', 'error');
       return;
