@@ -12,6 +12,7 @@ const CaseForm = () => {
     title: '',
     description: '',
     caseType: 'CIVIL',
+    courtLevel: 'DISTRICT',
     resourceRequirement: '',
     estimatedDurationDays: '',
   });
@@ -75,6 +76,7 @@ const CaseForm = () => {
           title: data.title || '',
           description: data.description || '',
           caseType: data.caseType || 'CIVIL',
+          courtLevel: data.courtLevel || 'DISTRICT',
           resourceRequirement: data.resourceRequirement || '',
           estimatedDurationDays: data.estimatedDurationDays || '',
         });
@@ -193,6 +195,7 @@ const CaseForm = () => {
         title: formData.title.trim(),
         description: formData.description.trim() || null,
         caseType: formData.caseType,
+        courtLevel: formData.courtLevel,
         resourceRequirement: formData.resourceRequirement.trim() || null,
         estimatedDurationDays: formData.estimatedDurationDays ? parseInt(formData.estimatedDurationDays) : null,
         documents: cleanDocuments.length > 0 ? JSON.stringify(cleanDocuments) : null,
@@ -389,6 +392,24 @@ const CaseForm = () => {
                     <option value="CIVIL">Civil</option>
                     <option value="FAMILY">Family</option>
                     <option value="ADMINISTRATIVE">Administrative</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label htmlFor="courtLevel" className="block text-sm font-medium text-gray-700 mb-2">
+                    Court Level *
+                  </label>
+                  <select
+                    id="courtLevel"
+                    name="courtLevel"
+                    required
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                    value={formData.courtLevel}
+                    onChange={handleChange}
+                  >
+                    <option value="DISTRICT">District Court</option>
+                    <option value="HIGH">High Court</option>
+                    <option value="SUPREME">Supreme Court</option>
                   </select>
                 </div>
 

@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.dcm.model.Case;
+import com.example.dcm.model.User;
 import com.example.dcm.service.CaseService;
 
 @RestController
@@ -107,6 +108,20 @@ public class CaseController {
             return ResponseEntity.ok(updatedCase);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().build();
+        }
+    }
+
+    // Judge takes over case 
+    @PutMapping("/{id}/take-over")
+    @PreAuthorize("hasRole('JUDGE')")
+    public ResponseEntity<?> takeOverCase(@PathVariable Long id, Authentication authentication) {
+        try {
+            String username = authentication.getName();
+            User judge = caseService.getUserByUsername(username);
+            Case updatedCase = caseService.assignJudge(id, judge.getId());
+            return ResponseEntity.ok(updatedCase);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }
     }
 

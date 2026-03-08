@@ -9,7 +9,10 @@ const CaseOverview = ({
     user,
     actionLoading,
     advocates,
+    judges,
     onAssignAdvocate,
+    onAssignJudge,
+    onTakeOverCase,
     setShowStatusModal,
     setShowHearingModal,
     setShowNoteModal,
@@ -395,6 +398,66 @@ const CaseOverview = ({
                                     <p className="font-semibold">Advocate — Read-Only View</p>
                                     <p className="text-xs mt-1 text-purple-600 dark:text-purple-400">You can view this case's details, documents, timeline and notes. Case management actions are restricted to court staff.</p>
                                 </div>
+                            </div>
+                        )}
+
+                        {/* Judge: Take Over Case */}
+                        {user.role === 'JUDGE' && (
+                            <div className="border border-blue-200 dark:border-blue-800 rounded-lg p-3 bg-blue-50 dark:bg-blue-900/10">
+                                <h4 className="text-sm font-semibold text-blue-800 dark:text-blue-200 mb-2 flex items-center">
+                                    <svg className="h-4 w-4 mr-1 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clipRule="evenodd" />
+                                    </svg>
+                                    Case Ownership
+                                </h4>
+                                {caseData.assignedJudge ? (
+                                    <p className="text-xs text-blue-700 dark:text-blue-300 mb-2">
+                                        Assigned to: <strong>{caseData.assignedJudge.firstName} {caseData.assignedJudge.lastName}</strong>
+                                    </p>
+                                ) : (
+                                    <p className="text-xs text-blue-600 dark:text-blue-400 mb-2">No judge assigned yet.</p>
+                                )}
+
+                                {(!caseData.assignedJudge || caseData.assignedJudge.id !== user.id) && (
+                                    <button
+                                        onClick={onTakeOverCase}
+                                        disabled={actionLoading}
+                                        className="w-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold py-1.5 px-3 rounded shadow-sm flex items-center justify-center transition-colors disabled:opacity-50"
+                                    >
+                                        Take Over Case
+                                    </button>
+                                )}
+                            </div>
+                        )}
+
+                        {/* Admin: Assign Judge */}
+                        {user.role === 'ADMIN' && (
+                            <div className="border border-blue-200 dark:border-blue-800 rounded-lg p-3 bg-blue-50 dark:bg-blue-900/10">
+                                <h4 className="text-sm font-semibold text-blue-800 dark:text-blue-200 mb-2 flex items-center">
+                                    <svg className="h-4 w-4 mr-1 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                    </svg>
+                                    Assign Judge
+                                </h4>
+                                {caseData.assignedJudge ? (
+                                    <p className="text-xs text-blue-700 dark:text-blue-300 mb-2">
+                                        Current: <strong>{caseData.assignedJudge.firstName} {caseData.assignedJudge.lastName}</strong>
+                                    </p>
+                                ) : (
+                                    <p className="text-xs text-blue-600 dark:text-blue-400 mb-2">No judge assigned yet.</p>
+                                )}
+                                <select
+                                    className="w-full text-xs px-2 py-1.5 border border-blue-300 dark:border-blue-700 rounded-md bg-white dark:bg-slate-800 text-gray-700 dark:text-gray-300 focus:ring-1 focus:ring-blue-500"
+                                    defaultValue=""
+                                    onChange={(e) => onAssignJudge && onAssignJudge(e.target.value)}
+                                >
+                                    <option value="">Select a judge…</option>
+                                    {(judges || []).map(judge => (
+                                        <option key={judge.id} value={judge.id}>
+                                            {judge.username} - {judge.courtLevel}
+                                        </option>
+                                    ))}
+                                </select>
                             </div>
                         )}
 

@@ -66,6 +66,7 @@ const CaseDetail = () => {
   const [deescalationReason, setDeescalationReason] = useState('');
   const [deescalationLoading, setDeescalationLoading] = useState(false);
   const [advocates, setAdvocates] = useState([]);
+  const [judges, setJudges] = useState([]);
 
   useEffect(() => {
     const fetchCase = async () => {
@@ -95,6 +96,11 @@ const CaseDetail = () => {
       axios.get('http://localhost:8080/api/auth/advocates')
         .then(res => setAdvocates(res.data))
         .catch(() => setAdvocates([]));
+
+      // Also fetch judges for assignment
+      axios.get('http://localhost:8080/api/auth/users')
+        .then(res => setJudges(res.data.filter(u => u.role === 'JUDGE')))
+        .catch(() => setJudges([]));
     }
   }, [user.role]);
 
@@ -447,6 +453,33 @@ const CaseDetail = () => {
     }
   };
 
+  const handleAssignJudge = async (judgeId) => {
+    if (!judgeId) return;
+    try {
+      await axios.put(`http://localhost:8080/api/cases/${id}/assign-judge`, null, {
+        params: { judgeId }
+      });
+      const response = await axios.get(`http://localhost:8080/api/cases/${id}`);
+      setCaseData(response.data);
+      showToast('Judge assigned successfully');
+    } catch (error) {
+      console.error('Error assigning judge:', error);
+      showToast('Failed to assign judge', 'error');
+    }
+  };
+
+  const handleTakeOverCase = async () => {
+    try {
+      await axios.put(`http://localhost:8080/api/cases/${id}/take-over`);
+      const response = await axios.get(`http://localhost:8080/api/cases/${id}`);
+      setCaseData(response.data);
+      showToast('You have successfully taken over this case');
+    } catch (error) {
+      console.error('Error taking over case:', error);
+      showToast('Failed to take over case', 'error');
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -546,7 +579,10 @@ const CaseDetail = () => {
               user={user}
               actionLoading={actionLoading}
               advocates={advocates}
+              judges={judges}
               onAssignAdvocate={handleAssignAdvocate}
+              onAssignJudge={handleAssignJudge}
+              onTakeOverCase={handleTakeOverCase}
               setShowStatusModal={setShowStatusModal}
               setShowHearingModal={setShowHearingModal}
               setShowNoteModal={setShowNoteModal}
