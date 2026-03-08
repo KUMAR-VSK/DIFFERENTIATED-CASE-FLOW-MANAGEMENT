@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
+import BASE_URL from '../../config/api';
 
 const UserManagement = () => {
   const { user: currentUser } = useAuth();
@@ -32,7 +33,7 @@ const UserManagement = () => {
 
   const fetchUsers = async () => {
     try {
-      const response = await axios.get('http://localhost:8080/api/auth/users');
+      const response = await axios.get(BASE_URL + '/api/auth/users');
       setUsers(response.data);
     } catch (error) {
       console.error('Error fetching users:', error);
@@ -66,11 +67,11 @@ const UserManagement = () => {
 
       if (editingUser) {
         // Update existing user
-        await axios.put(`http://localhost:8080/api/auth/users/${editingUser.id}`, requestData);
+        await axios.put(`${BASE_URL}/api/auth/users/${editingUser.id}`, requestData);
         setSuccess('User updated successfully!');
       } else {
         // Create new user
-        await axios.post('http://localhost:8080/api/auth/users', requestData);
+        await axios.post(BASE_URL + '/api/auth/users', requestData);
         setSuccess('User created successfully!');
       }
 
@@ -109,7 +110,7 @@ const UserManagement = () => {
 
     setActionLoading(true);
     try {
-      await axios.put(`http://localhost:8080/api/auth/users/${selectedUserId}/role`, newRole);
+      await axios.put(`${BASE_URL}/api/auth/users/${selectedUserId}/role`, newRole);
       setSuccess('User role updated successfully!');
       setShowRoleModal(false);
       setSelectedUserId(null);
@@ -132,7 +133,7 @@ const UserManagement = () => {
 
     setActionLoading(true);
     try {
-      await axios.delete(`http://localhost:8080/api/auth/users/${userToDelete.id}`);
+      await axios.delete(`${BASE_URL}/api/auth/users/${userToDelete.id}`);
       setSuccess('User deleted successfully!');
       setShowDeleteModal(false);
       setUserToDelete(null);

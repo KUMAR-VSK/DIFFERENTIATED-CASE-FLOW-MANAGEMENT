@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
+import BASE_URL from '../../config/api';
 
 const Reports = () => {
   const { user } = useAuth();
@@ -13,8 +14,8 @@ const Reports = () => {
     const fetchReportData = async () => {
       try {
         const [statsResponse, casesResponse] = await Promise.all([
-          axios.get('http://localhost:8080/api/cases/statistics'),
-          axios.get('http://localhost:8080/api/cases/management'),
+          axios.get(BASE_URL + '/api/cases/statistics'),
+          axios.get(BASE_URL + '/api/cases/management'),
         ]);
 
         setStats(statsResponse.data);

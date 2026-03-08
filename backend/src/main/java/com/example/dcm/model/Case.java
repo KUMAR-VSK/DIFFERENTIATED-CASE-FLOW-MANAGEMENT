@@ -18,10 +18,10 @@ import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "cases", indexes = {
+@Table(name = "court_cases", indexes = {
     @Index(name = "idx_case_number", columnList = "case_number"),
     @Index(name = "idx_status", columnList = "status"),
-    @Index(name = "idx_case_type", columnList = "caseType"),
+    @Index(name = "idx_case_type", columnList = "case_type"),
     @Index(name = "idx_court_level", columnList = "court_level"),
     @Index(name = "idx_priority", columnList = "priority"),
     @Index(name = "idx_filing_date", columnList = "filing_date"),
@@ -49,7 +49,7 @@ public class Case {
     private String description;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name = "case_type", nullable = false)
     private CaseType caseType;
 
     @Enumerated(EnumType.STRING)

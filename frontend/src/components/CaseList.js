@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { getStatusColor, getPriorityColor, getCaseTypeColor } from '../utils/caseHelpers';
+import BASE_URL from '../../config/api';
 
 const CaseList = () => {
   const { user } = useAuth();
@@ -26,9 +27,9 @@ const CaseList = () => {
       let response;
       if (user.role === 'ADVOCATE') {
         // Advocates can only see cases assigned to them
-        response = await axios.get(`http://localhost:8080/api/cases/advocate/${user.id}`);
+        response = await axios.get(`${BASE_URL}/api/cases/advocate/${user.id}`);
       } else {
-        response = await axios.get('http://localhost:8080/api/cases/management');
+        response = await axios.get(BASE_URL + '/api/cases/management');
       }
       setCases(response.data);
       setFilteredCases(response.data);

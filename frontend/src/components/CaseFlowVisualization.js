@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
+import BASE_URL from '../../config/api';
 
 const CaseFlowVisualization = () => {
     // eslint-disable-next-line no-unused-vars
@@ -23,7 +24,7 @@ const CaseFlowVisualization = () => {
                 ? `Basic ${btoa(`${storedCreds.username}:${storedCreds.password}`)}`
                 : axios.defaults.headers.common['Authorization'];
 
-            const response = await axios.get('http://localhost:8080/api/analytics/case-flow', {
+            const response = await axios.get(BASE_URL + '/api/analytics/case-flow', {
                 headers: { 'Authorization': authHeader }
             });
             setFlowData(response.data);

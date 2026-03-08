@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import BASE_URL from '../../config/api';
 
 const PriorityAgingBadge = ({ caseId, currentPriority }) => {
     const [agingInfo, setAgingInfo] = useState(null);
@@ -15,7 +16,7 @@ const PriorityAgingBadge = ({ caseId, currentPriority }) => {
     const fetchAgingInfo = async () => {
         setLoading(true);
         try {
-            const response = await axios.get(`http://localhost:8080/api/cases/${caseId}/priority-aging`);
+            const response = await axios.get(`${BASE_URL}/api/cases/${caseId}/priority-aging`);
             setAgingInfo(response.data);
         } catch (error) {
             console.error('Error fetching priority aging info:', error);

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { useParams } from 'react-router-dom';
+import BASE_URL from '../../config/api';
 
 const CaseTemplatesChecklists = ({ caseId }) => {
     const { user } = useAuth();
@@ -39,7 +40,7 @@ const CaseTemplatesChecklists = ({ caseId }) => {
 
     const fetchTemplates = async () => {
         try {
-            const response = await axios.get('http://localhost:8080/api/templates', getAuthHeaders());
+            const response = await axios.get(BASE_URL + '/api/templates', getAuthHeaders());
             setTemplates(response.data);
         } catch (error) {
             console.error('Error fetching templates:', error);
@@ -49,7 +50,7 @@ const CaseTemplatesChecklists = ({ caseId }) => {
     const fetchChecklist = async () => {
         try {
             const response = await axios.get(
-                `http://localhost:8080/api/templates/checklist/${caseId}`,
+                `${BASE_URL}/api/templates/checklist/${caseId}`,
                 getAuthHeaders()
             );
             setChecklist(response.data);
@@ -63,7 +64,7 @@ const CaseTemplatesChecklists = ({ caseId }) => {
     const fetchProgress = async () => {
         try {
             const response = await axios.get(
-                `http://localhost:8080/api/templates/checklist/${caseId}/progress`,
+                `${BASE_URL}/api/templates/checklist/${caseId}/progress`,
                 getAuthHeaders()
             );
             setProgress(response.data);
@@ -78,7 +79,7 @@ const CaseTemplatesChecklists = ({ caseId }) => {
             const updatedItem = { ...item, ...updates };
 
             await axios.put(
-                `http://localhost:8080/api/templates/checklist/${itemId}`,
+                `${BASE_URL}/api/templates/checklist/${itemId}`,
                 updatedItem,
                 getAuthHeaders()
             );
@@ -99,7 +100,7 @@ const CaseTemplatesChecklists = ({ caseId }) => {
             };
 
             await axios.post(
-                'http://localhost:8080/api/templates/checklist',
+                BASE_URL + '/api/templates/checklist',
                 item,
                 getAuthHeaders()
             );

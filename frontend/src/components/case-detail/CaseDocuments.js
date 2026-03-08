@@ -1,4 +1,5 @@
 import React from 'react';
+import BASE_URL from '../../config/api';
 
 const CaseDocuments = ({ documents, user, setShowUploadModal }) => {
     return (
@@ -59,7 +60,7 @@ const CaseDocuments = ({ documents, user, setShowUploadModal }) => {
                             <div className="mt-4 flex justify-end gap-3">
                                 <button
                                     onClick={() => {
-                                        const url = doc.url.startsWith('http') ? doc.url : `http://localhost:8080${doc.url}`;
+                                        const url = doc.url.startsWith('http') ? doc.url : `${BASE_URL}${doc.url}`;
                                         window.open(url, '_blank');
                                     }}
                                     className="text-blue-600 hover:text-blue-800 text-sm font-medium"

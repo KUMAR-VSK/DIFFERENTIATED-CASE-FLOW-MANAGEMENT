@@ -6,6 +6,7 @@ import interactionPlugin from '@fullcalendar/interaction';
 import listPlugin from '@fullcalendar/list';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import BASE_URL from '../../config/api';
 
 const HearingCalendar = () => {
     const navigate = useNavigate();
@@ -29,7 +30,7 @@ const HearingCalendar = () => {
 
     const fetchHearings = async () => {
         try {
-            const response = await axios.get('http://localhost:8080/api/cases/hearings');
+            const response = await axios.get(BASE_URL + '/api/cases/hearings');
             const calendarEvents = response.data.map(caseData => ({
                 id: caseData.id,
                 title: `${caseData.caseNumber}: ${caseData.title}`,

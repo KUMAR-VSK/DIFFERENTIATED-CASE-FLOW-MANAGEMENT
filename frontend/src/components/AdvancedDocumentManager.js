@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
+import BASE_URL from '../../config/api';
 
 const AdvancedDocumentManager = ({ caseId }) => {
     const { user } = useAuth();
@@ -42,7 +43,7 @@ const AdvancedDocumentManager = ({ caseId }) => {
     const fetchDocuments = async () => {
         try {
             const response = await axios.get(
-                `http://localhost:8080/api/documents/case/${caseId}`,
+                `${BASE_URL}/api/documents/case/${caseId}`,
                 getAuthHeaders()
             );
             setDocuments(response.data);
@@ -56,7 +57,7 @@ const AdvancedDocumentManager = ({ caseId }) => {
     const fetchVersions = async (documentId) => {
         try {
             const response = await axios.get(
-                `http://localhost:8080/api/documents/${documentId}/versions`,
+                `${BASE_URL}/api/documents/${documentId}/versions`,
                 getAuthHeaders()
             );
             setVersions(response.data);
@@ -110,7 +111,7 @@ const AdvancedDocumentManager = ({ caseId }) => {
 
         try {
             const credentials = btoa(`${user.username}:${localStorage.getItem('password')}`);
-            await axios.post('http://localhost:8080/api/documents/upload', formData, {
+            await axios.post(BASE_URL + '/api/documents/upload', formData, {
                 headers: {
                     'Authorization': `Basic ${credentials}`,
                     'Content-Type': 'multipart/form-data'
@@ -278,7 +279,7 @@ const AdvancedDocumentManager = ({ caseId }) => {
                         {/* Document Actions */}
                         <div className="p-4 bg-gray-50 dark:bg-gray-700 border-t border-gray-200 dark:border-gray-600 grid grid-cols-2 gap-2">
                             <button
-                                onClick={() => window.open(`http://localhost:8080/api/documents/view/${doc.url.split('/').pop()}`, '_blank')}
+                                onClick={() => window.open(`${BASE_URL}/api/documents/view/${doc.url.split('/').pop()}`, '_blank')}
                                 className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors flex items-center justify-center space-x-1"
                             >
                                 <span>👁️</span>
@@ -308,7 +309,7 @@ const AdvancedDocumentManager = ({ caseId }) => {
                             <button
                                 onClick={() => {
                                     const a = document.createElement('a');
-                                    a.href = `http://localhost:8080/api/documents/download/${doc.url.split('/').pop()}`;
+                                    a.href = `${BASE_URL}/api/documents/download/${doc.url.split('/').pop()}`;
                                     a.download = doc.originalFileName;
                                     a.click();
                                 }}

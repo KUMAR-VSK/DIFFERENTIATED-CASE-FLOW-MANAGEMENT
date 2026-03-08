@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
+import BASE_URL from '../../config/api';
 
 const CaseForm = () => {
   const navigate = useNavigate();
@@ -31,7 +32,7 @@ const CaseForm = () => {
   React.useEffect(() => {
     const fetchAdvocates = async () => {
       try {
-        const response = await axios.get('http://localhost:8080/api/auth/advocates');
+        const response = await axios.get(BASE_URL + '/api/auth/advocates');
         const advocateList = response.data;
         setAdvocates(advocateList);
       } catch (err) {
@@ -49,7 +50,7 @@ const CaseForm = () => {
       if (isEditing) return; // Don't fetch for editing mode
 
       try {
-        const response = await axios.get('http://localhost:8080/api/cases/next-case-number');
+        const response = await axios.get(BASE_URL + '/api/cases/next-case-number');
         setPreviewCaseNumber(response.data.nextCaseNumber);
       } catch (error) {
         console.error('Error fetching next case number:', error);
@@ -68,7 +69,7 @@ const CaseForm = () => {
 
       setLoading(true);
       try {
-        const response = await axios.get(`http://localhost:8080/api/cases/${id}`);
+        const response = await axios.get(`${BASE_URL}/api/cases/${id}`);
         const data = response.data;
 
         setFormData({
@@ -157,7 +158,7 @@ const CaseForm = () => {
       formData.append('file', doc.fileObj);
       formData.append('caseId', caseId);
 
-      return axios.post('http://localhost:8080/api/documents/upload', formData, {
+      return axios.post(BASE_URL + '/api/documents/upload', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
     });
@@ -205,7 +206,7 @@ const CaseForm = () => {
 
       if (isEditing) {
         // Update existing case
-        await axios.put(`http://localhost:8080/api/cases/${id}`, payload);
+        await axios.put(`${BASE_URL}/api/cases/${id}`, payload);
 
         // Upload new files
         await uploadFiles(id, documents);
@@ -214,8 +215,8 @@ const CaseForm = () => {
       } else {
         // Create new case — pass advocateId as a query param if selected
         const createUrl = selectedAdvocateId
-          ? `http://localhost:8080/api/cases?advocateId=${selectedAdvocateId}`
-          : 'http://localhost:8080/api/cases';
+          ? `${BASE_URL}/api/cases?advocateId=${selectedAdvocateId}`
+          : BASE_URL + '/api/cases';
         const response = await axios.post(createUrl, payload);
         const createdCase = response.data;
 

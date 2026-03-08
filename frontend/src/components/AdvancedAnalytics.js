@@ -14,6 +14,7 @@ import {
     Legend,
 } from 'chart.js';
 import { Bar, Doughnut, Line } from 'react-chartjs-2';
+import BASE_URL from '../../config/api';
 
 // Register Chart.js components
 ChartJS.register(
@@ -41,7 +42,7 @@ const AdvancedAnalytics = () => {
     const fetchAnalytics = async () => {
         try {
             const credentials = btoa(`${user.username}:${localStorage.getItem('password')}`);
-            const response = await axios.get('http://localhost:8080/api/analytics/advanced', {
+            const response = await axios.get(BASE_URL + '/api/analytics/advanced', {
                 headers: { 'Authorization': `Basic ${credentials}` },
                 params: { period }
             });

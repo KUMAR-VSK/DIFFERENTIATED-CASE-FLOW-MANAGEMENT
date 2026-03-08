@@ -8,6 +8,7 @@ import CaseNotes from './case-detail/CaseNotes';
 import CaseTimeline from './case-detail/CaseTimeline';
 import CaseAnalytics from './case-detail/CaseAnalytics';
 import {
+import BASE_URL from '../../config/api';
   StatusModal,
   HearingModal,
   PriorityModal,
@@ -71,7 +72,7 @@ const CaseDetail = () => {
   useEffect(() => {
     const fetchCase = async () => {
       try {
-        const response = await axios.get(`http://localhost:8080/api/cases/${id}`);
+        const response = await axios.get(`${BASE_URL}/api/cases/${id}`);
         setCaseData(response.data);
         // Parse and set notes from case data
         const parsedNotes = parseNotes(response.data.notes);
@@ -93,12 +94,12 @@ const CaseDetail = () => {
   // Fetch list of advocates for admin use
   useEffect(() => {
     if (user.role === 'ADMIN') {
-      axios.get('http://localhost:8080/api/auth/advocates')
+      axios.get(BASE_URL + '/api/auth/advocates')
         .then(res => setAdvocates(res.data))
         .catch(() => setAdvocates([]));
 
       // Also fetch judges for assignment
-      axios.get('http://localhost:8080/api/auth/users')
+      axios.get(BASE_URL + '/api/auth/users')
         .then(res => setJudges(res.data.filter(u => u.role === 'JUDGE')))
         .catch(() => setJudges([]));
     }
@@ -106,7 +107,7 @@ const CaseDetail = () => {
 
   const fetchDocuments = async (caseId) => {
     try {
-      const response = await axios.get(`http://localhost:8080/api/documents/case/${caseId}`);
+      const response = await axios.get(`${BASE_URL}/api/documents/case/${caseId}`);
       setDocuments(response.data);
     } catch (error) {
       console.error('Error fetching documents:', error);
@@ -131,12 +132,12 @@ const CaseDetail = () => {
 
     setActionLoading(true);
     try {
-      await axios.put(`http://localhost:8080/api/cases/${id}/status`, null, {
+      await axios.put(`${BASE_URL}/api/cases/${id}/status`, null, {
         params: { status: selectedStatus }
       });
 
       // Refresh case data
-      const response = await axios.get(`http://localhost:8080/api/cases/${id}`);
+      const response = await axios.get(`${BASE_URL}/api/cases/${id}`);
       setCaseData(response.data);
       setShowStatusModal(false);
       setSelectedStatus('');
@@ -172,12 +173,12 @@ const CaseDetail = () => {
     try {
       // Send the datetime-local string directly - no conversion needed!
       // Format is already "YYYY-MM-DDTHH:MM" which matches LocalDateTime
-      await axios.put(`http://localhost:8080/api/cases/${id}/schedule`, {
+      await axios.put(`${BASE_URL}/api/cases/${id}/schedule`, {
         hearingDate: hearingDate  // Send the string directly!
       });
 
       // Refresh case data
-      const response = await axios.get(`http://localhost:8080/api/cases/${id}`);
+      const response = await axios.get(`${BASE_URL}/api/cases/${id}`);
       setCaseData(response.data);
       setShowHearingModal(false);
       setHearingDate('');
@@ -205,10 +206,10 @@ const CaseDetail = () => {
         ? `${currentNotes}\n\n[${timestamp}] ${newNote}`
         : `[${timestamp}] ${newNote}`;
 
-      await axios.put(`http://localhost:8080/api/cases/${id}/notes`, { notes: updatedNotes });
+      await axios.put(`${BASE_URL}/api/cases/${id}/notes`, { notes: updatedNotes });
 
       // Refresh case data to show updated notes
-      const response = await axios.get(`http://localhost:8080/api/cases/${id}`);
+      const response = await axios.get(`${BASE_URL}/api/cases/${id}`);
       setCaseData(response.data);
 
       // Update notes state with newly parsed notes
@@ -248,12 +249,12 @@ const CaseDetail = () => {
 
     setActionLoading(true);
     try {
-      await axios.put(`http://localhost:8080/api/cases/${id}/set-priority`, null, {
+      await axios.put(`${BASE_URL}/api/cases/${id}/set-priority`, null, {
         params: { priority: manualPriority }
       });
 
       // Refresh case data
-      const response = await axios.get(`http://localhost:8080/api/cases/${id}`);
+      const response = await axios.get(`${BASE_URL}/api/cases/${id}`);
       setCaseData(response.data);
       setShowPriorityModal(false);
       setManualPriority('');
@@ -269,7 +270,7 @@ const CaseDetail = () => {
   const handleExportReport = async () => {
     setActionLoading(true);
     try {
-      const response = await axios.get(`http://localhost:8080/api/export/case/${id}/pdf`, {
+      const response = await axios.get(`${BASE_URL}/api/export/case/${id}/pdf`, {
         responseType: 'blob'
       });
 
@@ -294,7 +295,7 @@ const CaseDetail = () => {
   const handleGeneratePDF = async () => {
     setActionLoading(true);
     try {
-      const response = await axios.get(`http://localhost:8080/api/export/case/${id}/pdf`, {
+      const response = await axios.get(`${BASE_URL}/api/export/case/${id}/pdf`, {
         responseType: 'blob'
       });
 
@@ -328,7 +329,7 @@ const CaseDetail = () => {
       formData.append('file', selectedFile);
       formData.append('caseId', id);
 
-      await axios.post('http://localhost:8080/api/documents/upload', formData, {
+      await axios.post(BASE_URL + '/api/documents/upload', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -356,12 +357,12 @@ const CaseDetail = () => {
 
     setEscalationLoading(true);
     try {
-      await axios.post(`http://localhost:8080/api/cases/${id}/escalate`, {
+      await axios.post(`${BASE_URL}/api/cases/${id}/escalate`, {
         reason: escalationReason
       });
 
       // Refresh case data to show updated case
-      const response = await axios.get(`http://localhost:8080/api/cases/${id}`);
+      const response = await axios.get(`${BASE_URL}/api/cases/${id}`);
       setCaseData(response.data);
 
       // Update notes state with newly parsed notes
@@ -401,12 +402,12 @@ const CaseDetail = () => {
 
     setDeescalationLoading(true);
     try {
-      await axios.post(`http://localhost:8080/api/cases/${id}/deescalate`, {
+      await axios.post(`${BASE_URL}/api/cases/${id}/deescalate`, {
         reason: deescalationReason
       });
 
       // Refresh case data to show updated case
-      const response = await axios.get(`http://localhost:8080/api/cases/${id}`);
+      const response = await axios.get(`${BASE_URL}/api/cases/${id}`);
       setCaseData(response.data);
 
       // Update notes state with newly parsed notes
@@ -441,10 +442,10 @@ const CaseDetail = () => {
   const handleAssignAdvocate = async (advocateId) => {
     if (!advocateId) return;
     try {
-      await axios.put(`http://localhost:8080/api/cases/${id}/assign-advocate`, null, {
+      await axios.put(`${BASE_URL}/api/cases/${id}/assign-advocate`, null, {
         params: { advocateId }
       });
-      const response = await axios.get(`http://localhost:8080/api/cases/${id}`);
+      const response = await axios.get(`${BASE_URL}/api/cases/${id}`);
       setCaseData(response.data);
       showToast('Advocate assigned successfully');
     } catch (error) {
@@ -456,10 +457,10 @@ const CaseDetail = () => {
   const handleAssignJudge = async (judgeId) => {
     if (!judgeId) return;
     try {
-      await axios.put(`http://localhost:8080/api/cases/${id}/assign-judge`, null, {
+      await axios.put(`${BASE_URL}/api/cases/${id}/assign-judge`, null, {
         params: { judgeId }
       });
-      const response = await axios.get(`http://localhost:8080/api/cases/${id}`);
+      const response = await axios.get(`${BASE_URL}/api/cases/${id}`);
       setCaseData(response.data);
       showToast('Judge assigned successfully');
     } catch (error) {
@@ -470,8 +471,8 @@ const CaseDetail = () => {
 
   const handleTakeOverCase = async () => {
     try {
-      await axios.put(`http://localhost:8080/api/cases/${id}/take-over`);
-      const response = await axios.get(`http://localhost:8080/api/cases/${id}`);
+      await axios.put(`${BASE_URL}/api/cases/${id}/take-over`);
+      const response = await axios.get(`${BASE_URL}/api/cases/${id}`);
       setCaseData(response.data);
       showToast('You have successfully taken over this case');
     } catch (error) {
@@ -482,7 +483,7 @@ const CaseDetail = () => {
 
   const handleDownloadHistoryPDF = async () => {
     try {
-      const response = await axios.get(`http://localhost:8080/api/cases/${id}/pdf`, {
+      const response = await axios.get(`${BASE_URL}/api/cases/${id}/pdf`, {
         responseType: 'blob'
       });
       const url = window.URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
