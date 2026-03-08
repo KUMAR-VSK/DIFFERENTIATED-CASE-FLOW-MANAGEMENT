@@ -14,7 +14,7 @@ import {
     Legend,
 } from 'chart.js';
 import { Bar, Doughnut, Line } from 'react-chartjs-2';
-import BASE_URL from '../../config/api';
+import BASE_URL from '../config/api';
 
 // Register Chart.js components
 ChartJS.register(
@@ -172,23 +172,23 @@ const AdvancedAnalytics = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             {/* Header */}
             <div className="mb-8">
-                <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                <h1 className="text-3xl font-bold text-surface-900 dark:text-white mb-2">
                     📊 Advanced Analytics
                 </h1>
-                <p className="text-gray-600 dark:text-gray-400">
+                <p className="text-surface-600 dark:text-surface-400">
                     Comprehensive insights and visualizations for case management
                 </p>
             </div>
 
             {/* Period Selector */}
             <div className="mb-6 flex items-center gap-4">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                <label className="text-sm font-medium text-surface-700 dark:text-surface-300">
                     Time Period:
                 </label>
                 <select
                     value={period}
                     onChange={(e) => setPeriod(e.target.value)}
-                    className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                    className="px-4 py-2 border border-surface-300 dark:border-surface-600 rounded-lg bg-white dark:bg-surface-800 text-surface-900 dark:text-white"
                 >
                     <option value="7">Last 7 Days</option>
                     <option value="30">Last 30 Days</option>
@@ -243,8 +243,8 @@ const AdvancedAnalytics = () => {
             {/* Charts Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {/* Status Distribution */}
-                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
-                    <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+                <div className="bg-white dark:bg-surface-800 rounded-xl shadow-lg p-6">
+                    <h3 className="text-xl font-bold text-surface-900 dark:text-white mb-4">
                         Status Distribution
                     </h3>
                     <div className="h-80 flex items-center justify-center">
@@ -253,8 +253,8 @@ const AdvancedAnalytics = () => {
                 </div>
 
                 {/* Case Type Distribution */}
-                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
-                    <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+                <div className="bg-white dark:bg-surface-800 rounded-xl shadow-lg p-6">
+                    <h3 className="text-xl font-bold text-surface-900 dark:text-white mb-4">
                         Cases by Type
                     </h3>
                     <div className="h-80">
@@ -263,8 +263,8 @@ const AdvancedAnalytics = () => {
                 </div>
 
                 {/* Priority Distribution */}
-                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
-                    <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+                <div className="bg-white dark:bg-surface-800 rounded-xl shadow-lg p-6">
+                    <h3 className="text-xl font-bold text-surface-900 dark:text-white mb-4">
                         Priority Distribution
                     </h3>
                     <div className="h-80 flex items-center justify-center">
@@ -273,8 +273,8 @@ const AdvancedAnalytics = () => {
                 </div>
 
                 {/* Case Trend */}
-                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
-                    <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+                <div className="bg-white dark:bg-surface-800 rounded-xl shadow-lg p-6">
+                    <h3 className="text-xl font-bold text-surface-900 dark:text-white mb-4">
                         Case Trend Over Time
                     </h3>
                     <div className="h-80">
@@ -284,8 +284,8 @@ const AdvancedAnalytics = () => {
             </div>
 
             {/* Court Level Comparison */}
-            <div className="mt-8 bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+            <div className="mt-8 bg-white dark:bg-surface-800 rounded-xl shadow-lg p-6">
+                <h3 className="text-xl font-bold text-surface-900 dark:text-white mb-4">
                     Court Level Distribution
                 </h3>
                 <div className="h-96">

@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import BASE_URL from '../../config/api';
 
 const CaseTimeline = ({ caseData, notes, documents }) => {
     // Combine all events into a single timeline
@@ -13,7 +14,7 @@ const CaseTimeline = ({ caseData, notes, documents }) => {
                 title: 'Case Filed',
                 description: 'Case was filed in the system',
                 icon: (
-                    <div className="bg-blue-500 rounded-full p-2 mr-4 ring-4 ring-white dark:ring-slate-900">
+                    <div className="bg-primary-500 rounded-full p-2 mr-4 ring-4 ring-white dark:ring-slate-900">
                         <svg className="h-4 w-4 text-white" fill="currentColor" viewBox="0 0 20 20">
                             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                         </svg>
@@ -62,7 +63,7 @@ const CaseTimeline = ({ caseData, notes, documents }) => {
                 title: 'Case De-escalated',
                 description: caseData.escalationReason,
                 icon: (
-                    <div className="bg-blue-500 rounded-full p-2 mr-4 ring-4 ring-white dark:ring-slate-900">
+                    <div className="bg-primary-500 rounded-full p-2 mr-4 ring-4 ring-white dark:ring-slate-900">
                         <svg className="h-4 w-4 text-white" fill="currentColor" viewBox="0 0 20 20">
                             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm-1-9V7a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2z" clipRule="evenodd" />
                         </svg>
@@ -128,8 +129,8 @@ const CaseTimeline = ({ caseData, notes, documents }) => {
 
     return (
         <div>
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6 flex items-center">
-                <svg className="h-6 w-6 text-gray-600 dark:text-gray-400 mr-3" fill="currentColor" viewBox="0 0 20 20">
+            <h2 className="text-xl font-semibold text-surface-900 dark:text-white mb-6 flex items-center">
+                <svg className="h-6 w-6 text-surface-600 dark:text-surface-400 mr-3" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
                 </svg>
                 Case Activity Timeline
@@ -137,15 +138,15 @@ const CaseTimeline = ({ caseData, notes, documents }) => {
 
             <div className="space-y-6">
                 <div className="relative">
-                    <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-gray-200 dark:bg-slate-700"></div>
+                    <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-surface-200 dark:bg-surface-700"></div>
 
                     {timelineEvents.map((event, index) => (
                         <div key={index} className="relative flex items-start mb-6">
                             {event.icon}
-                            <div className="bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 p-4 flex-1 transition-colors hover:shadow-md">
+                            <div className="bg-white dark:bg-surface-800 rounded-lg border border-surface-200 dark:border-surface-700 p-4 flex-1 transition-colors hover:shadow-md">
                                 <div className="flex justify-between items-start">
-                                    <h3 className="text-sm font-bold text-gray-900 dark:text-white">{event.title}</h3>
-                                    <span className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap ml-2">
+                                    <h3 className="text-sm font-bold text-surface-900 dark:text-white">{event.title}</h3>
+                                    <span className="text-xs text-surface-500 dark:text-surface-400 whitespace-nowrap ml-2">
                                         {event.date.toLocaleDateString('en-US', {
                                             month: 'short',
                                             day: 'numeric',
@@ -154,7 +155,7 @@ const CaseTimeline = ({ caseData, notes, documents }) => {
                                         })}
                                     </span>
                                 </div>
-                                <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
+                                <p className="text-sm text-surface-600 dark:text-surface-300 mt-1">
                                     {event.description}
                                 </p>
                                 {event.type === 'HEARING' && new Date() < event.date && (
@@ -167,7 +168,7 @@ const CaseTimeline = ({ caseData, notes, documents }) => {
                     ))}
 
                     {timelineEvents.length === 0 && (
-                        <div className="text-center py-4 text-gray-500 dark:text-gray-400">
+                        <div className="text-center py-4 text-surface-500 dark:text-surface-400">
                             No timeline events found.
                         </div>
                     )}

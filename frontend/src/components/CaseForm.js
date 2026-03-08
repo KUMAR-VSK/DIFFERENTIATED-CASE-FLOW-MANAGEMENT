@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
-import BASE_URL from '../../config/api';
+import BASE_URL from '../config/api';
 
 const CaseForm = () => {
   const navigate = useNavigate();
@@ -255,10 +255,10 @@ const CaseForm = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+          <h1 className="text-3xl font-bold text-surface-900 dark:text-white">
             {isEditing ? 'Edit Case' : 'File New Case'}
           </h1>
-          <p className="text-gray-600 dark:text-gray-300 mt-1">
+          <p className="text-surface-600 dark:text-surface-300 mt-1">
             {isEditing ? 'Update case information' : 'Create a new case in the system'}
           </p>
         </div>
@@ -282,11 +282,11 @@ const CaseForm = () => {
                 <div className="mt-3 bg-white rounded-lg p-4 border border-green-200">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm text-gray-600">Case Number:</p>
-                      <p className="text-xl font-bold text-gray-900 font-mono">{createdCaseNumber}</p>
+                      <p className="text-sm text-surface-600">Case Number:</p>
+                      <p className="text-xl font-bold text-surface-900 font-mono">{createdCaseNumber}</p>
                     </div>
                     <div className="text-right">
-                      <p className="text-xs text-gray-500">Auto-generated</p>
+                      <p className="text-xs text-surface-500">Auto-generated</p>
                       <button
                         onClick={() => navigator.clipboard.writeText(createdCaseNumber)}
                         className="mt-1 text-sm text-indigo-600 hover:text-indigo-800 font-medium"
@@ -306,7 +306,7 @@ const CaseForm = () => {
       )}
 
       {/* Form */}
-      <div className="bg-white rounded-lg shadow-lg border border-gray-200">
+      <div className="bg-white rounded-lg shadow-lg border border-surface-200">
         <div className="p-8">
           {error && (
             <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
@@ -325,8 +325,8 @@ const CaseForm = () => {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Case Details Section */}
-            <div className="bg-gray-50 rounded-lg p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Case Details</h3>
+            <div className="bg-surface-50 rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-surface-900 mb-4">Case Details</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {!isEditing && (
                   <div className="bg-gradient-to-r from-indigo-50 to-blue-50 border border-indigo-200 rounded-lg p-6">
@@ -343,9 +343,9 @@ const CaseForm = () => {
                     </div>
                     <div className="bg-white rounded-lg p-4 border-2 border-dashed border-indigo-300">
                       <div className="text-center">
-                        <p className="text-xs text-gray-500 mb-1">Your case will be assigned:</p>
+                        <p className="text-xs text-surface-500 mb-1">Your case will be assigned:</p>
                         <p className="text-2xl font-bold font-mono text-indigo-600">{previewCaseNumber}</p>
-                        <p className="text-xs text-gray-400 mt-2">Format: CASE-YYYY-NNNN</p>
+                        <p className="text-xs text-surface-400 mt-2">Format: CASE-YYYY-NNNN</p>
                       </div>
                     </div>
                     <div className="mt-3 flex items-center space-x-1 text-xs text-indigo-700">
@@ -359,7 +359,7 @@ const CaseForm = () => {
 
                 {isEditing && (
                   <div>
-                    <label htmlFor="caseNumber" className="block text-sm font-medium text-gray-700 mb-2">
+                    <label htmlFor="caseNumber" className="block text-sm font-medium text-surface-700 mb-2">
                       Case Number *
                     </label>
                     <input
@@ -368,23 +368,23 @@ const CaseForm = () => {
                       name="caseNumber"
                       required
                       readOnly
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-600 cursor-not-allowed"
+                      className="w-full px-3 py-2 border border-surface-300 rounded-md bg-surface-50 text-surface-600 cursor-not-allowed"
                       value={formData.caseNumber}
                       onChange={handleChange}
                     />
-                    <p className="text-xs text-gray-500 mt-1">Case number cannot be modified</p>
+                    <p className="text-xs text-surface-500 mt-1">Case number cannot be modified</p>
                   </div>
                 )}
 
                 <div>
-                  <label htmlFor="caseType" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="caseType" className="block text-sm font-medium text-surface-700 mb-2">
                     Case Type *
                   </label>
                   <select
                     id="caseType"
                     name="caseType"
                     required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                    className="w-full px-3 py-2 border border-surface-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-indigo-500"
                     value={formData.caseType}
                     onChange={handleChange}
                   >
@@ -397,14 +397,14 @@ const CaseForm = () => {
                 </div>
 
                 <div>
-                  <label htmlFor="courtLevel" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="courtLevel" className="block text-sm font-medium text-surface-700 mb-2">
                     Court Level *
                   </label>
                   <select
                     id="courtLevel"
                     name="courtLevel"
                     required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                    className="w-full px-3 py-2 border border-surface-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-indigo-500"
                     value={formData.courtLevel}
                     onChange={handleChange}
                   >
@@ -415,7 +415,7 @@ const CaseForm = () => {
                 </div>
 
                 <div className="md:col-span-2">
-                  <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="title" className="block text-sm font-medium text-surface-700 mb-2">
                     Case Title *
                   </label>
                   <input
@@ -423,28 +423,28 @@ const CaseForm = () => {
                     id="title"
                     name="title"
                     required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                    className="w-full px-3 py-2 border border-surface-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-indigo-500"
                     placeholder="Enter case title"
                     value={formData.title}
                     onChange={handleChange}
                   />
-                  <p className="text-xs text-gray-500 mt-1">Brief title describing the case</p>
+                  <p className="text-xs text-surface-500 mt-1">Brief title describing the case</p>
                 </div>
 
                 <div className="md:col-span-2">
-                  <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="description" className="block text-sm font-medium text-surface-700 mb-2">
                     Description
                   </label>
                   <textarea
                     id="description"
                     name="description"
                     rows={4}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                    className="w-full px-3 py-2 border border-surface-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-indigo-500"
                     placeholder="Detailed description of the case"
                     value={formData.description}
                     onChange={handleChange}
                   />
-                  <p className="text-xs text-gray-500 mt-1">Optional detailed description</p>
+                  <p className="text-xs text-surface-500 mt-1">Optional detailed description</p>
                 </div>
               </div>
             </div>
@@ -487,7 +487,7 @@ const CaseForm = () => {
                     id="advocate-select"
                     value={selectedAdvocateId}
                     onChange={(e) => setSelectedAdvocateId(e.target.value)}
-                    className="w-full px-4 py-3 border border-purple-300 dark:border-purple-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-white dark:bg-slate-700 text-gray-900 dark:text-white text-sm"
+                    className="w-full px-4 py-3 border border-purple-300 dark:border-purple-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-white dark:bg-surface-700 text-surface-900 dark:text-white text-sm"
                   >
                     <option value="">— No advocate assigned (assign later) —</option>
                     {advocates.map(adv => (
@@ -500,13 +500,13 @@ const CaseForm = () => {
                   {selectedAdvocateId && (() => {
                     const adv = advocates.find(a => String(a.id) === selectedAdvocateId);
                     return adv ? (
-                      <div className="flex items-center space-x-3 p-3 bg-white dark:bg-slate-800 rounded-lg border border-purple-200 dark:border-purple-700">
+                      <div className="flex items-center space-x-3 p-3 bg-white dark:bg-surface-800 rounded-lg border border-purple-200 dark:border-purple-700">
                         <div className="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0">
                           {adv.firstName.charAt(0)}{adv.lastName.charAt(0)}
                         </div>
                         <div>
-                          <p className="text-sm font-semibold text-gray-900 dark:text-white">{adv.firstName} {adv.lastName}</p>
-                          <p className="text-xs text-gray-500 dark:text-gray-400">@{adv.username} · {adv.email}</p>
+                          <p className="text-sm font-semibold text-surface-900 dark:text-white">{adv.firstName} {adv.lastName}</p>
+                          <p className="text-xs text-surface-500 dark:text-surface-400">@{adv.username} · {adv.email}</p>
                           <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300 mt-1">
                             ⚖️ Advocate
                           </span>
@@ -514,7 +514,7 @@ const CaseForm = () => {
                         <button
                           type="button"
                           onClick={() => setSelectedAdvocateId('')}
-                          className="ml-auto text-gray-400 hover:text-red-500 transition-colors"
+                          className="ml-auto text-surface-400 hover:text-red-500 transition-colors"
                           title="Remove advocate selection"
                         >
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -529,11 +529,11 @@ const CaseForm = () => {
             </div>
 
             {/* Additional Details Section */}
-            <div className="bg-gray-50 rounded-lg p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Additional Details</h3>
+            <div className="bg-surface-50 rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-surface-900 mb-4">Additional Details</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label htmlFor="estimatedDurationDays" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="estimatedDurationDays" className="block text-sm font-medium text-surface-700 mb-2">
                     Estimated Duration (Days)
                   </label>
                   <input
@@ -541,60 +541,60 @@ const CaseForm = () => {
                     id="estimatedDurationDays"
                     name="estimatedDurationDays"
                     min="1"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                    className="w-full px-3 py-2 border border-surface-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-indigo-500"
                     placeholder="30"
                     value={formData.estimatedDurationDays}
                     onChange={handleChange}
                   />
-                  <p className="text-xs text-gray-500 mt-1">Expected duration in days</p>
+                  <p className="text-xs text-surface-500 mt-1">Expected duration in days</p>
                 </div>
 
                 <div>
-                  <label htmlFor="resourceRequirement" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="resourceRequirement" className="block text-sm font-medium text-surface-700 mb-2">
                     Resource Requirements
                   </label>
                   <input
                     type="text"
                     id="resourceRequirement"
                     name="resourceRequirement"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                    className="w-full px-3 py-2 border border-surface-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-indigo-500"
                     placeholder="Special resources needed"
                     value={formData.resourceRequirement}
                     onChange={handleChange}
                   />
-                  <p className="text-xs text-gray-500 mt-1">Any special resources needed (optional)</p>
+                  <p className="text-xs text-surface-500 mt-1">Any special resources needed (optional)</p>
                 </div>
               </div>
             </div>
 
             {/* Document Upload Section */}
-            <div className="bg-blue-50 rounded-lg p-6 border-2 border-dashed border-blue-300">
+            <div className="bg-primary-50 rounded-lg p-6 border-2 border-dashed border-blue-300">
               <div className="flex items-center mb-4">
-                <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center mr-3">
+                <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center mr-3">
                   <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                   </svg>
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900">Supporting Documents</h3>
+                <h3 className="text-lg font-semibold text-surface-900">Supporting Documents</h3>
               </div>
 
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-surface-700 mb-2">
                   Upload Case Documents
                 </label>
                 <div
-                  className={`mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-dashed rounded-lg transition-colors cursor-pointer ${dragActive ? 'border-indigo-500 bg-indigo-50' : 'border-gray-300 hover:border-indigo-400 bg-white'
+                  className={`mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-dashed rounded-lg transition-colors cursor-pointer ${dragActive ? 'border-indigo-500 bg-indigo-50' : 'border-surface-300 hover:border-indigo-400 bg-white'
                     }`}
                   onDragOver={handleDragOver}
                   onDragLeave={handleDragLeave}
                   onDrop={handleDrop}
                 >
                   <div className="space-y-1 text-center">
-                    <svg className="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                    <svg className="mx-auto h-12 w-12 text-surface-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
                       <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
-                    <div className="flex text-sm text-gray-600">
-                      <label htmlFor="file-upload" className="relative cursor-pointer rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500">
+                    <div className="flex text-sm text-surface-600">
+                      <label htmlFor="file-upload" className="relative cursor-pointer rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-primary-500">
                         <span>Upload files</span>
                         <input
                           id="file-upload"
@@ -608,7 +608,7 @@ const CaseForm = () => {
                       </label>
                       <p className="pl-1">or drag and drop</p>
                     </div>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-surface-500">
                       PDF, DOC, DOCX, JPG, PNG, TXT up to 10MB each
                     </p>
                   </div>
@@ -618,19 +618,19 @@ const CaseForm = () => {
               {/* Document Preview */}
               {documents.length > 0 && (
                 <div className="space-y-3">
-                  <h4 className="text-sm font-medium text-gray-900">Uploaded Documents ({documents.length})</h4>
+                  <h4 className="text-sm font-medium text-surface-900">Uploaded Documents ({documents.length})</h4>
                   <div className="space-y-2">
                     {documents.map((doc, index) => (
-                      <div key={index} className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200">
+                      <div key={index} className="flex items-center justify-between p-3 bg-white rounded-lg border border-surface-200">
                         <div className="flex items-center space-x-3">
                           <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                            <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-4 h-4 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
                           </div>
                           <div>
-                            <p className="text-sm font-medium text-gray-900">{doc.name}</p>
-                            <p className="text-xs text-gray-500">{(doc.size / 1024 / 1024).toFixed(2)} MB</p>
+                            <p className="text-sm font-medium text-surface-900">{doc.name}</p>
+                            <p className="text-xs text-surface-500">{(doc.size / 1024 / 1024).toFixed(2)} MB</p>
                           </div>
                         </div>
                         <button
@@ -648,7 +648,7 @@ const CaseForm = () => {
                 </div>
               )}
 
-              <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+              <div className="mt-4 p-4 bg-primary-50 rounded-lg border border-primary-200">
                 <div className="flex">
                   <div className="flex-shrink-0">
                     <svg className="h-5 w-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
@@ -669,7 +669,7 @@ const CaseForm = () => {
             </div>
 
             {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4 pt-6 border-t border-gray-200">
+            <div className="flex flex-col sm:flex-row gap-4 pt-6 border-t border-surface-200">
               <button
                 type="submit"
                 disabled={loading}
@@ -690,7 +690,7 @@ const CaseForm = () => {
               <button
                 type="button"
                 onClick={() => navigate('/cases')}
-                className="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition-colors duration-200"
+                className="px-6 py-3 border border-surface-300 rounded-lg text-surface-700 bg-white hover:bg-surface-50 transition-colors duration-200"
               >
                 Cancel
               </button>
@@ -700,7 +700,7 @@ const CaseForm = () => {
       </div>
 
       {/* Help Section */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+      <div className="bg-primary-50 border border-primary-200 rounded-lg p-6">
         <div className="flex">
           <div className="flex-shrink-0">
             <svg className="h-5 w-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">

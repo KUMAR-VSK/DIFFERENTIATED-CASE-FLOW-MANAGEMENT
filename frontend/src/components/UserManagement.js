@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
-import BASE_URL from '../../config/api';
+import BASE_URL from '../config/api';
 
 const UserManagement = () => {
   const { user: currentUser } = useAuth();
@@ -164,13 +164,13 @@ const UserManagement = () => {
       case 'ADMIN':
         return 'bg-red-100 text-red-800 border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-800';
       case 'JUDGE':
-        return 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800';
+        return 'bg-blue-100 text-blue-800 border-primary-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800';
       case 'CLERK':
         return 'bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-300 dark:border-emerald-800';
       case 'ADVOCATE':
         return 'bg-purple-100 text-purple-800 border-purple-200 dark:bg-purple-900/30 dark:text-purple-300 dark:border-purple-800';
       default:
-        return 'bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600';
+        return 'bg-surface-100 text-surface-800 border-surface-200 dark:bg-surface-700 dark:text-surface-300 dark:border-surface-600';
     }
   };
 
@@ -179,7 +179,7 @@ const UserManagement = () => {
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
-          <p className="mt-4 text-lg text-gray-600 dark:text-gray-300 font-medium">Loading users...</p>
+          <p className="mt-4 text-lg text-surface-600 dark:text-surface-300 font-medium">Loading users...</p>
         </div>
       </div>
     );
@@ -190,8 +190,8 @@ const UserManagement = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white">User Management</h1>
-          <p className="mt-2 text-xl text-gray-600 dark:text-gray-300 font-medium">
+          <h1 className="text-4xl font-bold text-surface-900 dark:text-white">User Management</h1>
+          <p className="mt-2 text-xl text-surface-600 dark:text-surface-300 font-medium">
             Manage system users and permissions
           </p>
         </div>
@@ -242,14 +242,14 @@ const UserManagement = () => {
 
       {/* Add/Edit User Form */}
       {showForm && (
-        <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 p-8 transition-colors duration-300">
+        <div className="bg-white dark:bg-surface-800 rounded-xl shadow-lg border border-surface-200 dark:border-surface-700 p-8 transition-colors duration-300">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+            <h2 className="text-2xl font-bold text-surface-900 dark:text-white">
               {editingUser ? 'Edit User' : 'Create New User'}
             </h2>
             <button
               onClick={resetForm}
-              className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+              className="text-surface-400 hover:text-surface-600 dark:hover:text-surface-300"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -260,7 +260,7 @@ const UserManagement = () => {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label htmlFor="firstName" className="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-2">
                   First Name
                 </label>
                 <input
@@ -268,14 +268,14 @@ const UserManagement = () => {
                   id="firstName"
                   name="firstName"
                   required
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-slate-700 text-gray-900 dark:text-white"
+                  className="w-full px-3 py-2 border border-surface-300 dark:border-surface-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-indigo-500 bg-white dark:bg-surface-700 text-surface-900 dark:text-white"
                   value={formData.firstName}
                   onChange={handleInputChange}
                 />
               </div>
 
               <div>
-                <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label htmlFor="lastName" className="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-2">
                   Last Name
                 </label>
                 <input
@@ -283,14 +283,14 @@ const UserManagement = () => {
                   id="lastName"
                   name="lastName"
                   required
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-slate-700 text-gray-900 dark:text-white"
+                  className="w-full px-3 py-2 border border-surface-300 dark:border-surface-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-indigo-500 bg-white dark:bg-surface-700 text-surface-900 dark:text-white"
                   value={formData.lastName}
                   onChange={handleInputChange}
                 />
               </div>
 
               <div>
-                <label htmlFor="username" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label htmlFor="username" className="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-2">
                   Username
                 </label>
                 <input
@@ -299,14 +299,14 @@ const UserManagement = () => {
                   name="username"
                   required
                   disabled={editingUser}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-gray-100 dark:bg-slate-600 text-gray-900 dark:text-white disabled:cursor-not-allowed"
+                  className="w-full px-3 py-2 border border-surface-300 dark:border-surface-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-indigo-500 bg-surface-100 dark:bg-surface-600 text-surface-900 dark:text-white disabled:cursor-not-allowed"
                   value={formData.username}
                   onChange={handleInputChange}
                 />
               </div>
 
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label htmlFor="email" className="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-2">
                   Email
                 </label>
                 <input
@@ -314,14 +314,14 @@ const UserManagement = () => {
                   id="email"
                   name="email"
                   required
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-slate-700 text-gray-900 dark:text-white"
+                  className="w-full px-3 py-2 border border-surface-300 dark:border-surface-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-indigo-500 bg-white dark:bg-surface-700 text-surface-900 dark:text-white"
                   value={formData.email}
                   onChange={handleInputChange}
                 />
               </div>
 
               <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label htmlFor="password" className="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-2">
                   {editingUser ? 'New Password (leave blank to keep current)' : 'Password'}
                 </label>
                 <input
@@ -329,21 +329,21 @@ const UserManagement = () => {
                   id="password"
                   name="password"
                   required={!editingUser}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-slate-700 text-gray-900 dark:text-white"
+                  className="w-full px-3 py-2 border border-surface-300 dark:border-surface-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-indigo-500 bg-white dark:bg-surface-700 text-surface-900 dark:text-white"
                   value={formData.password}
                   onChange={handleInputChange}
                 />
               </div>
 
               <div>
-                <label htmlFor="role" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label htmlFor="role" className="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-2">
                   Role
                 </label>
                 <select
                   id="role"
                   name="role"
                   required
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-slate-700 text-gray-900 dark:text-white"
+                  className="w-full px-3 py-2 border border-surface-300 dark:border-surface-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-indigo-500 bg-white dark:bg-surface-700 text-surface-900 dark:text-white"
                   value={formData.role}
                   onChange={handleInputChange}
                 >
@@ -357,14 +357,14 @@ const UserManagement = () => {
               {/* Court Level Field - Only for Judges */}
               {formData.role === 'JUDGE' && (
                 <div>
-                  <label htmlFor="courtLevel" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label htmlFor="courtLevel" className="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-2">
                     Court Level
                   </label>
                   <select
                     id="courtLevel"
                     name="courtLevel"
                     required
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-slate-700 text-gray-900 dark:text-white"
+                    className="w-full px-3 py-2 border border-surface-300 dark:border-surface-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-indigo-500 bg-white dark:bg-surface-700 text-surface-900 dark:text-white"
                     value={formData.courtLevel}
                     onChange={handleInputChange}
                   >
@@ -376,11 +376,11 @@ const UserManagement = () => {
               )}
             </div>
 
-            <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200 dark:border-slate-700">
+            <div className="flex justify-end space-x-3 pt-4 border-t border-surface-200 dark:border-surface-700">
               <button
                 type="button"
                 onClick={resetForm}
-                className="px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-slate-700 hover:bg-gray-50 dark:hover:bg-slate-600 transition-colors"
+                className="px-4 py-2 border border-surface-300 dark:border-surface-600 rounded-md text-surface-700 dark:text-surface-300 bg-white dark:bg-surface-700 hover:bg-surface-50 dark:hover:bg-surface-600 transition-colors"
               >
                 Cancel
               </button>
@@ -412,61 +412,61 @@ const UserManagement = () => {
       )}
 
       {/* Users Table */}
-      <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 overflow-hidden transition-colors duration-300">
-        <div className="px-6 py-4 border-b border-gray-200 dark:border-slate-700">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">System Users</h2>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Total users: {users.length}</p>
+      <div className="bg-white dark:bg-surface-800 rounded-xl shadow-lg border border-surface-200 dark:border-surface-700 overflow-hidden transition-colors duration-300">
+        <div className="px-6 py-4 border-b border-surface-200 dark:border-surface-700">
+          <h2 className="text-xl font-semibold text-surface-900 dark:text-white">System Users</h2>
+          <p className="text-sm text-surface-600 dark:text-surface-400 mt-1">Total users: {users.length}</p>
         </div>
 
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-slate-700">
-            <thead className="bg-gray-50 dark:bg-slate-700/50">
+          <table className="min-w-full divide-y divide-surface-100 dark:divide-surface-800">
+            <thead className="bg-surface-50 dark:bg-surface-700/50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-surface-500 dark:text-surface-400 uppercase tracking-wider">
                   Name
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-surface-500 dark:text-surface-400 uppercase tracking-wider">
                   Username
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-surface-500 dark:text-surface-400 uppercase tracking-wider">
                   Email
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-surface-500 dark:text-surface-400 uppercase tracking-wider">
                   Role
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-surface-500 dark:text-surface-400 uppercase tracking-wider">
                   Created
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-surface-500 dark:text-surface-400 uppercase tracking-wider">
                   Actions
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white dark:bg-slate-800 divide-y divide-gray-200 dark:divide-slate-700">
+            <tbody className="bg-white dark:bg-surface-800 divide-y divide-surface-100 dark:divide-surface-800">
               {users.map((userItem) => (
-                <tr key={userItem.id} className="hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors">
+                <tr key={userItem.id} className="hover:bg-surface-50 dark:hover:bg-surface-700/50 transition-colors">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold mr-3">
                         {(userItem.firstName || userItem.username).charAt(0).toUpperCase()}
                       </div>
-                      <div className="text-sm font-medium text-gray-900 dark:text-white">
+                      <div className="text-sm font-medium text-surface-900 dark:text-white">
                         {userItem.firstName} {userItem.lastName}
                       </div>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900 dark:text-gray-300 font-mono">{userItem.username}</div>
+                    <div className="text-sm text-surface-900 dark:text-surface-300 font-mono">{userItem.username}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900 dark:text-gray-300">{userItem.email}</div>
+                    <div className="text-sm text-surface-900 dark:text-surface-300">{userItem.email}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${getRoleColor(userItem.role)}`}>
                       {userItem.role}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-surface-500 dark:text-surface-400">
                     {new Date(userItem.createdAt).toLocaleDateString()}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -474,7 +474,7 @@ const UserManagement = () => {
                       {/* Edit Button */}
                       <button
                         onClick={() => handleEdit(userItem)}
-                        className="p-2 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                        className="p-2 text-primary-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 hover:bg-primary-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
                         title="Edit User"
                       >
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -515,35 +515,35 @@ const UserManagement = () => {
 
         {users.length === 0 && (
           <div className="text-center py-12">
-            <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="mx-auto h-12 w-12 text-surface-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
             </svg>
-            <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">No users found</p>
+            <p className="mt-2 text-sm text-surface-500 dark:text-surface-400">No users found</p>
           </div>
         )}
       </div>
 
       {/* Role Change Modal */}
       {showRoleModal && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 dark:bg-black/70 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
-          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white dark:bg-slate-800 dark:border-slate-700 transition-colors">
+        <div className="fixed inset-0 bg-surface-600 bg-opacity-50 dark:bg-black/70 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
+          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white dark:bg-surface-800 dark:border-surface-700 transition-colors">
             <div className="mt-3">
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Change User Role</h3>
+              <h3 className="text-lg font-medium text-surface-900 dark:text-white mb-4">Change User Role</h3>
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                <label className="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-3">
                   Select New Role
                 </label>
                 <select
                   value={newRole}
                   onChange={(e) => setNewRole(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-slate-700 text-gray-900 dark:text-white"
+                  className="w-full px-3 py-2 border border-surface-300 dark:border-surface-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-indigo-500 bg-white dark:bg-surface-700 text-surface-900 dark:text-white"
                 >
                   <option value="CLERK">Court Clerk</option>
                   <option value="JUDGE">Judge</option>
                   <option value="ADMIN">Administrator</option>
                   <option value="ADVOCATE">Advocate</option>
                 </select>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                <p className="text-xs text-surface-500 dark:text-surface-400 mt-2">
                   Current role will be changed to the selected role.
                 </p>
               </div>
@@ -554,7 +554,7 @@ const UserManagement = () => {
                     setSelectedUserId(null);
                     setNewRole('');
                   }}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-md hover:bg-gray-200 dark:hover:bg-slate-600 transition-colors"
+                  className="px-4 py-2 text-sm font-medium text-surface-700 dark:text-surface-300 bg-surface-100 dark:bg-surface-700 border border-surface-300 dark:border-surface-600 rounded-md hover:bg-surface-200 dark:hover:bg-surface-600 transition-colors"
                 >
                   Cancel
                 </button>
@@ -573,17 +573,17 @@ const UserManagement = () => {
 
       {/* Delete Confirmation Modal */}
       {showDeleteModal && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 dark:bg-black/70 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
-          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white dark:bg-slate-800 dark:border-slate-700 transition-colors">
+        <div className="fixed inset-0 bg-surface-600 bg-opacity-50 dark:bg-black/70 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
+          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white dark:bg-surface-800 dark:border-surface-700 transition-colors">
             <div className="mt-3">
               <div className="flex items-center justify-center w-12 h-12 mx-auto bg-red-100 dark:bg-red-900/30 rounded-full mb-4">
                 <svg className="w-6 h-6 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16.5c-.77 1.333.192 3 1.732 3z" />
                 </svg>
               </div>
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white text-center mb-2">Delete User</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400 text-center mb-6">
-                Are you sure you want to delete <strong className="text-gray-900 dark:text-white">{userToDelete?.username}</strong>?
+              <h3 className="text-lg font-medium text-surface-900 dark:text-white text-center mb-2">Delete User</h3>
+              <p className="text-sm text-surface-600 dark:text-surface-400 text-center mb-6">
+                Are you sure you want to delete <strong className="text-surface-900 dark:text-white">{userToDelete?.username}</strong>?
                 This action cannot be undone.
               </p>
               <div className="flex justify-end gap-3">
@@ -592,7 +592,7 @@ const UserManagement = () => {
                     setShowDeleteModal(false);
                     setUserToDelete(null);
                   }}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-md hover:bg-gray-200 dark:hover:bg-slate-600 transition-colors"
+                  className="px-4 py-2 text-sm font-medium text-surface-700 dark:text-surface-300 bg-surface-100 dark:bg-surface-700 border border-surface-300 dark:border-surface-600 rounded-md hover:bg-surface-200 dark:hover:bg-surface-600 transition-colors"
                 >
                   Cancel
                 </button>

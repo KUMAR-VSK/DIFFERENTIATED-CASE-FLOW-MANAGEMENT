@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
-import BASE_URL from '../../config/api';
+import BASE_URL from '../config/api';
 
 const AdvancedDocumentManager = ({ caseId }) => {
     const { user } = useAuth();
@@ -156,7 +156,7 @@ const AdvancedDocumentManager = ({ caseId }) => {
             PLEADING: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
             JUDGMENT: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
             APPEAL: 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200',
-            OTHER: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
+            OTHER: 'bg-surface-100 text-surface-800 dark:bg-surface-700 dark:text-surface-200'
         };
         return colors[type] || colors.OTHER;
     };
@@ -199,7 +199,7 @@ const AdvancedDocumentManager = ({ caseId }) => {
             <div className="flex flex-wrap gap-4">
                 <button
                     onClick={() => setShowUploadModal(true)}
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium shadow-lg transition-all hover:shadow-xl flex items-center space-x-2"
+                    className="bg-primary-600 hover:bg-primary-700 text-white px-6 py-3 rounded-lg font-medium shadow-lg transition-all hover:shadow-xl flex items-center space-x-2"
                 >
                     <span>📤</span>
                     <span>Upload Document</span>
@@ -224,18 +224,18 @@ const AdvancedDocumentManager = ({ caseId }) => {
                 {documents.map((doc) => (
                     <div
                         key={doc.id}
-                        className="bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-all border border-gray-200 dark:border-gray-700 overflow-hidden"
+                        className="bg-white dark:bg-surface-800 rounded-xl shadow-lg hover:shadow-xl transition-all border border-surface-200 dark:border-surface-700 overflow-hidden"
                     >
                         {/* Document Header */}
-                        <div className="p-6 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-800 border-b border-gray-200 dark:border-gray-600">
+                        <div className="p-6 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-800 border-b border-surface-200 dark:border-surface-600">
                             <div className="flex items-start justify-between">
                                 <div className="flex items-center space-x-3">
                                     <div className="text-4xl">{getDocumentIcon(doc.fileType)}</div>
                                     <div>
-                                        <h3 className="font-bold text-gray-900 dark:text-white line-clamp-1">
+                                        <h3 className="font-bold text-surface-900 dark:text-white line-clamp-1">
                                             {doc.originalFileName}
                                         </h3>
-                                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                                        <p className="text-xs text-surface-500 dark:text-surface-400">
                                             {formatFileSize(doc.fileSize)}
                                         </p>
                                     </div>
@@ -248,17 +248,17 @@ const AdvancedDocumentManager = ({ caseId }) => {
 
                         {/* Document Body */}
                         <div className="p-6">
-                            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 line-clamp-2">
+                            <p className="text-sm text-surface-600 dark:text-surface-400 mb-4 line-clamp-2">
                                 {doc.description || 'No description provided'}
                             </p>
 
                             <div className="space-y-2 text-sm">
-                                <div className="flex items-center text-gray-600 dark:text-gray-400">
+                                <div className="flex items-center text-surface-600 dark:text-surface-400">
                                     <span className="font-medium mr-2">📅 Uploaded:</span>
                                     <span>{new Date(doc.uploadDate).toLocaleDateString()}</span>
                                 </div>
                                 {doc.uploadedBy && (
-                                    <div className="flex items-center text-gray-600 dark:text-gray-400">
+                                    <div className="flex items-center text-surface-600 dark:text-surface-400">
                                         <span className="font-medium mr-2">👤 By:</span>
                                         <span>{doc.uploadedBy.username}</span>
                                     </div>
@@ -270,17 +270,17 @@ const AdvancedDocumentManager = ({ caseId }) => {
                                 <span className="text-xs bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 px-3 py-1 rounded-full font-medium">
                                     📦 v1.0
                                 </span>
-                                <span className="text-xs text-gray-500 dark:text-gray-400">
+                                <span className="text-xs text-surface-500 dark:text-surface-400">
                                     ✅ Current
                                 </span>
                             </div>
                         </div>
 
                         {/* Document Actions */}
-                        <div className="p-4 bg-gray-50 dark:bg-gray-700 border-t border-gray-200 dark:border-gray-600 grid grid-cols-2 gap-2">
+                        <div className="p-4 bg-surface-50 dark:bg-surface-700 border-t border-surface-200 dark:border-surface-600 grid grid-cols-2 gap-2">
                             <button
                                 onClick={() => window.open(`${BASE_URL}/api/documents/view/${doc.url.split('/').pop()}`, '_blank')}
-                                className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors flex items-center justify-center space-x-1"
+                                className="px-4 py-2 bg-primary-600 text-white rounded-lg text-sm font-medium hover:bg-primary-700 transition-colors flex items-center justify-center space-x-1"
                             >
                                 <span>👁️</span>
                                 <span>View</span>
@@ -313,7 +313,7 @@ const AdvancedDocumentManager = ({ caseId }) => {
                                     a.download = doc.originalFileName;
                                     a.click();
                                 }}
-                                className="px-4 py-2 bg-gray-600 text-white rounded-lg text-sm font-medium hover:bg-gray-700 transition-colors flex items-center justify-center space-x-1"
+                                className="px-4 py-2 bg-surface-600 text-white rounded-lg text-sm font-medium hover:bg-surface-700 transition-colors flex items-center justify-center space-x-1"
                             >
                                 <span>⬇️</span>
                                 <span>Download</span>
@@ -324,13 +324,13 @@ const AdvancedDocumentManager = ({ caseId }) => {
             </div>
 
             {documents.length === 0 && (
-                <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-xl shadow-lg">
+                <div className="text-center py-12 bg-white dark:bg-surface-800 rounded-xl shadow-lg">
                     <div className="text-6xl mb-4">📁</div>
-                    <p className="text-xl font-semibold text-gray-600 dark:text-gray-400">No documents yet</p>
-                    <p className="text-gray-500 dark:text-gray-500 mt-2">Upload your first document to get started</p>
+                    <p className="text-xl font-semibold text-surface-600 dark:text-surface-400">No documents yet</p>
+                    <p className="text-surface-500 dark:text-surface-500 mt-2">Upload your first document to get started</p>
                     <button
                         onClick={() => setShowUploadModal(true)}
-                        className="mt-6 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium shadow-lg transition-all"
+                        className="mt-6 bg-primary-600 hover:bg-primary-700 text-white px-6 py-3 rounded-lg font-medium shadow-lg transition-all"
                     >
                         Upload Document
                     </button>
@@ -340,13 +340,13 @@ const AdvancedDocumentManager = ({ caseId }) => {
             {/* Upload Modal with Drag & Drop */}
             {showUploadModal && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-                        <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+                    <div className="bg-white dark:bg-surface-800 rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                        <div className="p-6 border-b border-surface-200 dark:border-surface-700">
                             <div className="flex items-center justify-between">
-                                <h3 className="text-2xl font-bold text-gray-900 dark:text-white">Upload Document</h3>
+                                <h3 className="text-2xl font-bold text-surface-900 dark:text-white">Upload Document</h3>
                                 <button
                                     onClick={() => setShowUploadModal(false)}
-                                    className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-2xl font-bold"
+                                    className="text-surface-400 hover:text-surface-600 dark:hover:text-surface-300 text-2xl font-bold"
                                 >
                                     ×
                                 </button>
@@ -357,8 +357,8 @@ const AdvancedDocumentManager = ({ caseId }) => {
                             {/* Drag & Drop Zone */}
                             <div
                                 className={`border-2 border-dashed rounded-xl p-12 text-center transition-colors ${dragActive
-                                        ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-                                        : 'border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700'
+                                        ? 'border-blue-500 bg-primary-50 dark:bg-blue-900/20'
+                                        : 'border-surface-300 dark:border-surface-600 bg-surface-50 dark:bg-surface-700'
                                     }`}
                                 onDragEnter={handleDrag}
                                 onDragLeave={handleDrag}
@@ -366,11 +366,11 @@ const AdvancedDocumentManager = ({ caseId }) => {
                                 onDrop={handleDrop}
                             >
                                 <div className="text-6xl mb-4">📤</div>
-                                <p className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                <p className="text-lg font-semibold text-surface-700 dark:text-surface-300 mb-2">
                                     {uploadForm.file ? uploadForm.fileName : 'Drag & drop files here'}
                                 </p>
-                                <p className="text-sm text-gray-500 dark:text-gray-400">or</p>
-                                <label className="mt-2 inline-block px-6 py-2 bg-blue-600 text-white rounded-lg cursor-pointer hover:bg-blue-700 transition-colors">
+                                <p className="text-sm text-surface-500 dark:text-surface-400">or</p>
+                                <label className="mt-2 inline-block px-6 py-2 bg-primary-600 text-white rounded-lg cursor-pointer hover:bg-primary-700 transition-colors">
                                     Browse Files
                                     <input
                                         type="file"
@@ -378,7 +378,7 @@ const AdvancedDocumentManager = ({ caseId }) => {
                                         className="hidden"
                                     />
                                 </label>
-                                <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                                <p className="mt-2 text-xs text-surface-500 dark:text-surface-400">
                                     Maximum file size: 50MB
                                 </p>
                             </div>
@@ -387,12 +387,12 @@ const AdvancedDocumentManager = ({ caseId }) => {
                             {uploadProgress > 0 && uploadProgress < 100 && (
                                 <div>
                                     <div className="flex items-center justify-between mb-2">
-                                        <span className="text-sm text-gray-600 dark:text-gray-400">Uploading...</span>
-                                        <span className="text-sm font-medium text-blue-600">{uploadProgress}%</span>
+                                        <span className="text-sm text-surface-600 dark:text-surface-400">Uploading...</span>
+                                        <span className="text-sm font-medium text-primary-600">{uploadProgress}%</span>
                                     </div>
-                                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                                    <div className="w-full bg-surface-200 dark:bg-surface-700 rounded-full h-2">
                                         <div
-                                            className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                                            className="bg-primary-600 h-2 rounded-full transition-all duration-300"
                                             style={{ width: `${uploadProgress}%` }}
                                         ></div>
                                     </div>
@@ -401,13 +401,13 @@ const AdvancedDocumentManager = ({ caseId }) => {
 
                             {/* Form Fields */}
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                <label className="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-2">
                                     Description
                                 </label>
                                 <textarea
                                     value={uploadForm.description}
                                     onChange={(e) => setUploadForm({ ...uploadForm, description: e.target.value })}
-                                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                                    className="w-full px-4 py-2 border border-surface-300 dark:border-surface-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-surface-700 dark:text-white"
                                     rows="3"
                                     placeholder="Describe the document..."
                                 />
@@ -415,13 +415,13 @@ const AdvancedDocumentManager = ({ caseId }) => {
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                    <label className="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-2">
                                         Document Type
                                     </label>
                                     <select
                                         value={uploadForm.documentType}
                                         onChange={(e) => setUploadForm({ ...uploadForm, documentType: e.target.value })}
-                                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                                        className="w-full px-4 py-2 border border-surface-300 dark:border-surface-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-surface-700 dark:text-white"
                                     >
                                         <option value="EVIDENCE">Evidence</option>
                                         <option value="WITNESS_STATEMENT">Witness Statement</option>
@@ -434,43 +434,43 @@ const AdvancedDocumentManager = ({ caseId }) => {
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                    <label className="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-2">
                                         Expiry Date (Optional)
                                     </label>
                                     <input
                                         type="date"
                                         value={uploadForm.expiryDate}
                                         onChange={(e) => setUploadForm({ ...uploadForm, expiryDate: e.target.value })}
-                                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                                        className="w-full px-4 py-2 border border-surface-300 dark:border-surface-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-surface-700 dark:text-white"
                                     />
                                 </div>
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                <label className="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-2">
                                     Tags (comma-separated)
                                 </label>
                                 <input
                                     type="text"
                                     value={uploadForm.tags}
                                     onChange={(e) => setUploadForm({ ...uploadForm, tags: e.target.value })}
-                                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                                    className="w-full px-4 py-2 border border-surface-300 dark:border-surface-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-surface-700 dark:text-white"
                                     placeholder="e.g., confidential, urgent, evidence"
                                 />
                             </div>
 
-                            <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+                            <div className="flex justify-end space-x-3 pt-4 border-t border-surface-200 dark:border-surface-700">
                                 <button
                                     type="button"
                                     onClick={() => setShowUploadModal(false)}
-                                    className="px-6 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                                    className="px-6 py-2 border border-surface-300 dark:border-surface-600 text-surface-700 dark:text-surface-300 rounded-lg font-medium hover:bg-surface-50 dark:hover:bg-surface-700 transition-colors"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={!uploadForm.file}
-                                    className="px-6 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="px-6 py-2 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     Upload Document
                                 </button>
@@ -483,16 +483,16 @@ const AdvancedDocumentManager = ({ caseId }) => {
             {/* Version History Modal */}
             {showVersionModal && selectedDoc && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-                        <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+                    <div className="bg-white dark:bg-surface-800 rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+                        <div className="p-6 border-b border-surface-200 dark:border-surface-700">
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <h3 className="text-2xl font-bold text-gray-900 dark:text-white">Version History</h3>
-                                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{selectedDoc.originalFileName}</p>
+                                    <h3 className="text-2xl font-bold text-surface-900 dark:text-white">Version History</h3>
+                                    <p className="text-sm text-surface-600 dark:text-surface-400 mt-1">{selectedDoc.originalFileName}</p>
                                 </div>
                                 <button
                                     onClick={() => setShowVersionModal(false)}
-                                    className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-2xl font-bold"
+                                    className="text-surface-400 hover:text-surface-600 dark:hover:text-surface-300 text-2xl font-bold"
                                 >
                                     ×
                                 </button>
@@ -506,25 +506,25 @@ const AdvancedDocumentManager = ({ caseId }) => {
                                     <div className="flex items-center justify-between">
                                         <div>
                                             <div className="flex items-center space-x-3 mb-2">
-                                                <span className="text-2xl font-bold text-gray-900 dark:text-white">v1.0</span>
+                                                <span className="text-2xl font-bold text-surface-900 dark:text-white">v1.0</span>
                                                 <span className="px-3 py-1 bg-green-500 text-white rounded-full text-xs font-bold">
                                                     CURRENT
                                                 </span>
                                             </div>
-                                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                                            <p className="text-sm text-surface-600 dark:text-surface-400">
                                                 Uploaded on {new Date(selectedDoc.uploadDate).toLocaleString()}
                                             </p>
                                             {selectedDoc.uploadedBy && (
-                                                <p className="text-sm text-gray-600 dark:text-gray-400">
+                                                <p className="text-sm text-surface-600 dark:text-surface-400">
                                                     by {selectedDoc.uploadedBy.username}
                                                 </p>
                                             )}
                                         </div>
                                         <div className="flex space-x-2">
-                                            <button className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700">
+                                            <button className="px-4 py-2 bg-primary-600 text-white rounded-lg text-sm font-medium hover:bg-primary-700">
                                                 View
                                             </button>
-                                            <button className="px-4 py-2 bg-gray-600 text-white rounded-lg text-sm font-medium hover:bg-gray-700">
+                                            <button className="px-4 py-2 bg-surface-600 text-white rounded-lg text-sm font-medium hover:bg-surface-700">
                                                 Download
                                             </button>
                                         </div>
@@ -534,17 +534,17 @@ const AdvancedDocumentManager = ({ caseId }) => {
                                 {/* Previous Versions */}
                                 {versions.length > 0 && (
                                     <div className="mt-4">
-                                        <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">Previous Versions</h4>
+                                        <h4 className="text-lg font-semibold text-surface-900 dark:text-white mb-3">Previous Versions</h4>
                                         {versions.map((version, index) => (
-                                            <div key={index} className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 mb-3">
+                                            <div key={index} className="bg-surface-50 dark:bg-surface-700 rounded-lg p-4 mb-3">
                                                 <div className="flex items-center justify-between">
                                                     <div>
-                                                        <span className="font-bold text-gray-900 dark:text-white">v{version.versionNumber}</span>
-                                                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                                        <span className="font-bold text-surface-900 dark:text-white">v{version.versionNumber}</span>
+                                                        <p className="text-sm text-surface-600 dark:text-surface-400 mt-1">
                                                             {new Date(version.uploadDate).toLocaleString()}
                                                         </p>
                                                     </div>
-                                                    <button className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700">
+                                                    <button className="px-4 py-2 bg-primary-600 text-white rounded-lg text-sm font-medium hover:bg-primary-700">
                                                         Restore
                                                     </button>
                                                 </div>
@@ -554,7 +554,7 @@ const AdvancedDocumentManager = ({ caseId }) => {
                                 )}
 
                                 {versions.length === 0 && (
-                                    <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                                    <div className="text-center py-8 text-surface-500 dark:text-surface-400">
                                         No previous versions
                                     </div>
                                 )}
