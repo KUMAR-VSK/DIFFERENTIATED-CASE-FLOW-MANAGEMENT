@@ -10,7 +10,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.dcm.model.Case;
+import com.example.dcm.model.CaseAudit;
 import com.example.dcm.model.User;
+import com.example.dcm.repository.CaseAuditRepository;
 import com.example.dcm.repository.CaseRepository;
 import com.example.dcm.repository.UserRepository;
 
@@ -23,6 +25,9 @@ public class CaseService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private CaseAuditRepository caseAuditRepository;
 
     @Autowired
     private PriorityEngine priorityEngine;
@@ -64,6 +69,9 @@ public class CaseService {
 
             // Save all updated cases
             caseRepository.saveAll(allCases);
+
+            // Create Audit trail
+            caseAuditRepository.save(new CaseAudit(savedCase, CaseAudit.ActionType.CASE_CREATED, "Case filed as " + savedCase.getCaseNumber()));
 
             return savedCase;
         } catch (Exception e) {
@@ -108,8 +116,12 @@ public class CaseService {
         Case caseEntity = caseRepository.findById(caseId)
                 .orElseThrow(() -> new IllegalArgumentException("Case not found"));
 
+        Case.Status oldStatus = caseEntity.getStatus();
         caseEntity.setStatus(newStatus);
-        return caseRepository.save(caseEntity);
+        Case savedCase = caseRepository.save(caseEntity);
+        
+        caseAuditRepository.save(new CaseAudit(savedCase, CaseAudit.ActionType.STATUS_CHANGED, "Status changed from " + oldStatus + " to " + newStatus));
+        return savedCase;
     }
 
     // Assign judge to case
@@ -126,7 +138,10 @@ public class CaseService {
 
         caseEntity.setAssignedJudge(judge);
         caseEntity.setStatus(Case.Status.SCHEDULED);
-        return caseRepository.save(caseEntity);
+        Case savedCase = caseRepository.save(caseEntity);
+        
+        caseAuditRepository.save(new CaseAudit(savedCase, CaseAudit.ActionType.JUDGE_ASSIGNED, "Assigned to Judge: " + judge.getFirstName() + " " + judge.getLastName()));
+        return savedCase;
     }
 
     // Schedule hearing
@@ -139,7 +154,10 @@ public class CaseService {
         if (caseEntity.getStatus() == Case.Status.FILED || caseEntity.getStatus() == Case.Status.UNDER_REVIEW) {
             caseEntity.setStatus(Case.Status.SCHEDULED);
         }
-        return caseRepository.save(caseEntity);
+        Case savedCase = caseRepository.save(caseEntity);
+        
+        caseAuditRepository.save(new CaseAudit(savedCase, CaseAudit.ActionType.HEARING_SCHEDULED, "Hearing scheduled for " + hearingDate.toString().substring(0, 10)));
+        return savedCase;
     }
 
     // Get cases by priority order (for scheduling)
@@ -302,8 +320,8 @@ public class CaseService {
         Case caseEntity = caseRepository.findById(caseId)
                 .orElseThrow(() -> new IllegalArgumentException("Case not found"));
 
-        // For now, return a simple text-based "PDF" representation
-        // In a real implementation, you'd use a PDF library like iText or Apache PDFBox
+        List<CaseAudit> history = caseAuditRepository.findByCaseEntityOrderByCreatedAtAsc(caseEntity);
+
         StringBuilder pdfContent = new StringBuilder();
         pdfContent.append("%PDF-1.4\n");
         pdfContent.append("1 0 obj\n");
@@ -331,20 +349,42 @@ public class CaseService {
         pdfContent.append(">>\n");
         pdfContent.append("endobj\n");
 
+        StringBuilder textContent = new StringBuilder();
+        textContent.append("BT\n/F1 12 Tf\n72 720 Td\n");
+        
+        // Escape parentheses for PDF text format
+        String title = caseEntity.getTitle().replace("(", "\\(").replace(")", "\\)");
+        textContent.append("(").append(title).append(") Tj\n0 -20 Td\n");
+        textContent.append("(Case Number: ").append(caseEntity.getCaseNumber()).append(") Tj\n0 -20 Td\n");
+        textContent.append("(Status: ").append(caseEntity.getStatus()).append(") Tj\n0 -20 Td\n");
+        textContent.append("(Court Level: ").append(caseEntity.getCourtLevel()).append(") Tj\n0 -20 Td\n");
+        if (caseEntity.getAssignedJudge() != null) {
+            textContent.append("(Judge: ").append(caseEntity.getAssignedJudge().getFirstName())
+                       .append(" ").append(caseEntity.getAssignedJudge().getLastName()).append(") Tj\n0 -20 Td\n");
+        }
+        textContent.append("(-----------------------------------) Tj\n0 -20 Td\n");
+        textContent.append("(Update History:) Tj\n0 -20 Td\n");
+        
+        for (CaseAudit entry : history) {
+            String date = entry.getCreatedAt() != null ? entry.getCreatedAt().toString().substring(0, 16).replace("T", " ") : "Unknown";
+            String action = entry.getActionType() != null ? entry.getActionType().toString() : "";
+            String desc = entry.getDescription() != null ? entry.getDescription().replace("(", "\\(").replace(")", "\\)") : "";
+            
+            // Limit line length for simple PDF
+            String line = date + " - " + action + ": " + desc;
+            if (line.length() > 80) line = line.substring(0, 77) + "...";
+            
+            textContent.append("(").append(line).append(") Tj\n0 -15 Td\n");
+        }
+        
+        textContent.append("ET\n");
+
         pdfContent.append("4 0 obj\n");
         pdfContent.append("<<\n");
-        pdfContent.append("/Length ").append(("BT\n/F1 12 Tf\n72 720 Td\n(" + caseEntity.getTitle() + ") Tj\nET\n").length()).append("\n");
+        pdfContent.append("/Length ").append(textContent.length()).append("\n");
         pdfContent.append(">>\n");
         pdfContent.append("stream\n");
-        pdfContent.append("BT\n");
-        pdfContent.append("/F1 12 Tf\n");
-        pdfContent.append("72 720 Td\n");
-        pdfContent.append("(").append(caseEntity.getTitle()).append(") Tj\n");
-        pdfContent.append("0 -20 Td\n");
-        pdfContent.append("(Case Number: ").append(caseEntity.getCaseNumber()).append(") Tj\n");
-        pdfContent.append("0 -20 Td\n");
-        pdfContent.append("(Status: ").append(caseEntity.getStatus()).append(") Tj\n");
-        pdfContent.append("ET\n");
+        pdfContent.append(textContent.toString());
         pdfContent.append("endstream\n");
         pdfContent.append("endobj\n");
 

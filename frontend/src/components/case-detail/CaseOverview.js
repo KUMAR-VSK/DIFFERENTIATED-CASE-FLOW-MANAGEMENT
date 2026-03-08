@@ -13,6 +13,7 @@ const CaseOverview = ({
     onAssignAdvocate,
     onAssignJudge,
     onTakeOverCase,
+    onDownloadHistoryPDF,
     setShowStatusModal,
     setShowHearingModal,
     setShowNoteModal,
@@ -280,6 +281,18 @@ const CaseOverview = ({
                     </div>
 
                     <div className="space-y-3">
+                        {/* Download Case History PDF - Allow all authenticated users */}
+                        <button
+                            onClick={onDownloadHistoryPDF}
+                            disabled={actionLoading}
+                            className="w-full bg-slate-800 dark:bg-slate-300 text-white dark:text-slate-900 px-4 py-3 rounded-lg hover:bg-slate-900 dark:hover:bg-slate-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 text-sm font-medium flex items-center justify-center shadow-md mb-2"
+                        >
+                            <svg className="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            {actionLoading ? 'Downloading...' : 'Download Case History PDF'}
+                        </button>
+
                         {/* Status Update - ADMIN/JUDGE only */}
                         {(user.role === 'ADMIN' || user.role === 'JUDGE') ? (
                             <button

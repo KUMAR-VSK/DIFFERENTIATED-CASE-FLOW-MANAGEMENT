@@ -480,6 +480,25 @@ const CaseDetail = () => {
     }
   };
 
+  const handleDownloadHistoryPDF = async () => {
+    try {
+      const response = await axios.get(`http://localhost:8080/api/cases/${id}/pdf`, {
+        responseType: 'blob'
+      });
+      const url = window.URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `case-report-${id}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      showToast('Case History PDF downloaded successfully');
+    } catch (error) {
+      console.error('Error downloading case history PDF:', error);
+      showToast('Failed to download case history PDF', 'error');
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -583,6 +602,7 @@ const CaseDetail = () => {
               onAssignAdvocate={handleAssignAdvocate}
               onAssignJudge={handleAssignJudge}
               onTakeOverCase={handleTakeOverCase}
+              onDownloadHistoryPDF={handleDownloadHistoryPDF}
               setShowStatusModal={setShowStatusModal}
               setShowHearingModal={setShowHearingModal}
               setShowNoteModal={setShowNoteModal}

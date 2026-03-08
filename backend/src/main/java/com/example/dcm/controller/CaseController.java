@@ -272,9 +272,9 @@ public class CaseController {
         }
     }
 
-    // Generate case PDF (placeholder - would need PDF library)
+    // Generate case PDF (placeholder - returns formatted text for now)
     @GetMapping("/{id}/pdf")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('JUDGE')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('JUDGE') or hasRole('CLERK') or hasRole('ADVOCATE')")
     public ResponseEntity<String> generateCasePDF(@PathVariable Long id) {
         try {
             String pdfContent = caseService.generateCasePDF(id);
