@@ -34,24 +34,54 @@ public class CaseController {
     // Get all cases (for admins and judges)
     @GetMapping
     @PreAuthorize("hasRole('ADMIN') or hasRole('JUDGE') or hasRole('CLERK')")
-    public ResponseEntity<List<Case>> getAllCases() {
-        List<Case> cases = caseService.getCasesByPriorityOrder();
+    public ResponseEntity<List<Case>> getAllCases(Authentication authentication) {
+        String username = authentication.getName();
+        User currentUser = caseService.getUserByUsername(username);
+        
+        List<Case> cases;
+        if (currentUser.getRole() == User.Role.ADMIN) {
+            cases = caseService.getCasesByPriorityOrder();
+        } else if (currentUser.getCourtLevel() != null) {
+            cases = caseService.getCasesByPriorityOrderAndCourtLevel(currentUser.getCourtLevel());
+        } else {
+            cases = caseService.getCasesByPriorityOrder();
+        }
         return ResponseEntity.ok(cases);
     }
 
     // Get recent cases (sorted by creation date, descending)
     @GetMapping("/recent")
     @PreAuthorize("hasRole('ADMIN') or hasRole('JUDGE') or hasRole('CLERK') or hasRole('ADVOCATE')")
-    public ResponseEntity<List<Case>> getRecentCases() {
-        List<Case> cases = caseService.getRecentCases();
+    public ResponseEntity<List<Case>> getRecentCases(Authentication authentication) {
+        String username = authentication.getName();
+        User currentUser = caseService.getUserByUsername(username);
+        
+        List<Case> cases;
+        if (currentUser.getRole() == User.Role.ADMIN) {
+            cases = caseService.getRecentCases();
+        } else if (currentUser.getCourtLevel() != null) {
+            cases = caseService.getRecentCasesByCourtLevel(currentUser.getCourtLevel());
+        } else {
+            cases = caseService.getRecentCases();
+        }
         return ResponseEntity.ok(cases);
     }
 
     // Get all cases for case management (includes filed cases)
     @GetMapping("/management")
     @PreAuthorize("hasRole('ADMIN') or hasRole('JUDGE') or hasRole('CLERK')")
-    public ResponseEntity<List<Case>> getAllCasesForManagement() {
-        List<Case> cases = caseService.getAllCases();
+    public ResponseEntity<List<Case>> getAllCasesForManagement(Authentication authentication) {
+        String username = authentication.getName();
+        User currentUser = caseService.getUserByUsername(username);
+        
+        List<Case> cases;
+        if (currentUser.getRole() == User.Role.ADMIN) {
+            cases = caseService.getAllCases();
+        } else if (currentUser.getCourtLevel() != null) {
+            cases = caseService.getAllCasesByCourtLevel(currentUser.getCourtLevel());
+        } else {
+            cases = caseService.getAllCases();
+        }
         return ResponseEntity.ok(cases);
     }
 
@@ -180,24 +210,54 @@ public class CaseController {
     // Get unscheduled cases
     @GetMapping("/unscheduled")
     @PreAuthorize("hasRole('ADMIN') or hasRole('JUDGE')")
-    public ResponseEntity<List<Case>> getUnscheduledCases() {
-        List<Case> cases = caseService.getUnscheduledCases();
+    public ResponseEntity<List<Case>> getUnscheduledCases(Authentication authentication) {
+        String username = authentication.getName();
+        User currentUser = caseService.getUserByUsername(username);
+        
+        List<Case> cases;
+        if (currentUser.getRole() == User.Role.ADMIN) {
+            cases = caseService.getUnscheduledCases();
+        } else if (currentUser.getCourtLevel() != null) {
+            cases = caseService.getUnscheduledCasesByCourtLevel(currentUser.getCourtLevel());
+        } else {
+            cases = caseService.getUnscheduledCases();
+        }
         return ResponseEntity.ok(cases);
     }
 
     // Get high priority cases
     @GetMapping("/high-priority")
     @PreAuthorize("hasRole('ADMIN') or hasRole('JUDGE')")
-    public ResponseEntity<List<Case>> getHighPriorityCases() {
-        List<Case> cases = caseService.getHighPriorityCases();
+    public ResponseEntity<List<Case>> getHighPriorityCases(Authentication authentication) {
+        String username = authentication.getName();
+        User currentUser = caseService.getUserByUsername(username);
+        
+        List<Case> cases;
+        if (currentUser.getRole() == User.Role.ADMIN) {
+            cases = caseService.getHighPriorityCases();
+        } else if (currentUser.getCourtLevel() != null) {
+            cases = caseService.getHighPriorityCasesByCourtLevel(currentUser.getCourtLevel());
+        } else {
+            cases = caseService.getHighPriorityCases();
+        }
         return ResponseEntity.ok(cases);
     }
 
     // Get all scheduled hearings for calendar view
     @GetMapping("/hearings")
     @PreAuthorize("hasRole('ADMIN') or hasRole('JUDGE') or hasRole('CLERK')")
-    public ResponseEntity<List<Case>> getAllHearings() {
-        List<Case> cases = caseService.getAllScheduledHearings();
+    public ResponseEntity<List<Case>> getAllHearings(Authentication authentication) {
+        String username = authentication.getName();
+        User currentUser = caseService.getUserByUsername(username);
+        
+        List<Case> cases;
+        if (currentUser.getRole() == User.Role.ADMIN) {
+            cases = caseService.getAllScheduledHearings();
+        } else if (currentUser.getCourtLevel() != null) {
+            cases = caseService.getAllScheduledHearingsByCourtLevel(currentUser.getCourtLevel());
+        } else {
+            cases = caseService.getAllScheduledHearings();
+        }
         return ResponseEntity.ok(cases);
     }
 
@@ -244,16 +304,32 @@ public class CaseController {
     // Get case statistics (allow multiple roles)
     @GetMapping("/statistics")
     @PreAuthorize("hasRole('ADMIN') or hasRole('CLERK') or hasRole('JUDGE') or hasRole('ADVOCATE')")
-    public ResponseEntity<CaseService.CaseStatistics> getCaseStatistics() {
-        CaseService.CaseStatistics stats = caseService.getCaseStatistics();
+    public ResponseEntity<CaseService.CaseStatistics> getCaseStatistics(Authentication authentication) {
+        String username = authentication.getName();
+        User currentUser = caseService.getUserByUsername(username);
+        
+        CaseService.CaseStatistics stats;
+        if (currentUser.getRole() == User.Role.ADMIN) {
+            stats = caseService.getCaseStatistics();
+        } else {
+            stats = caseService.getCaseStatistics(currentUser.getCourtLevel());
+        }
         return ResponseEntity.ok(stats);
     }
 
     // Get court level statistics
     @GetMapping("/court-stats")
     @PreAuthorize("hasRole('ADMIN') or hasRole('CLERK') or hasRole('JUDGE') or hasRole('ADVOCATE')")
-    public ResponseEntity<CaseService.CourtLevelStats> getCourtLevelStats() {
-        CaseService.CourtLevelStats stats = caseService.getCourtLevelStats();
+    public ResponseEntity<CaseService.CourtLevelStats> getCourtLevelStats(Authentication authentication) {
+        String username = authentication.getName();
+        User currentUser = caseService.getUserByUsername(username);
+        
+        CaseService.CourtLevelStats stats;
+        if (currentUser.getRole() == User.Role.ADMIN) {
+            stats = caseService.getCourtLevelStats();
+        } else {
+            stats = caseService.getCourtLevelStats(currentUser.getCourtLevel());
+        }
         return ResponseEntity.ok(stats);
     }
 

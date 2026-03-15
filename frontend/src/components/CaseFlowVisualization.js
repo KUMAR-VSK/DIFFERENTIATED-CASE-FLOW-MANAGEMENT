@@ -54,10 +54,10 @@ const CaseFlowVisualization = () => {
             SCHEDULED: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
             IN_PROGRESS: 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200',
             COMPLETED: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
-            DISMISSED: 'bg-surface-100 text-surface-800 dark:bg-surface-700 dark:text-surface-200',
+            DISMISSED: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200',
             ESCALATED: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
         };
-        return colors[status] || 'bg-surface-100 text-surface-800';
+        return colors[status] || 'bg-gray-100 text-gray-800';
     };
 
     const getCourtLevelColor = (level) => {
@@ -66,7 +66,7 @@ const CaseFlowVisualization = () => {
             HIGH: 'bg-orange-500',
             SUPREME: 'bg-red-500'
         };
-        return colors[level] || 'bg-surface-500';
+        return colors[level] || 'bg-gray-500';
     };
 
     const getSeverityColor = (severity) => {
@@ -75,16 +75,16 @@ const CaseFlowVisualization = () => {
             MEDIUM: 'bg-orange-500 text-white',
             LOW: 'bg-yellow-500 text-white'
         };
-        return colors[severity] || 'bg-surface-500 text-white';
+        return colors[severity] || 'bg-gray-500 text-white';
     };
 
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div className="mb-8">
-                <h1 className="text-3xl font-bold text-surface-900 dark:text-white mb-2">
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
                     📊 Case Flow Visualization
                 </h1>
-                <p className="text-surface-600 dark:text-surface-400">
+                <p className="text-gray-600 dark:text-gray-400">
                     Interactive flowcharts showing case progression, bottlenecks, and escalation paths
                 </p>
             </div>
@@ -96,8 +96,8 @@ const CaseFlowVisualization = () => {
                         key={metric}
                         onClick={() => setSelectedMetric(metric)}
                         className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-all ${selectedMetric === metric
-                            ? 'bg-primary-600 text-white shadow-lg'
-                            : 'bg-white dark:bg-surface-800 text-surface-700 dark:text-surface-300 hover:bg-surface-100 dark:hover:bg-surface-700'
+                            ? 'bg-blue-600 text-white shadow-lg'
+                            : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                             }`}
                     >
                         {metric.charAt(0).toUpperCase() + metric.slice(1).replace(/([A-Z])/g, ' $1')}
@@ -158,8 +158,8 @@ const CaseFlowVisualization = () => {
 
             {/* Court Level Flow - Visual Representation */}
             {selectedMetric === 'courtLevels' && (
-                <div className="bg-white dark:bg-surface-800 rounded-xl shadow-lg p-8 mb-8">
-                    <h2 className="text-2xl font-bold text-surface-900 dark:text-white mb-6">
+                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 mb-8">
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
                         Court Level Distribution
                     </h2>
 
@@ -169,16 +169,16 @@ const CaseFlowVisualization = () => {
                             return (
                                 <div key={level}>
                                     <div className="flex items-center justify-between mb-2">
-                                        <span className="font-medium text-surface-700 dark:text-surface-300">
+                                        <span className="font-medium text-gray-700 dark:text-gray-300">
                                             {level === 'DISTRICT' ? '🏛️ District Court' :
                                                 level === 'HIGH' ? '⚖️ High Court' :
                                                     '🏛️ Supreme Court'}
                                         </span>
-                                        <span className="text-sm text-surface-600 dark:text-surface-400">
+                                        <span className="text-sm text-gray-600 dark:text-gray-400">
                                             {count} cases ({percentage}%)
                                         </span>
                                     </div>
-                                    <div className="w-full bg-surface-200 dark:bg-surface-700 rounded-full h-4">
+                                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-4">
                                         <div
                                             className={`${getCourtLevelColor(level)} h-4 rounded-full transition-all duration-500`}
                                             style={{ width: `${percentage}%` }}
@@ -191,7 +191,7 @@ const CaseFlowVisualization = () => {
 
                     {/* Flow Diagram */}
                     <div className="mt-12">
-                        <h3 className="text-xl font-bold text-surface-900 dark:text-white mb-6 text-center">
+                        <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6 text-center">
                             Case Flow Progression
                         </h3>
                         <div className="flex items-center justify-center space-x-8">
@@ -208,7 +208,7 @@ const CaseFlowVisualization = () => {
 
                             <div className="flex flex-col items-center">
                                 <div className="text-3xl">→</div>
-                                <div className="text-xs text-surface-600 dark:text-surface-400">Escalate</div>
+                                <div className="text-xs text-gray-600 dark:text-gray-400">Escalate</div>
                             </div>
 
                             <div className="text-center">
@@ -224,7 +224,7 @@ const CaseFlowVisualization = () => {
 
                             <div className="flex flex-col items-center">
                                 <div className="text-3xl">→</div>
-                                <div className="text-xs text-surface-600 dark:text-surface-400">Escalate</div>
+                                <div className="text-xs text-gray-600 dark:text-gray-400">Escalate</div>
                             </div>
 
                             <div className="text-center">
@@ -244,15 +244,15 @@ const CaseFlowVisualization = () => {
 
             {/* Status Distribution */}
             {selectedMetric === 'status' && (
-                <div className="bg-white dark:bg-surface-800 rounded-xl shadow-lg p-8 mb-8">
-                    <h2 className="text-2xl font-bold text-surface-900 dark:text-white mb-6">
+                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 mb-8">
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
                         Status Distribution & Average Time
                     </h2>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {/* Status Count */}
                         <div>
-                            <h3 className="text-lg font-semibold text-surface-700 dark:text-surface-300 mb-4">
+                            <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-4">
                                 Cases by Status
                             </h3>
                             <div className="space-y-3">
@@ -261,7 +261,7 @@ const CaseFlowVisualization = () => {
                                         <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(status)}`}>
                                             {status.replace(/_/g, ' ')}
                                         </span>
-                                        <span className="font-bold text-surface-900 dark:text-white">{count}</span>
+                                        <span className="font-bold text-gray-900 dark:text-white">{count}</span>
                                     </div>
                                 ))}
                             </div>
@@ -269,16 +269,16 @@ const CaseFlowVisualization = () => {
 
                         {/* Average Time by Status */}
                         <div>
-                            <h3 className="text-lg font-semibold text-surface-700 dark:text-surface-300 mb-4">
+                            <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-4">
                                 Average Days per Status
                             </h3>
                             <div className="space-y-3">
                                 {Object.entries(flowData.averageTimeByStatus || {}).map(([status, days]) => (
                                     <div key={status} className="flex items-center justify-between">
-                                        <span className="text-sm text-surface-600 dark:text-surface-400">
+                                        <span className="text-sm text-gray-600 dark:text-gray-400">
                                             {status.replace(/_/g, ' ')}
                                         </span>
-                                        <span className="font-bold text-primary-600 dark:text-blue-400">
+                                        <span className="font-bold text-blue-600 dark:text-blue-400">
                                             {days.toFixed(1)} days
                                         </span>
                                     </div>
@@ -291,8 +291,8 @@ const CaseFlowVisualization = () => {
 
             {/* Escalation Paths */}
             {selectedMetric === 'escalations' && (
-                <div className="bg-white dark:bg-surface-800 rounded-xl shadow-lg p-8 mb-8">
-                    <h2 className="text-2xl font-bold text-surface-900 dark:text-white mb-6">
+                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 mb-8">
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
                         Common Escalation Paths
                     </h2>
 
@@ -300,7 +300,7 @@ const CaseFlowVisualization = () => {
                         {flowData.escalationPaths?.slice(0, 10).map((path, index) => (
                             <div
                                 key={index}
-                                className="bg-surface-50 dark:bg-surface-700 rounded-lg p-4 hover:shadow-md transition-shadow"
+                                className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 hover:shadow-md transition-shadow"
                             >
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center space-x-3">
@@ -308,19 +308,19 @@ const CaseFlowVisualization = () => {
                                             {index + 1}
                                         </div>
                                         <div>
-                                            <p className="font-medium text-surface-900 dark:text-white font-mono">
+                                            <p className="font-medium text-gray-900 dark:text-white font-mono">
                                                 {path.path}
                                             </p>
-                                            <p className="text-xs text-surface-500 dark:text-surface-400 mt-1">
+                                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                                                 Escalation pathway
                                             </p>
                                         </div>
                                     </div>
                                     <div className="text-right">
-                                        <div className="text-2xl font-bold text-primary-600 dark:text-blue-400">
+                                        <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
                                             {path.count}
                                         </div>
-                                        <div className="text-xs text-surface-500 dark:text-surface-400">cases</div>
+                                        <div className="text-xs text-gray-500 dark:text-gray-400">cases</div>
                                     </div>
                                 </div>
                             </div>
@@ -331,11 +331,11 @@ const CaseFlowVisualization = () => {
 
             {/* Bottlenecks */}
             {selectedMetric === 'bottlenecks' && (
-                <div className="bg-white dark:bg-surface-800 rounded-xl shadow-lg p-8">
-                    <h2 className="text-2xl font-bold text-surface-900 dark:text-white mb-2">
+                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8">
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
                         ⚠️ Identified Bottlenecks
                     </h2>
-                    <p className="text-surface-600 dark:text-surface-400 mb-6">
+                    <p className="text-gray-600 dark:text-gray-400 mb-6">
                         Cases stuck in certain statuses exceeding threshold (60+ days)
                     </p>
 
@@ -344,7 +344,7 @@ const CaseFlowVisualization = () => {
                             {flowData.bottlenecks.map((bottleneck, index) => (
                                 <div
                                     key={index}
-                                    className="border-l-4 bg-surface-50 dark:bg-surface-700 rounded-r-lg p-6 hover:shadow-lg transition-shadow"
+                                    className="border-l-4 bg-gray-50 dark:bg-gray-700 rounded-r-lg p-6 hover:shadow-lg transition-shadow"
                                     style={{
                                         borderLeftColor:
                                             bottleneck.severity === 'HIGH'
@@ -357,7 +357,7 @@ const CaseFlowVisualization = () => {
                                     <div className="flex items-start justify-between">
                                         <div className="flex-1">
                                             <div className="flex items-center space-x-3 mb-3">
-                                                <h3 className="text-xl font-bold text-surface-900 dark:text-white">
+                                                <h3 className="text-xl font-bold text-gray-900 dark:text-white">
                                                     {bottleneck.status.replace(/_/g, ' ')}
                                                 </h3>
                                                 <span className={`px-3 py-1 rounded-full text-xs font-bold ${getSeverityColor(bottleneck.severity)}`}>
@@ -367,19 +367,19 @@ const CaseFlowVisualization = () => {
 
                                             <div className="grid grid-cols-3 gap-4">
                                                 <div>
-                                                    <p className="text-sm text-surface-600 dark:text-surface-400">Total Cases</p>
-                                                    <p className="text-2xl font-bold text-surface-900 dark:text-white">
+                                                    <p className="text-sm text-gray-600 dark:text-gray-400">Total Cases</p>
+                                                    <p className="text-2xl font-bold text-gray-900 dark:text-white">
                                                         {bottleneck.totalCases}
                                                     </p>
                                                 </div>
                                                 <div>
-                                                    <p className="text-sm text-surface-600 dark:text-surface-400">Stuck Cases</p>
+                                                    <p className="text-sm text-gray-600 dark:text-gray-400">Stuck Cases</p>
                                                     <p className="text-2xl font-bold text-red-600 dark:text-red-400">
                                                         {bottleneck.stuckCases}
                                                     </p>
                                                 </div>
                                                 <div>
-                                                    <p className="text-sm text-surface-600 dark:text-surface-400">Avg Age</p>
+                                                    <p className="text-sm text-gray-600 dark:text-gray-400">Avg Age</p>
                                                     <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">
                                                         {bottleneck.averageAge.toFixed(0)}d
                                                     </p>
@@ -396,7 +396,7 @@ const CaseFlowVisualization = () => {
                             <p className="text-xl font-semibold text-green-600 dark:text-green-400">
                                 No bottlenecks detected!
                             </p>
-                            <p className="text-surface-600 dark:text-surface-400 mt-2">
+                            <p className="text-gray-600 dark:text-gray-400 mt-2">
                                 All cases are progressing within acceptable timeframes
                             </p>
                         </div>

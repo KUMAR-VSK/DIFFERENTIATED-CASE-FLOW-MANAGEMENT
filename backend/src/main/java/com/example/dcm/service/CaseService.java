@@ -167,9 +167,23 @@ public class CaseService {
         );
     }
 
+    // Get cases by priority order filtered by court level
+    public List<Case> getCasesByPriorityOrderAndCourtLevel(User.CourtLevel userLevel) {
+        Case.CourtLevel caseLevel = convertUserCourtLevelToCaseCourtLevel(userLevel);
+        return caseRepository.findByStatusInAndCourtLevelOrderByPriorityDescFilingDateAsc(
+            List.of(Case.Status.UNDER_REVIEW, Case.Status.SCHEDULED), caseLevel
+        );
+    }
+
     // Get unscheduled cases
     public List<Case> getUnscheduledCases() {
         return caseRepository.findUnscheduledCasesOrderByPriority();
+    }
+
+    // Get unscheduled cases filtered by court level
+    public List<Case> getUnscheduledCasesByCourtLevel(User.CourtLevel userLevel) {
+        Case.CourtLevel caseLevel = convertUserCourtLevelToCaseCourtLevel(userLevel);
+        return caseRepository.findUnscheduledCasesOrderByPriorityAndCourtLevel(caseLevel);
     }
 
     // Get cases assigned to judge
@@ -245,9 +259,21 @@ public class CaseService {
         return caseRepository.findByPriorityGreaterThanEqual(8);
     }
 
+    // Get high priority cases filtered by court level
+    public List<Case> getHighPriorityCasesByCourtLevel(User.CourtLevel userLevel) {
+        Case.CourtLevel caseLevel = convertUserCourtLevelToCaseCourtLevel(userLevel);
+        return caseRepository.findByPriorityGreaterThanEqualAndCourtLevel(8, caseLevel);
+    }
+
     // Get all scheduled hearings for calendar view
     public List<Case> getAllScheduledHearings() {
         return caseRepository.findAllScheduledHearings();
+    }
+
+    // Get all scheduled hearings filtered by court level
+    public List<Case> getAllScheduledHearingsByCourtLevel(User.CourtLevel userLevel) {
+        Case.CourtLevel caseLevel = convertUserCourtLevelToCaseCourtLevel(userLevel);
+        return caseRepository.findAllScheduledHearingsByCourtLevel(caseLevel);
     }
 
     // Update case priority
@@ -418,7 +444,18 @@ public class CaseService {
 
     // Get case statistics
     public CaseStatistics getCaseStatistics() {
-        List<Case> allCases = caseRepository.findAll();
+        return getCaseStatistics(null);
+    }
+
+    // Get case statistics with optional court level filter
+    public CaseStatistics getCaseStatistics(User.CourtLevel userLevel) {
+        List<Case> allCases;
+        if (userLevel != null) {
+            Case.CourtLevel caseLevel = convertUserCourtLevelToCaseCourtLevel(userLevel);
+            allCases = caseRepository.findByCourtLevel(caseLevel);
+        } else {
+            allCases = caseRepository.findAll();
+        }
 
         long totalCases = allCases.size();
         long filedCases = allCases.stream().mapToLong(c -> c.getStatus() == Case.Status.FILED ? 1 : 0).sum();
@@ -434,6 +471,12 @@ public class CaseService {
     public List<Case> getAllCases() {
         // Use a custom query to avoid Hibernate lazy loading issues
         return caseRepository.findAllCasesWithUsers();
+    }
+
+    // Get all cases filtered by court level
+    public List<Case> getAllCasesByCourtLevel(User.CourtLevel userLevel) {
+        Case.CourtLevel caseLevel = convertUserCourtLevelToCaseCourtLevel(userLevel);
+        return caseRepository.findAllCasesWithUsersByCourtLevel(caseLevel);
     }
 
     // Update case notes
@@ -513,6 +556,12 @@ public class CaseService {
     // Get recent cases (sorted by creation date, descending)
     public List<Case> getRecentCases() {
         return caseRepository.findTop5ByOrderByFilingDateDesc();
+    }
+
+    // Get recent cases filtered by court level
+    public List<Case> getRecentCasesByCourtLevel(User.CourtLevel userLevel) {
+        Case.CourtLevel caseLevel = convertUserCourtLevelToCaseCourtLevel(userLevel);
+        return caseRepository.findTop5ByCourtLevelOrderByFilingDateDesc(caseLevel);
     }
 
     // Get next case number preview (for filing form)
@@ -781,7 +830,20 @@ public class CaseService {
      * Get court level distribution statistics
      */
     public CourtLevelStats getCourtLevelStats() {
-        List<Case> allCases = caseRepository.findAll();
+        return getCourtLevelStats(null);
+    }
+
+    /**
+     * Get court level distribution statistics with optional court level filter
+     */
+    public CourtLevelStats getCourtLevelStats(User.CourtLevel userLevel) {
+        List<Case> allCases;
+        if (userLevel != null) {
+            Case.CourtLevel caseLevel = convertUserCourtLevelToCaseCourtLevel(userLevel);
+            allCases = caseRepository.findByCourtLevel(caseLevel);
+        } else {
+            allCases = caseRepository.findAll();
+        }
         
         long districtCases = allCases.stream()
                 .filter(c -> c.getCourtLevel() == null || c.getCourtLevel() == Case.CourtLevel.DISTRICT)

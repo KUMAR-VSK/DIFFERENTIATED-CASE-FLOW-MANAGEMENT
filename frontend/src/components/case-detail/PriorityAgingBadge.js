@@ -29,7 +29,7 @@ const PriorityAgingBadge = ({ caseId, currentPriority }) => {
         <div className="mt-2">
             <button
                 onClick={() => setShowDetails(!showDetails)}
-                className="text-xs text-primary-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 flex items-center gap-1"
+                className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 flex items-center gap-1"
             >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -38,9 +38,9 @@ const PriorityAgingBadge = ({ caseId, currentPriority }) => {
             </button>
 
             {showDetails && (
-                <div className="mt-3 p-4 bg-primary-50 dark:bg-blue-900/20 rounded-lg border border-primary-200 dark:border-blue-800">
+                <div className="mt-3 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
                     {loading ? (
-                        <p className="text-sm text-primary-600 dark:text-blue-400">Loading aging info...</p>
+                        <p className="text-sm text-blue-600 dark:text-blue-400">Loading aging info...</p>
                     ) : agingInfo ? (
                         <div className="space-y-2">
                             <h4 className="text-sm font-semibold text-blue-900 dark:text-blue-100 flex items-center gap-2">
@@ -51,27 +51,27 @@ const PriorityAgingBadge = ({ caseId, currentPriority }) => {
                             </h4>
 
                             <div className="grid grid-cols-2 gap-2 text-xs">
-                                <div className="bg-white dark:bg-surface-800 p-2 rounded">
-                                    <span className="text-surface-600 dark:text-surface-400">Case Age:</span>
+                                <div className="bg-white dark:bg-slate-800 p-2 rounded">
+                                    <span className="text-gray-600 dark:text-gray-400">Case Age:</span>
                                     <div className="font-semibold text-blue-700 dark:text-blue-300">{agingInfo.caseAgeDays} days</div>
                                 </div>
-                                <div className="bg-white dark:bg-surface-800 p-2 rounded">
-                                    <span className="text-surface-600 dark:text-surface-400">Base Priority:</span>
+                                <div className="bg-white dark:bg-slate-800 p-2 rounded">
+                                    <span className="text-gray-600 dark:text-gray-400">Base Priority:</span>
                                     <div className="font-semibold text-blue-700 dark:text-blue-300">{agingInfo.basePriority}/10</div>
                                 </div>
-                                <div className="bg-white dark:bg-surface-800 p-2 rounded">
-                                    <span className="text-surface-600 dark:text-surface-400">Aging Boost:</span>
+                                <div className="bg-white dark:bg-slate-800 p-2 rounded">
+                                    <span className="text-gray-600 dark:text-gray-400">Aging Boost:</span>
                                     <div className="font-semibold text-green-600 dark:text-green-400">+{agingInfo.agingBoost}</div>
                                 </div>
-                                <div className="bg-white dark:bg-surface-800 p-2 rounded">
-                                    <span className="text-surface-600 dark:text-surface-400">Adjusted Priority:</span>
+                                <div className="bg-white dark:bg-slate-800 p-2 rounded">
+                                    <span className="text-gray-600 dark:text-gray-400">Adjusted Priority:</span>
                                     <div className="font-semibold text-blue-700 dark:text-blue-300">{agingInfo.adjustedPriority}/10</div>
                                 </div>
                             </div>
 
-                            <div className="mt-3 p-2 bg-white dark:bg-surface-800 rounded text-xs">
-                                <div className="text-surface-600 dark:text-surface-400 mb-1">Formula:</div>
-                                <code className="text-primary-600 dark:text-blue-400">{agingInfo.agingFormula}</code>
+                            <div className="mt-3 p-2 bg-white dark:bg-slate-800 rounded text-xs">
+                                <div className="text-gray-600 dark:text-gray-400 mb-1">Formula:</div>
+                                <code className="text-blue-600 dark:text-blue-400">{agingInfo.agingFormula}</code>
                             </div>
 
                             {agingInfo.agingBoost > 0 && (
@@ -97,7 +97,7 @@ const PriorityAgingBadge = ({ caseId, currentPriority }) => {
                             )}
                         </div>
                     ) : (
-                        <p className="text-sm text-surface-600 dark:text-surface-400">Unable to load aging information</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">Unable to load aging information</p>
                     )}
                 </div>
             )}

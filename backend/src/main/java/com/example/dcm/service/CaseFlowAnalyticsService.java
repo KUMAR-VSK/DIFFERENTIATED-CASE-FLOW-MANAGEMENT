@@ -23,10 +23,22 @@ public class CaseFlowAnalyticsService {
     private CaseAuditRepository caseAuditRepository;
 
     /**
-     * Get case flow visualization data showing progression through court levels
+     * Get comprehensive case flow visualization data showing progression through court levels
      */
     public Map<String, Object> getCaseFlowVisualization() {
-        List<Case> allCases = caseRepository.findAll();
+        return getCaseFlowVisualization(null);
+    }
+
+    /**
+     * Get case flow visualization data filtered by court level
+     */
+    public Map<String, Object> getCaseFlowVisualization(Case.CourtLevel level) {
+        List<Case> allCases;
+        if (level != null) {
+            allCases = caseRepository.findByCourtLevel(level);
+        } else {
+            allCases = caseRepository.findAll();
+        }
         
         Map<String, Object> flowData = new HashMap<>();
         
@@ -273,7 +285,19 @@ public class CaseFlowAnalyticsService {
      * Get court level flow statistics
      */
     public Map<String, Object> getCourtLevelFlowStats() {
-        List<Case> allCases = caseRepository.findAll();
+        return getCourtLevelFlowStats(null);
+    }
+
+    /**
+     * Get court level flow statistics with optional court level filter
+     */
+    public Map<String, Object> getCourtLevelFlowStats(Case.CourtLevel level) {
+        List<Case> allCases;
+        if (level != null) {
+            allCases = caseRepository.findByCourtLevel(level);
+        } else {
+            allCases = caseRepository.findAll();
+        }
         
         Map<String, Object> stats = new HashMap<>();
         

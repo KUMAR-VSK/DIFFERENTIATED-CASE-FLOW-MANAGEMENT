@@ -20,13 +20,28 @@ public class AnalyticsController {
     @Autowired
     private CaseFlowAnalyticsService analyticsService;
 
+    @Autowired
+    private UserRepository userRepository;
+
+    private Case.CourtLevel convertLevel(User.CourtLevel level) {
+        if (level == null) return null;
+        try {
+            return Case.CourtLevel.valueOf(level.name());
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
     /**
      * Get comprehensive case flow visualization data
      */
     @GetMapping("/case-flow")
     @PreAuthorize("hasAnyRole('ADMIN', 'JUDGE')")
-    public ResponseEntity<Map<String, Object>> getCaseFlowVisualization() {
-        Map<String, Object> flowData = analyticsService.getCaseFlowVisualization();
+    public ResponseEntity<Map<String, Object>> getCaseFlowVisualization(org.springframework.security.core.Authentication auth) {
+        User user = userRepository.findByUsername(auth.getName()).orElse(null);
+        Case.CourtLevel level = (user != null && user.getRole() != User.Role.ADMIN) ? convertLevel(user.getCourtLevel()) : null;
+        
+        Map<String, Object> flowData = analyticsService.getCaseFlowVisualization(level);
         return ResponseEntity.ok(flowData);
     }
 
@@ -45,8 +60,11 @@ public class AnalyticsController {
      */
     @GetMapping("/court-level-stats")
     @PreAuthorize("hasAnyRole('ADMIN', 'JUDGE')")
-    public ResponseEntity<Map<String, Object>> getCourtLevelStats() {
-        Map<String, Object> stats = analyticsService.getCourtLevelFlowStats();
+    public ResponseEntity<Map<String, Object>> getCourtLevelStats(org.springframework.security.core.Authentication auth) {
+        User user = userRepository.findByUsername(auth.getName()).orElse(null);
+        Case.CourtLevel level = (user != null && user.getRole() != User.Role.ADMIN) ? convertLevel(user.getCourtLevel()) : null;
+
+        Map<String, Object> stats = analyticsService.getCourtLevelFlowStats(level);
         return ResponseEntity.ok(stats);
     }
 }
