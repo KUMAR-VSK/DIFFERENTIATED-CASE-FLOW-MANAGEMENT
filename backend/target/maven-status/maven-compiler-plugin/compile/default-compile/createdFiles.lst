@@ -14,7 +14,6 @@ com/example/dcm/model/CaseAudit.class
 com/example/dcm/service/PriorityEngine$1.class
 com/example/dcm/model/Case$Status.class
 com/example/dcm/exception/ResourceNotFoundException.class
-com/example/dcm/config/SecurityConfig.class
 com/example/dcm/model/CaseChecklistItem$ChecklistStatus.class
 com/example/dcm/dto/RegisterRequest.class
 com/example/dcm/repository/UserRepository.class
