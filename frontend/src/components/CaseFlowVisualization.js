@@ -16,17 +16,7 @@ const CaseFlowVisualization = () => {
 
     const fetchFlowData = async () => {
         try {
-            // AuthContext sets axios.defaults.headers.common['Authorization'] automatically.
-            // We read credentials directly from localStorage as a reliable fallback
-            // in case the axios defaults haven't been applied yet (effect ordering).
-            const storedCreds = JSON.parse(localStorage.getItem('credentials') || '{}');
-            const authHeader = storedCreds.username
-                ? `Basic ${btoa(`${storedCreds.username}:${storedCreds.password}`)}`
-                : axios.defaults.headers.common['Authorization'];
-
-            const response = await axios.get(BASE_URL + '/api/analytics/case-flow', {
-                headers: { 'Authorization': authHeader }
-            });
+            const response = await axios.get(BASE_URL + '/api/analytics/case-flow');
             setFlowData(response.data);
         } catch (error) {
             console.error('Error fetching flow data:', error);

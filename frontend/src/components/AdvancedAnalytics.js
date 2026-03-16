@@ -41,9 +41,7 @@ const AdvancedAnalytics = () => {
 
     const fetchAnalytics = async () => {
         try {
-            const credentials = btoa(`${user.username}:${localStorage.getItem('password')}`);
             const response = await axios.get(BASE_URL + '/api/analytics/advanced', {
-                headers: { 'Authorization': `Basic ${credentials}` },
                 params: { period }
             });
             setAnalytics(response.data);

@@ -15,6 +15,8 @@ import com.example.dcm.service.CaseFlowAnalyticsService;
 @RestController
 @RequestMapping("/api/analytics")
 @CrossOrigin(origins = "*")
+@io.swagger.v3.oas.annotations.tags.Tag(name = "Analytics", description = "Case analytics and statistics")
+@io.swagger.v3.oas.annotations.security.SecurityRequirement(name = "bearerAuth")
 public class AnalyticsController {
 
     @Autowired

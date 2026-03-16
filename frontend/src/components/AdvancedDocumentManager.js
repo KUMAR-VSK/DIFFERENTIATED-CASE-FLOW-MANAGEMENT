@@ -32,12 +32,8 @@ const AdvancedDocumentManager = ({ caseId }) => {
     }, [caseId]);
 
     const getAuthHeaders = () => {
-        const credentials = btoa(`${user.username}:${localStorage.getItem('password')}`);
-        return {
-            headers: {
-                'Authorization': `Basic ${credentials}`
-            }
-        };
+        // JWT is automatically attached by axios interceptor in AuthContext
+        return {};
     };
 
     const fetchDocuments = async () => {
@@ -110,10 +106,8 @@ const AdvancedDocumentManager = ({ caseId }) => {
         formData.append('documentType', uploadForm.documentType);
 
         try {
-            const credentials = btoa(`${user.username}:${localStorage.getItem('password')}`);
             await axios.post(BASE_URL + '/api/documents/upload', formData, {
                 headers: {
-                    'Authorization': `Basic ${credentials}`,
                     'Content-Type': 'multipart/form-data'
                 },
                 onUploadProgress: (progressEvent) => {

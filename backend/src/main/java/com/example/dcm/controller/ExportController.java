@@ -17,6 +17,8 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/export")
 @CrossOrigin(origins = "*")
+@io.swagger.v3.oas.annotations.tags.Tag(name = "Export", description = "Export cases to Excel/PDF")
+@io.swagger.v3.oas.annotations.security.SecurityRequirement(name = "bearerAuth")
 public class ExportController {
 
     @Autowired

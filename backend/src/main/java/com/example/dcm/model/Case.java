@@ -16,6 +16,11 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 @Entity
 @Table(name = "court_cases", indexes = {
@@ -43,13 +48,17 @@ public class Case {
     private Integer caseSequence;
 
     @Column(nullable = false)
+    @NotBlank(message = "Title is required")
+    @Size(min = 3, max = 255, message = "Title must be between 3 and 255 characters")
     private String title;
 
     @Column(length = 2000)
+    @Size(max = 2000, message = "Description cannot exceed 2000 characters")
     private String description;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "case_type", nullable = false)
+    @NotNull(message = "Case type is required")
     private CaseType caseType;
 
     @Enumerated(EnumType.STRING)
@@ -76,6 +85,8 @@ public class Case {
     private LocalDateTime hearingDate;
 
     @Column(nullable = false)
+    @Min(value = 1, message = "Priority must be between 1 and 10")
+    @Max(value = 10, message = "Priority must be between 1 and 10")
     private Integer priority; // 1-10, higher number = higher priority
 
     @Column(name = "estimated_duration_days")

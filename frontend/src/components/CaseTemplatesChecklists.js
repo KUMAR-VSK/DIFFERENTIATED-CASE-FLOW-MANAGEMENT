@@ -30,12 +30,8 @@ const CaseTemplatesChecklists = ({ caseId }) => {
     }, [caseId]);
 
     const getAuthHeaders = () => {
-        const credentials = btoa(`${user.username}:${localStorage.getItem('password')}`);
-        return {
-            headers: {
-                'Authorization': `Basic ${credentials}`
-            }
-        };
+        // JWT is automatically attached by axios interceptor in AuthContext
+        return {};
     };
 
     const fetchTemplates = async () => {

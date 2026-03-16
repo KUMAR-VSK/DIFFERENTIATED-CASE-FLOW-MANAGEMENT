@@ -1,3 +1,4 @@
+/Users/kumarvs/Downloads/S8 PROJECT/backend/src/main/java/com/example/dcm/security/JwtUtil.java
 /Users/kumarvs/Downloads/S8 PROJECT/backend/src/main/java/com/example/dcm/exception/ErrorResponse.java
 /Users/kumarvs/Downloads/S8 PROJECT/backend/src/main/java/com/example/dcm/controller/TemplateController.java
 /Users/kumarvs/Downloads/S8 PROJECT/backend/src/main/java/com/example/dcm/model/Document.java
@@ -17,8 +18,10 @@
 /Users/kumarvs/Downloads/S8 PROJECT/backend/src/main/java/com/example/dcm/controller/CaseSearchController.java
 /Users/kumarvs/Downloads/S8 PROJECT/backend/src/main/java/com/example/dcm/repository/CaseTemplateRepository.java
 /Users/kumarvs/Downloads/S8 PROJECT/backend/src/main/java/com/example/dcm/exception/DuplicateResourceException.java
+/Users/kumarvs/Downloads/S8 PROJECT/backend/src/main/java/com/example/dcm/security/JwtAuthenticationFilter.java
 /Users/kumarvs/Downloads/S8 PROJECT/backend/src/main/java/com/example/dcm/repository/CaseAuditRepository.java
 /Users/kumarvs/Downloads/S8 PROJECT/backend/src/main/java/com/example/dcm/controller/AnalyticsController.java
+/Users/kumarvs/Downloads/S8 PROJECT/backend/src/main/java/com/example/dcm/dto/AuthResponse.java
 /Users/kumarvs/Downloads/S8 PROJECT/backend/src/main/java/com/example/dcm/repository/DocumentApprovalRepository.java
 /Users/kumarvs/Downloads/S8 PROJECT/backend/src/main/java/com/example/dcm/controller/AdvancedAnalyticsController.java
 /Users/kumarvs/Downloads/S8 PROJECT/backend/src/main/java/com/example/dcm/specification/CaseSpecification.java
@@ -26,7 +29,10 @@
 /Users/kumarvs/Downloads/S8 PROJECT/backend/src/main/java/com/example/dcm/exception/GlobalExceptionHandler.java
 /Users/kumarvs/Downloads/S8 PROJECT/backend/src/main/java/com/example/dcm/repository/DocumentVersionRepository.java
 /Users/kumarvs/Downloads/S8 PROJECT/backend/src/main/java/com/example/dcm/model/User.java
+/Users/kumarvs/Downloads/S8 PROJECT/backend/src/main/java/com/example/dcm/dto/RegisterRequest.java
+/Users/kumarvs/Downloads/S8 PROJECT/backend/src/main/java/com/example/dcm/config/OpenApiConfig.java
 /Users/kumarvs/Downloads/S8 PROJECT/backend/src/main/java/com/example/dcm/model/CaseChecklistItem.java
+/Users/kumarvs/Downloads/S8 PROJECT/backend/src/main/java/com/example/dcm/dto/LoginRequest.java
 /Users/kumarvs/Downloads/S8 PROJECT/backend/src/main/java/com/example/dcm/controller/AuthController.java
 /Users/kumarvs/Downloads/S8 PROJECT/backend/src/main/java/com/example/dcm/model/CaseNote.java
 /Users/kumarvs/Downloads/S8 PROJECT/backend/src/main/java/com/example/dcm/DcmApplication.java
@@ -34,6 +40,7 @@
 /Users/kumarvs/Downloads/S8 PROJECT/backend/src/main/java/com/example/dcm/model/DocumentVersion.java
 /Users/kumarvs/Downloads/S8 PROJECT/backend/src/main/java/com/example/dcm/config/SecurityConfig.java
 /Users/kumarvs/Downloads/S8 PROJECT/backend/src/main/java/com/example/dcm/exception/ResourceNotFoundException.java
+/Users/kumarvs/Downloads/S8 PROJECT/backend/src/main/java/com/example/dcm/security/RateLimitingFilter.java
 /Users/kumarvs/Downloads/S8 PROJECT/backend/src/main/java/com/example/dcm/model/DocumentApproval.java
 /Users/kumarvs/Downloads/S8 PROJECT/backend/src/main/java/com/example/dcm/service/CaseService.java
 /Users/kumarvs/Downloads/S8 PROJECT/backend/src/main/java/com/example/dcm/dto/CaseSearchCriteria.java

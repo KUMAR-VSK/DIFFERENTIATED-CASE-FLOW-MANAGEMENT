@@ -28,17 +28,10 @@ export const ThemeProvider = ({ children }) => {
     }
   }, [darkMode]);
 
-  const toggleDarkMode = () => {
-    setDarkMode(prev => !prev);
-  };
-
-  const value = {
-    darkMode,
-    toggleDarkMode,
-  };
+  const toggleDarkMode = () => setDarkMode(prev => !prev);
 
   return (
-    <ThemeContext.Provider value={value}>
+    <ThemeContext.Provider value={{ darkMode, toggleDarkMode }}>
       {children}
     </ThemeContext.Provider>
   );
@@ -55,90 +48,103 @@ export const useAuth = () => {
   return context;
 };
 
-export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [credentials, setCredentials] = useState(() => {
-    const stored = localStorage.getItem('credentials');
-    return stored ? JSON.parse(stored) : null;
-  });
+// Axios interceptor: attach JWT token to every request
+axios.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers['Authorization'] = `Bearer ${token}`;
+  }
+  return config;
+});
 
-  // Configure axios defaults
-  useEffect(() => {
-    if (credentials) {
-      axios.defaults.headers.common['Authorization'] = `Basic ${btoa(`${credentials.username}:${credentials.password}`)}`;
-    } else {
+// Axios interceptor: handle 401 by clearing auth
+axios.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('refreshToken');
+      localStorage.removeItem('user');
       delete axios.defaults.headers.common['Authorization'];
     }
-  }, [credentials]);
+    return Promise.reject(error);
+  }
+);
 
-  // Check if user is logged in on app start
+export const AuthProvider = ({ children }) => {
+  const [user, setUser] = useState(() => {
+    const stored = localStorage.getItem('user');
+    return stored ? JSON.parse(stored) : null;
+  });
+  const [loading, setLoading] = useState(true);
+
+  // Validate token on app start
   useEffect(() => {
-    const checkAuth = async () => {
-      if (credentials) {
+    const validateToken = async () => {
+      const token = localStorage.getItem('token');
+      if (token) {
         try {
-          const response = await axios.get(BASE_URL + '/api/auth/me');
+          const response = await axios.get(`${BASE_URL}/api/auth/me`);
           setUser(response.data);
-        } catch (error) {
-          // Credentials invalid, clear them
-          localStorage.removeItem('credentials');
-          setCredentials(null);
+          localStorage.setItem('user', JSON.stringify(response.data));
+        } catch {
+          // Token invalid or expired
+          localStorage.removeItem('token');
+          localStorage.removeItem('refreshToken');
+          localStorage.removeItem('user');
+          setUser(null);
         }
       }
       setLoading(false);
     };
-
-    checkAuth();
-  }, [credentials]);
+    validateToken();
+  }, []);
 
   const login = async (username, password) => {
     try {
-      // Create basic auth header
-      const authHeader = btoa(`${username}:${password}`);
-      axios.defaults.headers.common['Authorization'] = `Basic ${authHeader}`;
+      const response = await axios.post(`${BASE_URL}/api/auth/login`, { username, password });
+      const { token, refreshToken, role, courtLevel, userId } = response.data;
 
-      const response = await axios.get(BASE_URL + '/api/auth/me');
-      setUser(response.data);
+      localStorage.setItem('token', token);
+      localStorage.setItem('refreshToken', refreshToken);
 
-      // Store credentials for persistence
-      const creds = { username, password };
-      setCredentials(creds);
-      localStorage.setItem('credentials', JSON.stringify(creds));
+      const userData = { username, role, courtLevel, id: userId };
+      localStorage.setItem('user', JSON.stringify(userData));
+      setUser(userData);
 
       return { success: true };
     } catch (error) {
-      delete axios.defaults.headers.common['Authorization'];
-      return { success: false, error: error.response?.data?.message || 'Login failed' };
+      return { success: false, error: error.response?.data?.error || 'Login failed' };
     }
   };
 
   const register = async (userData) => {
     try {
-      const response = await axios.post(BASE_URL + '/api/auth/register', userData);
+      const response = await axios.post(`${BASE_URL}/api/auth/register`, userData);
+      const { token, refreshToken, role, courtLevel, userId, username } = response.data;
+
+      localStorage.setItem('token', token);
+      localStorage.setItem('refreshToken', refreshToken);
+
+      const user = { username, role, courtLevel, id: userId };
+      localStorage.setItem('user', JSON.stringify(user));
+      setUser(user);
+
       return { success: true, user: response.data };
     } catch (error) {
-      return { success: false, error: error.response?.data || 'Registration failed' };
+      return { success: false, error: error.response?.data?.error || 'Registration failed' };
     }
   };
 
   const logout = () => {
     setUser(null);
-    setCredentials(null);
-    localStorage.removeItem('credentials');
-    delete axios.defaults.headers.common['Authorization'];
-  };
-
-  const value = {
-    user,
-    credentials,
-    loading,
-    login,
-    register,
-    logout,
+    localStorage.removeItem('token');
+    localStorage.removeItem('refreshToken');
+    localStorage.removeItem('user');
   };
 
   return (
-    <AuthContext.Provider value={value}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   );

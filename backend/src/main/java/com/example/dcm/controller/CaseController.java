@@ -22,10 +22,16 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.dcm.model.Case;
 import com.example.dcm.model.User;
 import com.example.dcm.service.CaseService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/cases")
-@CrossOrigin(origins = "*") // For development - configure properly for production
+@CrossOrigin(origins = "*")
+@Tag(name = "Cases", description = "Case management endpoints")
+@SecurityRequirement(name = "bearerAuth")
 public class CaseController {
 
     @Autowired
@@ -98,7 +104,7 @@ public class CaseController {
     @PostMapping
     @PreAuthorize("hasRole('CLERK') or hasRole('ADMIN')")
     public ResponseEntity<?> createCase(
-            @RequestBody Case caseEntity,
+            @Valid @RequestBody Case caseEntity,
             @RequestParam(required = false) Long advocateId,
             Authentication authentication) {
         try {
