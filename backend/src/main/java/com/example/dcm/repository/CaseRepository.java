@@ -3,6 +3,8 @@ package com.example.dcm.repository;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -45,6 +47,16 @@ public interface CaseRepository extends JpaRepository<Case, Long>, JpaSpecificat
     // All cases with eager loading of users to avoid serialization issues
     @Query("SELECT c FROM Case c LEFT JOIN FETCH c.filingClerk LEFT JOIN FETCH c.assignedJudge")
     List<Case> findAllCasesWithUsers();
+
+    // Paginated version of all cases with users
+    @Query(value = "SELECT c FROM Case c LEFT JOIN FETCH c.filingClerk LEFT JOIN FETCH c.assignedJudge",
+           countQuery = "SELECT COUNT(c) FROM Case c")
+    Page<Case> findAllCasesWithUsersPaged(Pageable pageable);
+
+    // Paginated version filtered by court level
+    @Query(value = "SELECT c FROM Case c LEFT JOIN FETCH c.filingClerk LEFT JOIN FETCH c.assignedJudge WHERE c.courtLevel = :courtLevel",
+           countQuery = "SELECT COUNT(c) FROM Case c WHERE c.courtLevel = :courtLevel")
+    Page<Case> findAllCasesWithUsersByCourtLevelPaged(@Param("courtLevel") Case.CourtLevel courtLevel, Pageable pageable);
 
     // Find the maximum case sequence number for sequential case numbering
     @Query("SELECT MAX(c.caseSequence) FROM Case c")

@@ -9,30 +9,42 @@ const CaseList = () => {
   const { user } = useAuth();
   const location = useLocation();
   const [cases, setCases] = useState([]);
-  const [filteredCases, setFilteredCases] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedCases, setSelectedCases] = useState([]);
   const [sortConfig, setSortConfig] = useState({ key: 'filingDate', direction: 'desc' });
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalElements, setTotalElements] = useState(0);
   const [filters, setFilters] = useState({
     status: '',
     caseType: '',
     search: '',
     priority: '',
   });
-  const casesPerPage = 10;
+  const casesPerPage = 20;
 
-  const fetchCases = async () => {
+  const fetchCases = async (page = 0) => {
     try {
+      setLoading(true);
       let response;
       if (user.role === 'ADVOCATE') {
-        // Advocates can only see cases assigned to them
         response = await axios.get(`${BASE_URL}/api/cases/advocate/${user.id}`);
+        setCases(response.data);
+        setTotalPages(1);
+        setTotalElements(response.data.length);
       } else {
-        response = await axios.get(BASE_URL + '/api/cases/management');
+        response = await axios.get(`${BASE_URL}/api/cases/management`, {
+          params: {
+            page,
+            size: casesPerPage,
+            sortBy: sortConfig.key,
+            direction: sortConfig.direction,
+          },
+        });
+        setCases(response.data.content);
+        setTotalPages(response.data.totalPages);
+        setTotalElements(response.data.totalElements);
       }
-      setCases(response.data);
-      setFilteredCases(response.data);
     } catch (error) {
       console.error('Error fetching cases:', error);
     } finally {
@@ -41,61 +53,30 @@ const CaseList = () => {
   };
 
   useEffect(() => {
-    fetchCases();
-  }, []);
+    fetchCases(currentPage);
+  }, [currentPage, sortConfig]);
 
-  // Refresh logic handling
   useEffect(() => {
-    if (location.state?.refresh || (location.state?.timestamp && Date.now() - location.state.timestamp < 5000)) {
-      fetchCases();
+    if (location.state?.refresh) {
+      fetchCases(0);
+      setCurrentPage(0);
       window.history.replaceState({}, document.title);
     }
   }, [location.state]);
 
-  // Filter application
-  useEffect(() => {
-    let filtered = cases;
-
-    if (filters.status) {
-      filtered = filtered.filter(caseItem => caseItem.status === filters.status);
-    }
-
-    if (filters.caseType) {
-      filtered = filtered.filter(caseItem => caseItem.caseType === filters.caseType);
-    }
-
-    if (filters.priority) {
-      const priorityNum = parseInt(filters.priority);
-      filtered = filtered.filter(caseItem => caseItem.priority === priorityNum);
-    }
-
+  // Filter application (client-side on current page)
+  const filteredCases = cases.filter(caseItem => {
+    if (filters.status && caseItem.status !== filters.status) return false;
+    if (filters.caseType && caseItem.caseType !== filters.caseType) return false;
+    if (filters.priority && caseItem.priority !== parseInt(filters.priority)) return false;
     if (filters.search) {
-      const searchLower = filters.search.toLowerCase();
-      filtered = filtered.filter(caseItem =>
-        caseItem.title.toLowerCase().includes(searchLower) ||
-        caseItem.caseNumber.toLowerCase().includes(searchLower) ||
-        (caseItem.description && caseItem.description.toLowerCase().includes(searchLower))
-      );
+      const q = filters.search.toLowerCase();
+      return caseItem.title.toLowerCase().includes(q) ||
+        caseItem.caseNumber.toLowerCase().includes(q) ||
+        (caseItem.description && caseItem.description.toLowerCase().includes(q));
     }
-
-    // Sort
-    filtered.sort((a, b) => {
-      let aValue = a[sortConfig.key];
-      let bValue = b[sortConfig.key];
-
-      if (sortConfig.key === 'filingDate') {
-        aValue = new Date(aValue);
-        bValue = new Date(bValue);
-      }
-
-      if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
-      if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
-      return 0;
-    });
-
-    setFilteredCases(filtered);
-    setCurrentPage(1);
-  }, [cases, filters, sortConfig]);
+    return true;
+  });
 
 
   const handleFilterChange = (field, value) => {
@@ -103,10 +84,11 @@ const CaseList = () => {
   };
 
   const handleSort = (key) => {
-    setSortConfig(prev => ({
-      key,
-      direction: prev.key === key && prev.direction === 'asc' ? 'desc' : 'asc',
-    }));
+    setSortConfig(prev => {
+      const newDirection = prev.key === key && prev.direction === 'asc' ? 'desc' : 'asc';
+      return { key, direction: newDirection };
+    });
+    setCurrentPage(0);
   };
 
   const handleSelectCase = (caseId) => {
@@ -117,22 +99,15 @@ const CaseList = () => {
 
   const handleSelectAll = (e) => {
     if (e.target.checked) {
-      setSelectedCases(currentCases.map(c => c.id));
+      setSelectedCases(filteredCases.map(c => c.id));
     } else {
       setSelectedCases([]);
     }
   };
 
-  // Pagination
-  const indexOfLastCase = currentPage * casesPerPage;
-  const indexOfFirstCase = indexOfLastCase - casesPerPage;
-  const currentCases = filteredCases.slice(indexOfFirstCase, indexOfLastCase);
-  const totalPages = Math.ceil(filteredCases.length / casesPerPage);
-  const paginate = (pageNumber) => setCurrentPage(pageNumber);
-
   // Statistics for top cards
   const stats = {
-    total: cases.length,
+    total: totalElements,
     filed: cases.filter(c => c.status === 'FILED').length,
     underReview: cases.filter(c => c.status === 'UNDER_REVIEW').length,
     scheduled: cases.filter(c => c.status === 'SCHEDULED').length,
@@ -175,7 +150,7 @@ const CaseList = () => {
           </div>
           <div className="flex gap-3">
             <button
-              onClick={() => fetchCases()}
+              onClick={() => fetchCases(currentPage)}
               className="inline-flex items-center px-4 py-2 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-600 text-gray-700 dark:text-gray-200 text-sm font-medium rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors shadow-sm"
             >
               <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -298,7 +273,7 @@ const CaseList = () => {
 
         {/* Data Table / List */}
         <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 overflow-hidden">
-          {currentCases.length > 0 ? (
+          {filteredCases.length > 0 ? (
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200 dark:divide-slate-700">
                 <thead className="bg-gray-50 dark:bg-slate-900/50">
@@ -307,7 +282,7 @@ const CaseList = () => {
                       <input
                         type="checkbox"
                         className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                        checked={selectedCases.length === currentCases.length && currentCases.length > 0}
+                        checked={selectedCases.length === filteredCases.length && filteredCases.length > 0}
                         onChange={handleSelectAll}
                       />
                     </th>
@@ -341,7 +316,7 @@ const CaseList = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 dark:divide-slate-700">
-                  {currentCases.map((caseItem) => (
+                  {filteredCases.map((caseItem) => (
                     <tr
                       key={caseItem.id}
                       className={`hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors ${selectedCases.includes(caseItem.id) ? 'bg-blue-50 dark:bg-slate-700' : ''}`}
@@ -425,8 +400,7 @@ const CaseList = () => {
               </p>
               <div className="mt-6">
                 <button
-                  onClick={() => setFilters({ status: '', caseType: '', search: '', priority: '' })}
-                  className="text-indigo-600 hover:text-indigo-500 font-medium"
+                  onClick={() => setFilters({ status: '', caseType: '', search: '', priority: '' })}                  className="text-indigo-600 hover:text-indigo-500 font-medium"
                 >
                   Clear all filters
                 </button>
@@ -439,33 +413,39 @@ const CaseList = () => {
         {totalPages > 1 && (
           <div className="flex items-center justify-between border-t border-gray-200 dark:border-slate-700 pt-4">
             <div className="text-sm text-gray-500 dark:text-gray-400">
-              Showing <span className="font-semibold text-gray-900 dark:text-white">{indexOfFirstCase + 1}</span> to <span className="font-semibold text-gray-900 dark:text-white">{Math.min(indexOfLastCase, filteredCases.length)}</span> of <span className="font-semibold text-gray-900 dark:text-white">{filteredCases.length}</span> results
+              Page <span className="font-semibold text-gray-900 dark:text-white">{currentPage + 1}</span> of{' '}
+              <span className="font-semibold text-gray-900 dark:text-white">{totalPages}</span>
+              {' '}— <span className="font-semibold text-gray-900 dark:text-white">{totalElements}</span> total cases
             </div>
             <div className="flex gap-2">
               <button
-                onClick={() => paginate(currentPage - 1)}
-                disabled={currentPage === 1}
+                onClick={() => setCurrentPage(p => Math.max(0, p - 1))}
+                disabled={currentPage === 0}
                 className="px-3 py-1.5 border border-gray-300 dark:border-slate-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 Previous
               </button>
               <div className="hidden sm:flex gap-1">
-                {[...Array(totalPages)].map((_, i) => (
-                  <button
-                    key={i}
-                    onClick={() => paginate(i + 1)}
-                    className={`w-8 h-8 rounded-lg text-sm font-medium ${currentPage === i + 1
-                      ? 'bg-indigo-600 text-white shadow-sm'
-                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-700'
-                      }`}
-                  >
-                    {i + 1}
-                  </button>
-                ))}
+                {[...Array(Math.min(totalPages, 7))].map((_, i) => {
+                  const pageNum = totalPages <= 7 ? i : Math.max(0, currentPage - 3) + i;
+                  if (pageNum >= totalPages) return null;
+                  return (
+                    <button
+                      key={pageNum}
+                      onClick={() => setCurrentPage(pageNum)}
+                      className={`w-8 h-8 rounded-lg text-sm font-medium ${currentPage === pageNum
+                        ? 'bg-indigo-600 text-white shadow-sm'
+                        : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-700'
+                        }`}
+                    >
+                      {pageNum + 1}
+                    </button>
+                  );
+                })}
               </div>
               <button
-                onClick={() => paginate(currentPage + 1)}
-                disabled={currentPage === totalPages}
+                onClick={() => setCurrentPage(p => Math.min(totalPages - 1, p + 1))}
+                disabled={currentPage >= totalPages - 1}
                 className="px-3 py-1.5 border border-gray-300 dark:border-slate-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 Next

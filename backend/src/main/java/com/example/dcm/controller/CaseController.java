@@ -22,10 +22,13 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.dcm.model.Case;
 import com.example.dcm.model.User;
 import com.example.dcm.service.CaseService;
+import com.example.dcm.dto.ReasonRequest;
+import com.example.dcm.dto.ScheduleRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
 
 @RestController
 @RequestMapping("/api/cases")
@@ -73,20 +76,25 @@ public class CaseController {
         return ResponseEntity.ok(cases);
     }
 
-    // Get all cases for case management (includes filed cases)
+    // Get all cases for case management (includes filed cases) - paginated
     @GetMapping("/management")
     @PreAuthorize("hasRole('ADMIN') or hasRole('JUDGE') or hasRole('CLERK')")
-    public ResponseEntity<List<Case>> getAllCasesForManagement(Authentication authentication) {
+    public ResponseEntity<Page<Case>> getAllCasesForManagement(
+            Authentication authentication,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "filingDate") String sortBy,
+            @RequestParam(defaultValue = "desc") String direction) {
         String username = authentication.getName();
         User currentUser = caseService.getUserByUsername(username);
-        
-        List<Case> cases;
+
+        Page<Case> cases;
         if (currentUser.getRole() == User.Role.ADMIN) {
-            cases = caseService.getAllCases();
+            cases = caseService.getAllCasesPaged(page, size, sortBy, direction);
         } else if (currentUser.getCourtLevel() != null) {
-            cases = caseService.getAllCasesByCourtLevel(currentUser.getCourtLevel());
+            cases = caseService.getAllCasesByCourtLevelPaged(currentUser.getCourtLevel(), page, size, sortBy, direction);
         } else {
-            cases = caseService.getAllCases();
+            cases = caseService.getAllCasesPaged(page, size, sortBy, direction);
         }
         return ResponseEntity.ok(cases);
     }
@@ -166,10 +174,9 @@ public class CaseController {
     @PreAuthorize("hasRole('ADMIN') or hasRole('JUDGE')")
     public ResponseEntity<Case> scheduleHearing(
             @PathVariable Long id,
-            @RequestBody Map<String, String> request) {
+            @Valid @RequestBody ScheduleRequest request) {
         try {
-            String hearingDateStr = request.get("hearingDate");
-            LocalDateTime hearingDate = LocalDateTime.parse(hearingDateStr.replace("Z", ""));
+            LocalDateTime hearingDate = LocalDateTime.parse(request.getHearingDate().replace("Z", ""));
             Case updatedCase = caseService.scheduleHearing(id, hearingDate);
             return ResponseEntity.ok(updatedCase);
         } catch (IllegalArgumentException e) {
@@ -425,15 +432,9 @@ public class CaseController {
     // Escalate a case to higher court (Judge or Admin only)
     @PostMapping("/{id}/escalate")
     @PreAuthorize("hasRole('ADMIN') or hasRole('JUDGE')")
-    public ResponseEntity<?> escalateCase(@PathVariable Long id, @RequestBody Map<String, String> request) {
+    public ResponseEntity<?> escalateCase(@PathVariable Long id, @Valid @RequestBody ReasonRequest request) {
         try {
-            String reason = request.get("reason");
-            if (reason == null || reason.trim().isEmpty()) {
-                return ResponseEntity.badRequest().body(Map.of("error", "Escalation reason is required"));
-            }
-
-            Case escalatedCase = caseService.escalateCase(id, reason);
-            
+            Case escalatedCase = caseService.escalateCase(id, request.getReason());
             return ResponseEntity.ok(Map.of(
                 "message", "Case escalated successfully to " + escalatedCase.getCourtLevel().getDisplayName(),
                 "case", escalatedCase
@@ -446,15 +447,9 @@ public class CaseController {
     // De-escalate a case to lower court (Admin or Judge only)
     @PostMapping("/{id}/deescalate")
     @PreAuthorize("hasRole('ADMIN') or hasRole('JUDGE')")
-    public ResponseEntity<?> deescalateCase(@PathVariable Long id, @RequestBody Map<String, String> request) {
+    public ResponseEntity<?> deescalateCase(@PathVariable Long id, @Valid @RequestBody ReasonRequest request) {
         try {
-            String reason = request.get("reason");
-            if (reason == null || reason.trim().isEmpty()) {
-                return ResponseEntity.badRequest().body(Map.of("error", "De-escalation reason is required"));
-            }
-
-            Case deescalatedCase = caseService.deescalateCase(id, reason);
-            
+            Case deescalatedCase = caseService.deescalateCase(id, request.getReason());
             return ResponseEntity.ok(Map.of(
                 "message", "Case de-escalated successfully to " + deescalatedCase.getCourtLevel().getDisplayName(),
                 "case", deescalatedCase

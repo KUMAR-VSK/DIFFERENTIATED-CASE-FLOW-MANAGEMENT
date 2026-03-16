@@ -16,6 +16,7 @@ import HearingCalendar from './components/HearingCalendar';
 import CaseFlowVisualization from './components/CaseFlowVisualization';
 import CaseTemplatesChecklists from './components/CaseTemplatesChecklists';
 import AdvancedDocumentManager from './components/AdvancedDocumentManager';
+import ErrorBoundary from './components/ErrorBoundary';
 
 // Protected Route Component
 const ProtectedRoute = ({ children, allowedRoles = [] }) => {
@@ -44,7 +45,8 @@ function App() {
           <Navigation />
           <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 transition-colors duration-300">
             <main className="h-screen w-full overflow-auto py-8 px-4 sm:px-6 lg:px-8">
-              <Routes>
+              <ErrorBoundary>
+                <Routes>
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
                 <Route
@@ -137,6 +139,7 @@ function App() {
                 />
                 <Route path="/" element={<Navigate to="/dashboard" replace />} />
               </Routes>
+              </ErrorBoundary>
             </main>
           </div>
         </Router>

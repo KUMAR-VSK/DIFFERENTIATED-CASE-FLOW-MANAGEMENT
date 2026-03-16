@@ -6,6 +6,10 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -471,6 +475,21 @@ public class CaseService {
     public List<Case> getAllCases() {
         // Use a custom query to avoid Hibernate lazy loading issues
         return caseRepository.findAllCasesWithUsers();
+    }
+
+    // Get all cases paginated
+    public Page<Case> getAllCasesPaged(int page, int size, String sortBy, String direction) {
+        Sort sort = direction.equalsIgnoreCase("asc") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+        return caseRepository.findAllCasesWithUsersPaged(pageable);
+    }
+
+    // Get all cases filtered by court level paginated
+    public Page<Case> getAllCasesByCourtLevelPaged(User.CourtLevel userLevel, int page, int size, String sortBy, String direction) {
+        Case.CourtLevel caseLevel = convertUserCourtLevelToCaseCourtLevel(userLevel);
+        Sort sort = direction.equalsIgnoreCase("asc") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+        return caseRepository.findAllCasesWithUsersByCourtLevelPaged(caseLevel, pageable);
     }
 
     // Get all cases filtered by court level
