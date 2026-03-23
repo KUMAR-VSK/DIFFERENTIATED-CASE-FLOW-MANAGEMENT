@@ -10,6 +10,7 @@
 /Users/kumarvs/Downloads/S8 PROJECT/backend/src/main/java/com/example/dcm/service/UserService.java
 /Users/kumarvs/Downloads/S8 PROJECT/backend/src/main/java/com/example/dcm/repository/UserRepository.java
 /Users/kumarvs/Downloads/S8 PROJECT/backend/src/main/java/com/example/dcm/repository/CaseTemplateRepository.java
+/Users/kumarvs/Downloads/S8 PROJECT/backend/src/main/java/com/example/dcm/config/PasswordEncoderConfig.java
 /Users/kumarvs/Downloads/S8 PROJECT/backend/src/main/java/com/example/dcm/repository/CaseAuditRepository.java
 /Users/kumarvs/Downloads/S8 PROJECT/backend/src/main/java/com/example/dcm/controller/AnalyticsController.java
 /Users/kumarvs/Downloads/S8 PROJECT/backend/src/main/java/com/example/dcm/repository/DocumentApprovalRepository.java

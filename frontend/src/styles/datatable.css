@@ -1,0 +1,30 @@
+.datatable-container {
+  width: 100%;
+  border-collapse: collapse;
+}
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid var(--border);
+}
+.data-table th, .data-table td {
+  padding: 0.5rem;
+  border-bottom: 1px solid var(--border);
+}
+.data-table th.sortable { cursor: pointer; user-select: none; }
+.datatable-pagination { font-size: 0.9rem; color: var(--muted); }
+.badge { padding: 0.15em 0.4em; border-radius: 4px; font-size: 0.85em; }
+.status-OPEN { background: #d1e7dd; color: #0f5132; }
+.status-ESTABLISHED { background: #fff3cd; color: #843a00; }
+.status-ESCALATED { background: #f8d7da; color: #842029; }
+.status-FILED { background: #d6e0f5; color: #1f2b66; }
+.btn {
+  padding: 0.4rem 0.8rem;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  border-radius: 4px;
+  cursor: pointer;
+}
+.btn[disabled] { opacity: 0.5; cursor: not-allowed; }
+.theme-toggle { margin-left: 8px; }

@@ -2,6 +2,7 @@ com/example/dcm/repository/DocumentRepository.class
 com/example/dcm/service/CaseService.class
 com/example/dcm/model/CaseNote$NoteType.class
 com/example/dcm/repository/DocumentVersionRepository.class
+com/example/dcm/config/PasswordEncoderConfig.class
 com/example/dcm/repository/CaseTemplateRepository.class
 com/example/dcm/dto/ReasonRequest.class
 com/example/dcm/repository/CaseAuditRepository.class
@@ -16,6 +17,7 @@ com/example/dcm/dto/ScheduleRequest.class
 com/example/dcm/service/PriorityEngine$1.class
 com/example/dcm/model/Case$Status.class
 com/example/dcm/exception/ResourceNotFoundException.class
+com/example/dcm/config/SecurityConfig.class
 com/example/dcm/model/CaseChecklistItem$ChecklistStatus.class
 com/example/dcm/dto/RegisterRequest.class
 com/example/dcm/repository/UserRepository.class
@@ -28,6 +30,7 @@ com/example/dcm/service/CaseService$CourtLevelStats.class
 com/example/dcm/model/Case.class
 com/example/dcm/dto/LoginRequest.class
 com/example/dcm/service/CaseFlowAnalyticsService.class
+com/example/dcm/controller/AuthController.class
 com/example/dcm/model/DocumentApproval$ApprovalStatus.class
 com/example/dcm/service/PriorityEngine.class
 com/example/dcm/controller/CaseController.class
