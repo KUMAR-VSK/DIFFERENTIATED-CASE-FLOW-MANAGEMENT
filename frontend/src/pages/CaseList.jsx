@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import DataTable from '../components/DataTable';
+import Card from '../ui/core/Card.jsx';
 
 const CaseList = () => {
   const [data, setData] = useState([]);
@@ -18,7 +20,8 @@ const CaseList = () => {
     { key: 'priority', label: 'Priority', sortable: true },
     { key: 'filingDate', label: 'Filing Date', sortable: true, render: (r) => r.filingDate?.toString() },
     { key: 'hearingDate', label: 'Hearing Date', sortable: true, render: (r) => (r.hearingDate ?? '') + '' },
-    { key: 'assignedJudge', label: 'Assigned Judge', sortable: false, render: (r) => r.assignedJudge?.firstName ?? '' }
+    { key: 'assignedJudge', label: 'Assigned Judge', sortable: false, render: (r) => r.assignedJudge?.firstName ?? '' },
+    { key: 'view', label: 'Actions', sortable: false, render: (r) => <Link to={`/cases/${r.id}`}>View</Link> }
   ];
 
   // Build query params from filters
@@ -65,65 +68,66 @@ const CaseList = () => {
 
   return (
     <div className="case-list" style={{ padding: '1rem' }}>
-      <h2>Case Management</h2>
-      <div className="filters" style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center', marginBottom: '0.75rem' }}>
-        <select
-          value={filters.status}
-          onChange={(e) => setFilters((f) => ({ ...f, status: e.target.value }))}
-          aria-label="Filter by status"
-          className="btn"
-        >
-          <option value="">All Statuses</option>
-          <option value="FILED">FILED</option>
-          <option value="UNDER_REVIEW">UNDER_REVIEW</option>
-          <option value="SCHEDULED">SCHEDULED</option>
-          <option value="ESCALATED">ESCALATED</option>
-          <option value="COMPLETED">COMPLETED</option>
-          <option value="DISMISSED">DISMISSED</option>
-        </select>
-        <select
-          value={filters.caseType}
-          onChange={(e) => setFilters((f) => ({ ...f, caseType: e.target.value }))}
-          aria-label="Filter by case type"
-          className="btn"
-        >
-          <option value="">All Types</option>
-          <option value="CIVIL">Civil</option>
-          <option value="CRIMINAL">Criminal</option>
-          <option value="FAMILY">Family</option>
-          <option value="CONSTITUTIONAL">Constitutional</option>
-          <option value="ADMINISTRATIVE">Administrative</option>
-        </select>
-        <select
-          value={filters.courtLevel}
-          onChange={(e) => setFilters((f) => ({ ...f, courtLevel: e.target.value }))}
-          aria-label="Filter by court level"
-          className="btn"
-        >
-          <option value="">All Levels</option>
-          <option value="DISTRICT">DISTRICT</option>
-          <option value="HIGH">HIGH</option>
-          <option value="SUPREME">SUPREME</option>
-        </select>
-        <input
-          type="text"
-          placeholder="Search title or case number"
-          value={filters.query}
-          onChange={(e) => setFilters((f) => ({ ...f, query: e.target.value }))}
-          className="btn"
+      <Card title="Case Management">
+        <div className="filters" style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center', marginBottom: '0.75rem' }}>
+          <select
+            value={filters.status}
+            onChange={(e) => setFilters((f) => ({ ...f, status: e.target.value }))}
+            aria-label="Filter by status"
+            className="btn"
+          >
+            <option value="">All Statuses</option>
+            <option value="FILED">FILED</option>
+            <option value="UNDER_REVIEW">UNDER_REVIEW</option>
+            <option value="SCHEDULED">SCHEDULED</option>
+            <option value="ESCALATED">ESCALATED</option>
+            <option value="COMPLETED">COMPLETED</option>
+            <option value="DISMISSED">DISMISSED</option>
+          </select>
+          <select
+            value={filters.caseType}
+            onChange={(e) => setFilters((f) => ({ ...f, caseType: e.target.value }))}
+            aria-label="Filter by case type"
+            className="btn"
+          >
+            <option value="">All Types</option>
+            <option value="CIVIL">Civil</option>
+            <option value="CRIMINAL">Criminal</option>
+            <option value="FAMILY">Family</option>
+            <option value="CONSTITUTIONAL">Constitutional</option>
+            <option value="ADMINISTRATIVE">Administrative</option>
+          </select>
+          <select
+            value={filters.courtLevel}
+            onChange={(e) => setFilters((f) => ({ ...f, courtLevel: e.target.value }))}
+            aria-label="Filter by court level"
+            className="btn"
+          >
+            <option value="">All Levels</option>
+            <option value="DISTRICT">DISTRICT</option>
+            <option value="HIGH">HIGH</option>
+            <option value="SUPREME">SUPREME</option>
+          </select>
+          <input
+            type="text"
+            placeholder="Search title or case number"
+            value={filters.query}
+            onChange={(e) => setFilters((f) => ({ ...f, query: e.target.value }))}
+            className="btn"
+          />
+          <button onClick={resetFilters} className="btn">
+            Reset
+          </button>
+        </div>
+        <DataTable
+          columns={columns}
+          data={data}
+          page={page}
+          pageSize={pageSize}
+          total={total}
+          onPageChange={setPage}
         />
-        <button onClick={resetFilters} className="btn">
-          Reset
-        </button>
-      </div>
-      <DataTable
-        columns={columns}
-        data={data}
-        page={page}
-        pageSize={pageSize}
-        total={total}
-        onPageChange={setPage}
-      />
+      </Card>
     </div>
   );
 };
