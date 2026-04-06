@@ -364,15 +364,17 @@ public class CaseController {
     // Generate case PDF (placeholder - returns formatted text for now)
     @GetMapping("/{id}/pdf")
     @PreAuthorize("hasRole('ADMIN') or hasRole('JUDGE') or hasRole('CLERK') or hasRole('ADVOCATE')")
-    public ResponseEntity<String> generateCasePDF(@PathVariable Long id) {
+    public ResponseEntity<byte[]> generateCasePDF(@PathVariable Long id) {
         try {
-            String pdfContent = caseService.generateCasePDF(id);
+            byte[] pdfContent = caseService.generateCasePDF(id);
             return ResponseEntity.ok()
-                    .header("Content-Type", "application/pdf")
-                    .header("Content-Disposition", "attachment; filename=\"case-report-" + id + ".pdf\"")
+                    .header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"case-history-" + id + ".pdf\"")
+                    .contentType(org.springframework.http.MediaType.APPLICATION_PDF)
                     .body(pdfContent);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
         }
     }
 

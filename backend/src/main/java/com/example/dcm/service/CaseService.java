@@ -345,105 +345,103 @@ public class CaseService {
         return report.toString();
     }
 
-    // Generate case PDF (placeholder - returns formatted text for now)
-    public String generateCasePDF(Long caseId) {
+    // Generate case history PDF
+    public byte[] generateCasePDF(Long caseId) throws Exception {
         Case caseEntity = caseRepository.findById(caseId)
                 .orElseThrow(() -> new IllegalArgumentException("Case not found"));
 
         List<CaseAudit> history = caseAuditRepository.findByCaseEntityOrderByCreatedAtAsc(caseEntity);
 
-        StringBuilder pdfContent = new StringBuilder();
-        pdfContent.append("%PDF-1.4\n");
-        pdfContent.append("1 0 obj\n");
-        pdfContent.append("<<\n");
-        pdfContent.append("/Type /Catalog\n");
-        pdfContent.append("/Pages 2 0 R\n");
-        pdfContent.append(">>\n");
-        pdfContent.append("endobj\n");
+        com.itextpdf.text.Document document = new com.itextpdf.text.Document(com.itextpdf.text.PageSize.A4);
+        java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
 
-        pdfContent.append("2 0 obj\n");
-        pdfContent.append("<<\n");
-        pdfContent.append("/Type /Pages\n");
-        pdfContent.append("/Kids [3 0 R]\n");
-        pdfContent.append("/Count 1\n");
-        pdfContent.append(">>\n");
-        pdfContent.append("endobj\n");
+        try {
+            com.itextpdf.text.pdf.PdfWriter writer = com.itextpdf.text.pdf.PdfWriter.getInstance(document, out);
+            document.open();
 
-        pdfContent.append("3 0 obj\n");
-        pdfContent.append("<<\n");
-        pdfContent.append("/Type /Page\n");
-        pdfContent.append("/Parent 2 0 R\n");
-        pdfContent.append("/MediaBox [0 0 612 792]\n");
-        pdfContent.append("/Contents 4 0 R\n");
-        pdfContent.append("/Resources << /Font << /F1 5 0 R >> >>\n");
-        pdfContent.append(">>\n");
-        pdfContent.append("endobj\n");
+            // Set up fonts
+            com.itextpdf.text.Font titleFont = com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA_BOLD, 22, com.itextpdf.text.BaseColor.DARK_GRAY);
+            com.itextpdf.text.Font headerFont = com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA_BOLD, 14, com.itextpdf.text.BaseColor.BLACK);
+            com.itextpdf.text.Font normalFont = com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA, 12, com.itextpdf.text.BaseColor.BLACK);
+            com.itextpdf.text.Font dateFont = com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA_OBLIQUE, 10, com.itextpdf.text.BaseColor.GRAY);
 
-        StringBuilder textContent = new StringBuilder();
-        textContent.append("BT\n/F1 12 Tf\n72 720 Td\n");
-        
-        // Escape parentheses for PDF text format
-        String title = caseEntity.getTitle().replace("(", "\\(").replace(")", "\\)");
-        textContent.append("(").append(title).append(") Tj\n0 -20 Td\n");
-        textContent.append("(Case Number: ").append(caseEntity.getCaseNumber()).append(") Tj\n0 -20 Td\n");
-        textContent.append("(Status: ").append(caseEntity.getStatus()).append(") Tj\n0 -20 Td\n");
-        textContent.append("(Court Level: ").append(caseEntity.getCourtLevel()).append(") Tj\n0 -20 Td\n");
-        if (caseEntity.getAssignedJudge() != null) {
-            textContent.append("(Judge: ").append(caseEntity.getAssignedJudge().getFirstName())
-                       .append(" ").append(caseEntity.getAssignedJudge().getLastName()).append(") Tj\n0 -20 Td\n");
-        }
-        textContent.append("(-----------------------------------) Tj\n0 -20 Td\n");
-        textContent.append("(Update History:) Tj\n0 -20 Td\n");
-        
-        for (CaseAudit entry : history) {
-            String date = entry.getCreatedAt() != null ? entry.getCreatedAt().toString().substring(0, 16).replace("T", " ") : "Unknown";
-            String action = entry.getActionType() != null ? entry.getActionType().toString() : "";
-            String desc = entry.getDescription() != null ? entry.getDescription().replace("(", "\\(").replace(")", "\\)") : "";
+            // Add Header
+            com.itextpdf.text.Paragraph title = new com.itextpdf.text.Paragraph("Comprehensive Case History Report", titleFont);
+            title.setAlignment(com.itextpdf.text.Element.ALIGN_CENTER);
+            title.setSpacingAfter(10);
+            document.add(title);
+
+            com.itextpdf.text.pdf.draw.LineSeparator separator = new com.itextpdf.text.pdf.draw.LineSeparator();
+            separator.setLineColor(com.itextpdf.text.BaseColor.LIGHT_GRAY);
+            document.add(new com.itextpdf.text.Chunk(separator));
+
+            // Case Info Summary
+            com.itextpdf.text.Paragraph caseInfo = new com.itextpdf.text.Paragraph();
+            caseInfo.setSpacingBefore(15);
+            caseInfo.setSpacingAfter(20);
+            caseInfo.add(new com.itextpdf.text.Chunk("Case Number: ", headerFont));
+            caseInfo.add(new com.itextpdf.text.Chunk(caseEntity.getCaseNumber() + "\n", normalFont));
+            caseInfo.add(new com.itextpdf.text.Chunk("Title: ", headerFont));
+            caseInfo.add(new com.itextpdf.text.Chunk(caseEntity.getTitle() + "\n", normalFont));
+            caseInfo.add(new com.itextpdf.text.Chunk("Status: ", headerFont));
+            caseInfo.add(new com.itextpdf.text.Chunk(caseEntity.getStatus().name() + "  |  ", normalFont));
+            caseInfo.add(new com.itextpdf.text.Chunk("Court Level: ", headerFont));
+            caseInfo.add(new com.itextpdf.text.Chunk(caseEntity.getCourtLevel().name() + "\n", normalFont));
+            caseInfo.add(new com.itextpdf.text.Chunk("Filing Date: ", headerFont));
+            caseInfo.add(new com.itextpdf.text.Chunk(caseEntity.getFilingDate().toString().substring(0, 10), normalFont));
+            document.add(caseInfo);
+
+            document.add(new com.itextpdf.text.Chunk(separator));
+
+            // Timeline Header
+            com.itextpdf.text.Paragraph timelineTitle = new com.itextpdf.text.Paragraph("Case Change History (Timeline)", com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA_BOLD, 18, com.itextpdf.text.BaseColor.DARK_GRAY));
+            timelineTitle.setSpacingBefore(20);
+            timelineTitle.setSpacingAfter(15);
+            document.add(timelineTitle);
+
+            // Format Timeline
+            for (CaseAudit audit : history) {
+                com.itextpdf.text.pdf.PdfPTable auditTable = new com.itextpdf.text.pdf.PdfPTable(1);
+                auditTable.setWidthPercentage(100);
+                
+                com.itextpdf.text.pdf.PdfPCell cell = new com.itextpdf.text.pdf.PdfPCell();
+                cell.setPadding(10);
+                cell.setUseBorderPadding(true);
+                cell.setBorderWidth(1);
+                cell.setBorderColor(com.itextpdf.text.BaseColor.LIGHT_GRAY);
+                cell.setBackgroundColor(new com.itextpdf.text.BaseColor(245, 247, 250)); // Very light blue/gray
+                
+                // Date portion
+                String dateStr = audit.getCreatedAt() != null ? java.time.format.DateTimeFormatter.ofPattern("MMM dd, yyyy - HH:mm").format(audit.getCreatedAt()) : "Unknown Time";
+                com.itextpdf.text.Paragraph dateP = new com.itextpdf.text.Paragraph(dateStr, dateFont);
+                dateP.setSpacingAfter(5);
+                cell.addElement(dateP);
+                
+                // Action Type and Description
+                com.itextpdf.text.Font actionFont = com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA_BOLD, 12, com.itextpdf.text.BaseColor.BLACK);
+                com.itextpdf.text.Paragraph actionP = new com.itextpdf.text.Paragraph(audit.getActionType().name().replace("_", " "), actionFont);
+                actionP.setSpacingAfter(3);
+                cell.addElement(actionP);
+                
+                com.itextpdf.text.Paragraph descP = new com.itextpdf.text.Paragraph(audit.getDescription(), normalFont);
+                cell.addElement(descP);
+                
+                auditTable.addCell(cell);
+                document.add(auditTable);
+                
+                // Small spacing between audit entries
+                document.add(new com.itextpdf.text.Paragraph(" ", com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA, 5)));
+            }
             
-            // Limit line length for simple PDF
-            String line = date + " - " + action + ": " + desc;
-            if (line.length() > 80) line = line.substring(0, 77) + "...";
-            
-            textContent.append("(").append(line).append(") Tj\n0 -15 Td\n");
+            if (history.isEmpty()) {
+                document.add(new com.itextpdf.text.Paragraph("No history records found for this case.", normalFont));
+            }
+
+        } finally {
+            document.close();
         }
-        
-        textContent.append("ET\n");
 
-        pdfContent.append("4 0 obj\n");
-        pdfContent.append("<<\n");
-        pdfContent.append("/Length ").append(textContent.length()).append("\n");
-        pdfContent.append(">>\n");
-        pdfContent.append("stream\n");
-        pdfContent.append(textContent.toString());
-        pdfContent.append("endstream\n");
-        pdfContent.append("endobj\n");
-
-        pdfContent.append("5 0 obj\n");
-        pdfContent.append("<<\n");
-        pdfContent.append("/Type /Font\n");
-        pdfContent.append("/Subtype /Type1\n");
-        pdfContent.append("/BaseFont /Helvetica\n");
-        pdfContent.append(">>\n");
-        pdfContent.append("endobj\n");
-
-        pdfContent.append("xref\n");
-        pdfContent.append("0 6\n");
-        pdfContent.append("0000000000 65535 f \n");
-        pdfContent.append("0000000009 00000 n \n");
-        pdfContent.append("0000000058 00000 n \n");
-        pdfContent.append("0000000115 00000 n \n");
-        pdfContent.append("0000000274 00000 n \n");
-        pdfContent.append("0000000516 00000 n \n");
-        pdfContent.append("trailer\n");
-        pdfContent.append("<<\n");
-        pdfContent.append("/Size 6\n");
-        pdfContent.append("/Root 1 0 R\n");
-        pdfContent.append(">>\n");
-        pdfContent.append("startxref\n");
-        pdfContent.append("581\n");
-        pdfContent.append("%%EOF\n");
-
-        return pdfContent.toString();
+        return out.toByteArray();
     }
 
     // Get case statistics
