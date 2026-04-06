@@ -43,6 +43,26 @@ public class ExportService {
     private CaseAuditRepository caseAuditRepository;
 
     /**
+     * Helper class for page numbering
+     */
+    private class PageNumberEvents extends com.itextpdf.text.pdf.PdfPageEventHelper {
+        @Override
+        public void onEndPage(PdfWriter writer, Document document) {
+            com.itextpdf.text.pdf.PdfPTable table = new com.itextpdf.text.pdf.PdfPTable(1);
+            table.setTotalWidth(523);
+            table.setLockedWidth(true);
+            table.getDefaultCell().setFixedHeight(20);
+            table.getDefaultCell().setBorder(com.itextpdf.text.Rectangle.TOP);
+            table.getDefaultCell().setHorizontalAlignment(com.itextpdf.text.Element.ALIGN_RIGHT);
+            
+            Font footerFt = FontFactory.getFont(FontFactory.HELVETICA, 8, new BaseColor(120, 120, 130));
+            table.addCell(new com.itextpdf.text.Phrase(String.format("Page %d", writer.getPageNumber()), footerFt));
+            
+            table.writeSelectedRows(0, -1, 36, 30, writer.getDirectContent());
+        }
+    }
+
+    /**
      * Export cases to Excel (XLSX format)
      */
     public byte[] exportCasesToExcel(List<Case> cases) throws IOException {
@@ -168,40 +188,44 @@ public class ExportService {
         Document document = new Document(PageSize.A4, 40, 40, 50, 40);
         ByteArrayOutputStream out = new ByteArrayOutputStream();
 
-        // ── Color palette ──────────────────────────────────────────────
-        BaseColor headerBg   = new BaseColor(15, 52, 96);
-        BaseColor accentBlue = new BaseColor(22, 96, 186);
-        BaseColor lightBlue  = new BaseColor(232, 242, 254);
-        BaseColor oddBg      = new BaseColor(245, 248, 255);
-        BaseColor evenBg     = new BaseColor(255, 255, 255);
-        BaseColor labelColor = new BaseColor(15, 52, 96);
-        BaseColor mutedGray  = new BaseColor(120, 120, 130);
-        BaseColor borderClr  = new BaseColor(210, 220, 235);
-
-        // Action-type pill colours
-        BaseColor GREEN  = new BaseColor(0,  153, 102);
-        BaseColor BLUE   = new BaseColor(33, 150, 243);
-        BaseColor PURPLE = new BaseColor(156, 39, 176);
-        BaseColor ORANGE = new BaseColor(255, 152,  0);
-        BaseColor RED    = new BaseColor(198,  40, 40);
-        BaseColor SLATE  = new BaseColor( 96, 125, 139);
-
-        // ── Fonts ──────────────────────────────────────────────────────
-        Font titleFt  = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 22, BaseColor.WHITE);
-        Font subFt    = FontFactory.getFont(FontFactory.HELVETICA, 11, new BaseColor(200, 220, 255));
-        Font secFt    = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12, labelColor);
-        Font lblFt    = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10, labelColor);
-        Font valFt    = FontFactory.getFont(FontFactory.HELVETICA, 10, BaseColor.BLACK);
-        Font tsFt     = FontFactory.getFont(FontFactory.HELVETICA_OBLIQUE, 8, mutedGray);
-        Font actFt    = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 9, BaseColor.WHITE);
-        Font descFt   = FontFactory.getFont(FontFactory.HELVETICA, 10, BaseColor.BLACK);
-        Font byFt     = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 9, accentBlue);
-        Font detFt    = FontFactory.getFont(FontFactory.HELVETICA_OBLIQUE, 9, mutedGray);
-        Font footerFt = FontFactory.getFont(FontFactory.HELVETICA, 8, mutedGray);
-
         try {
-            PdfWriter.getInstance(document, out);
+            PdfWriter writer = PdfWriter.getInstance(document, out);
+            writer.setPageEvent(new PageNumberEvents());
             document.open();
+
+            // ── Color palette ──────────────────────────────────────────────
+            BaseColor headerBg   = new BaseColor(15, 52, 96);
+            BaseColor accentBlue = new BaseColor(22, 96, 186);
+            BaseColor lightBlue  = new BaseColor(232, 242, 254);
+            BaseColor oddBg      = new BaseColor(245, 248, 255);
+            BaseColor evenBg     = new BaseColor(255, 255, 255);
+            BaseColor labelColor = new BaseColor(15, 52, 96);
+            BaseColor mutedGray  = new BaseColor(120, 120, 130);
+            BaseColor borderClr  = new BaseColor(210, 220, 235);
+            BaseColor successG   = new BaseColor(40, 167, 69);
+            BaseColor inactiveG  = new BaseColor(200, 200, 200);
+
+            // Action-type pill colours
+            BaseColor GREEN  = new BaseColor(0,  153, 102);
+            BaseColor BLUE   = new BaseColor(33, 150, 243);
+            BaseColor PURPLE = new BaseColor(156, 39, 176);
+            BaseColor ORANGE = new BaseColor(255, 152,  0);
+            BaseColor RED    = new BaseColor(198,  40, 40);
+            BaseColor SLATE  = new BaseColor( 96, 125, 139);
+
+            // ── Fonts ──────────────────────────────────────────────────────
+            Font titleFt  = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 22, BaseColor.WHITE);
+            Font subFt    = FontFactory.getFont(FontFactory.HELVETICA, 11, new BaseColor(200, 220, 255));
+            Font secFt    = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12, labelColor);
+            Font lblFt    = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10, labelColor);
+            Font valFt    = FontFactory.getFont(FontFactory.HELVETICA, 10, BaseColor.BLACK);
+            Font tsFt     = FontFactory.getFont(FontFactory.HELVETICA_OBLIQUE, 8, mutedGray);
+            Font actFt    = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 9, BaseColor.WHITE);
+            Font descFt   = FontFactory.getFont(FontFactory.HELVETICA, 10, BaseColor.BLACK);
+            Font byFt     = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 9, accentBlue);
+            Font detFt    = FontFactory.getFont(FontFactory.HELVETICA_OBLIQUE, 9, mutedGray);
+            Font footerFt = FontFactory.getFont(FontFactory.HELVETICA, 8, mutedGray);
+            Font progressFt = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8, BaseColor.WHITE);
 
             // ── BANNER ────────────────────────────────────────────────
             PdfPTable banner = new PdfPTable(1);
@@ -219,7 +243,23 @@ public class ExportService {
             bc.addElement(bs);
             banner.addCell(bc);
             document.add(banner);
+
+            // ── PROGRESS BAR ──────────────────────────────────────────
             document.add(new Paragraph(" ", FontFactory.getFont(FontFactory.HELVETICA, 5)));
+            PdfPTable progress = new PdfPTable(3);
+            progress.setWidthPercentage(100);
+            
+            String status = caseItem.getStatus().name();
+            boolean isFiled = true;
+            boolean isScheduled = status.equals("SCHEDULED") || status.equals("IN_PROGRESS") || status.equals("COMPLETED");
+            boolean isCompleted = status.equals("COMPLETED");
+
+            addProgressCell(progress, "FILED", isFiled, successG, inactiveG, progressFt);
+            addProgressCell(progress, "SCHEDULED", isScheduled, successG, inactiveG, progressFt);
+            addProgressCell(progress, "COMPLETED", isCompleted, successG, inactiveG, progressFt);
+            
+            document.add(progress);
+            document.add(new Paragraph(" ", FontFactory.getFont(FontFactory.HELVETICA, 10)));
 
             // ── CASE OVERVIEW GRID ────────────────────────────────────
             Paragraph ov = new Paragraph("CASE OVERVIEW", secFt);
@@ -386,6 +426,16 @@ public class ExportService {
         PdfPCell v = new PdfPCell(new Phrase(value != null ? value : "\u2014", valFt));
         v.setBackgroundColor(bg2); v.setPadding(7); v.setBorderColor(border);
         table.addCell(v);
+    }
+
+    private void addProgressCell(PdfPTable table, String label, boolean active, 
+            BaseColor activeBg, BaseColor inactiveBg, Font font) {
+        PdfPCell cell = new PdfPCell(new Phrase(label, font));
+        cell.setBackgroundColor(active ? activeBg : inactiveBg);
+        cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+        cell.setPadding(5);
+        cell.setBorderColor(BaseColor.WHITE);
+        table.addCell(cell);
     }
 
     private BaseColor resolvePillColor(CaseAudit.ActionType type,

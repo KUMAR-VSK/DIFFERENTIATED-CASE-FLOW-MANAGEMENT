@@ -56,6 +56,7 @@ const CaseDetail = () => {
   const [selectedStatus, setSelectedStatus] = useState('');
   const [hearingDate, setHearingDate] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
+  const [isDownloadingHistory, setIsDownloadingHistory] = useState(false);
   const [toast, setToast] = useState(null);
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
@@ -482,6 +483,7 @@ const CaseDetail = () => {
   };
 
   const handleDownloadHistoryPDF = async () => {
+    setIsDownloadingHistory(true);
     try {
       const response = await axios.get(`${BASE_URL}/api/cases/${id}/pdf`, {
         responseType: 'blob'
@@ -489,7 +491,7 @@ const CaseDetail = () => {
       const url = window.URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', `case-report-${id}.pdf`);
+      link.setAttribute('download', `case-history-${id}.pdf`);
       document.body.appendChild(link);
       link.click();
       link.remove();
@@ -497,6 +499,8 @@ const CaseDetail = () => {
     } catch (error) {
       console.error('Error downloading case history PDF:', error);
       showToast('Failed to download case history PDF', 'error');
+    } finally {
+      setIsDownloadingHistory(false);
     }
   };
 

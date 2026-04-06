@@ -133,10 +133,10 @@ public class CaseController {
 
     // Update case status
     @PutMapping("/{id}/status")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('JUDGE')")
-    public ResponseEntity<Case> updateCaseStatus(@PathVariable Long id, @RequestParam Case.Status status) {
+    @PreAuthorize("hasRole('ADMIN') or hasRole('JUDGE') or hasRole('CLERK')")
+    public ResponseEntity<Case> updateCaseStatus(@PathVariable Long id, @RequestParam Case.Status status, Authentication authentication) {
         try {
-            Case updatedCase = caseService.updateCaseStatus(id, status);
+            Case updatedCase = caseService.updateCaseStatus(id, status, authentication.getName());
             return ResponseEntity.ok(updatedCase);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.notFound().build();
@@ -145,10 +145,11 @@ public class CaseController {
 
     // Assign judge to case
     @PutMapping("/{id}/assign-judge")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Case> assignJudge(@PathVariable Long id, @RequestParam Long judgeId) {
+    @PreAuthorize("hasRole('ADMIN') or hasRole('CLERK')")
+    public ResponseEntity<Case> assignJudge(@PathVariable Long id, @RequestBody Map<String, Long> request, Authentication authentication) {
         try {
-            Case updatedCase = caseService.assignJudge(id, judgeId);
+            Long judgeId = request.get("judgeId");
+            Case updatedCase = caseService.assignJudge(id, judgeId, authentication.getName());
             return ResponseEntity.ok(updatedCase);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().build();
@@ -174,10 +175,11 @@ public class CaseController {
     @PreAuthorize("hasRole('ADMIN') or hasRole('JUDGE')")
     public ResponseEntity<Case> scheduleHearing(
             @PathVariable Long id,
-            @Valid @RequestBody ScheduleRequest request) {
+            @Valid @RequestBody ScheduleRequest request,
+            Authentication authentication) {
         try {
             LocalDateTime hearingDate = LocalDateTime.parse(request.getHearingDate().replace("Z", ""));
-            Case updatedCase = caseService.scheduleHearing(id, hearingDate);
+            Case updatedCase = caseService.scheduleHearing(id, hearingDate, authentication.getName());
             return ResponseEntity.ok(updatedCase);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().build();
@@ -303,11 +305,11 @@ public class CaseController {
 
     // Add or update case notes
     @PutMapping("/{id}/notes")
-    @PreAuthorize("hasRole('JUDGE')")
-    public ResponseEntity<Case> updateCaseNotes(@PathVariable Long id, @RequestBody Map<String, String> request) {
+    @PreAuthorize("hasRole('ADMIN') or hasRole('JUDGE') or hasRole('CLERK')")
+    public ResponseEntity<Case> updateCaseNotes(@PathVariable Long id, @RequestBody Map<String, String> request, Authentication authentication) {
         try {
             String notes = request.get("notes");
-            Case updatedCase = caseService.updateCaseNotes(id, notes);
+            Case updatedCase = caseService.updateCaseNotes(id, notes, authentication.getName());
             return ResponseEntity.ok(updatedCase);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.notFound().build();

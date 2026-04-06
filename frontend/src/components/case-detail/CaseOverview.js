@@ -8,6 +8,7 @@ const CaseOverview = ({
     notes,
     user,
     actionLoading,
+    isDownloadingHistory,
     advocates,
     judges,
     onAssignAdvocate,
@@ -25,6 +26,39 @@ const CaseOverview = ({
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Left Column - Main Info */}
             <div className="lg:col-span-2 space-y-6">
+                {/* Case Progress Bar */}
+                <div className="bg-white dark:bg-slate-800 rounded-lg p-6 shadow-md border border-gray-100 dark:border-slate-700">
+                    <div className="flex items-center justify-between mb-4">
+                        <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Case Progress</span>
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${getStatusColor(caseData.status)}`}>
+                            Current: {caseData.status.replace('_', ' ')}
+                        </span>
+                    </div>
+                    <div className="relative flex items-center justify-between">
+                        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1 bg-gray-200 dark:bg-slate-700"></div>
+                        <div 
+                            className="absolute left-0 top-1/2 -translate-y-1/2 h-1 bg-green-500 transition-all duration-1000"
+                            style={{ 
+                                width: caseData.status === 'FILED' ? '0%' : 
+                                       caseData.status === 'COMPLETED' ? '100%' : '50%' 
+                            }}
+                        ></div>
+                        
+                        {[
+                            { label: 'FILED', color: 'bg-green-500', active: true },
+                            { label: 'SCHEDULED', color: caseData.status !== 'FILED' ? 'bg-green-500' : 'bg-gray-300 dark:bg-slate-600', active: caseData.status !== 'FILED' },
+                            { label: 'COMPLETED', color: caseData.status === 'COMPLETED' ? 'bg-green-500' : 'bg-gray-300 dark:bg-slate-600', active: caseData.status === 'COMPLETED' }
+                        ].map((step, idx) => (
+                            <div key={idx} className="relative z-10 flex flex-col items-center">
+                                <div className={`w-4 h-4 rounded-full border-2 border-white dark:border-slate-800 ${step.color}`}></div>
+                                <span className={`mt-2 text-[10px] font-bold ${step.active ? 'text-green-600 dark:text-green-400' : 'text-gray-400'}`}>
+                                    {step.label}
+                                </span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
                 {/* Basic Information */}
                 <div className="bg-gray-50 dark:bg-slate-700/30 rounded-lg p-6 transition-colors duration-300">
                     <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6 flex items-center">
@@ -284,13 +318,13 @@ const CaseOverview = ({
                         {/* Download Case History PDF - Allow all authenticated users */}
                         <button
                             onClick={onDownloadHistoryPDF}
-                            disabled={actionLoading}
-                            className="w-full bg-slate-800 dark:bg-slate-300 text-white dark:text-slate-900 px-4 py-3 rounded-lg hover:bg-slate-900 dark:hover:bg-slate-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 text-sm font-medium flex items-center justify-center shadow-md mb-2"
+                            disabled={isDownloadingHistory}
+                            className={`w-full ${isDownloadingHistory ? 'bg-slate-600' : 'bg-slate-800 dark:bg-slate-300'} text-white dark:text-slate-900 px-4 py-3 rounded-lg hover:bg-slate-900 dark:hover:bg-slate-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 text-sm font-medium flex items-center justify-center shadow-md mb-2`}
                         >
-                            <svg className="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className={`h-5 w-5 mr-2 ${isDownloadingHistory ? 'animate-bounce' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
-                            {actionLoading ? 'Downloading...' : 'Download Case History PDF'}
+                            {isDownloadingHistory ? 'Generating PDF...' : 'Download Case History PDF'}
                         </button>
 
                         {/* Status Update - ADMIN/JUDGE only */}

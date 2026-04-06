@@ -117,19 +117,32 @@ public class CaseService {
 
     // Update case status
     public Case updateCaseStatus(Long caseId, Case.Status newStatus) {
+        return updateCaseStatus(caseId, newStatus, null);
+    }
+
+    public Case updateCaseStatus(Long caseId, Case.Status newStatus, String performedByUsername) {
         Case caseEntity = caseRepository.findById(caseId)
                 .orElseThrow(() -> new IllegalArgumentException("Case not found"));
 
         Case.Status oldStatus = caseEntity.getStatus();
         caseEntity.setStatus(newStatus);
         Case savedCase = caseRepository.save(caseEntity);
-        
-        caseAuditRepository.save(new CaseAudit(savedCase, CaseAudit.ActionType.STATUS_CHANGED, "Status changed from " + oldStatus + " to " + newStatus));
+
+        CaseAudit audit = new CaseAudit(savedCase, CaseAudit.ActionType.STATUS_CHANGED,
+                "Status changed from " + oldStatus + " to " + newStatus);
+        if (performedByUsername != null) {
+            userRepository.findByUsername(performedByUsername).ifPresent(audit::setPerformedBy);
+        }
+        caseAuditRepository.save(audit);
         return savedCase;
     }
 
     // Assign judge to case
     public Case assignJudge(Long caseId, Long judgeId) {
+        return assignJudge(caseId, judgeId, null);
+    }
+
+    public Case assignJudge(Long caseId, Long judgeId, String performedByUsername) {
         Case caseEntity = caseRepository.findById(caseId)
                 .orElseThrow(() -> new IllegalArgumentException("Case not found"));
 
@@ -143,24 +156,37 @@ public class CaseService {
         caseEntity.setAssignedJudge(judge);
         caseEntity.setStatus(Case.Status.SCHEDULED);
         Case savedCase = caseRepository.save(caseEntity);
-        
-        caseAuditRepository.save(new CaseAudit(savedCase, CaseAudit.ActionType.JUDGE_ASSIGNED, "Assigned to Judge: " + judge.getFirstName() + " " + judge.getLastName()));
+
+        CaseAudit audit = new CaseAudit(savedCase, CaseAudit.ActionType.JUDGE_ASSIGNED,
+                "Assigned to Judge: " + judge.getFirstName() + " " + judge.getLastName());
+        if (performedByUsername != null) {
+            userRepository.findByUsername(performedByUsername).ifPresent(audit::setPerformedBy);
+        }
+        caseAuditRepository.save(audit);
         return savedCase;
     }
 
     // Schedule hearing
     public Case scheduleHearing(Long caseId, LocalDateTime hearingDate) {
+        return scheduleHearing(caseId, hearingDate, null);
+    }
+
+    public Case scheduleHearing(Long caseId, LocalDateTime hearingDate, String performedByUsername) {
         Case caseEntity = caseRepository.findById(caseId)
                 .orElseThrow(() -> new IllegalArgumentException("Case not found"));
 
         caseEntity.setHearingDate(hearingDate);
-        // Only change status to SCHEDULED if it's not already in a more advanced state
         if (caseEntity.getStatus() == Case.Status.FILED || caseEntity.getStatus() == Case.Status.UNDER_REVIEW) {
             caseEntity.setStatus(Case.Status.SCHEDULED);
         }
         Case savedCase = caseRepository.save(caseEntity);
-        
-        caseAuditRepository.save(new CaseAudit(savedCase, CaseAudit.ActionType.HEARING_SCHEDULED, "Hearing scheduled for " + hearingDate.toString().substring(0, 10)));
+
+        CaseAudit audit = new CaseAudit(savedCase, CaseAudit.ActionType.HEARING_SCHEDULED,
+                "Hearing scheduled for " + hearingDate.toString().substring(0, 10));
+        if (performedByUsername != null) {
+            userRepository.findByUsername(performedByUsername).ifPresent(audit::setPerformedBy);
+        }
+        caseAuditRepository.save(audit);
         return savedCase;
     }
 
@@ -498,11 +524,31 @@ public class CaseService {
 
     // Update case notes
     public Case updateCaseNotes(Long caseId, String notes) {
+        return updateCaseNotes(caseId, notes, null);
+    }
+
+    public Case updateCaseNotes(Long caseId, String notes, String performedByUsername) {
         Case caseEntity = caseRepository.findById(caseId)
                 .orElseThrow(() -> new IllegalArgumentException("Case not found"));
 
+        String oldNotes = caseEntity.getNotes() != null ? caseEntity.getNotes() : "";
         caseEntity.setNotes(notes);
-        return caseRepository.save(caseEntity);
+        Case savedCase = caseRepository.save(caseEntity);
+
+        // Extract what was newly added
+        String newText = notes != null ? notes : "";
+        String addedText = newText.length() > oldNotes.length()
+                ? newText.substring(oldNotes.length()).trim()
+                : "(note updated)";
+        String shortPreview = addedText.length() > 120 ? addedText.substring(0, 117) + "..." : addedText;
+
+        CaseAudit audit = new CaseAudit(savedCase, CaseAudit.ActionType.NOTE_ADDED,
+                "Note added: " + shortPreview);
+        if (performedByUsername != null) {
+            userRepository.findByUsername(performedByUsername).ifPresent(audit::setPerformedBy);
+        }
+        caseAuditRepository.save(audit);
+        return savedCase;
     }
 
     // Add sample documents to new cases
@@ -716,7 +762,17 @@ public class CaseService {
         // Clear assigned judge (new court will assign their own judge)
         caseEntity.setAssignedJudge(null);
 
-        return caseRepository.save(caseEntity);
+        Case savedCase = caseRepository.save(caseEntity);
+
+        // Save escalation audit entry
+        CaseAudit audit = new CaseAudit(savedCase, CaseAudit.ActionType.COURT_ESCALATED,
+                "Case escalated from " + currentLevel.getDisplayName() + " to " + nextLevel.getDisplayName()
+                + ". Reason: " + reason);
+        audit.setPreviousCourtLevel(currentLevel);
+        audit.setNewCourtLevel(nextLevel);
+        caseAuditRepository.save(audit);
+
+        return savedCase;
     }
 
     /**

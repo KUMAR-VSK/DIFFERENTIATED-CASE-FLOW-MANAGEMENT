@@ -1,4 +1,5 @@
 com/example/dcm/repository/DocumentRepository.class
+com/example/dcm/service/ExportService$1.class
 com/example/dcm/service/CaseService.class
 com/example/dcm/model/CaseNote$NoteType.class
 com/example/dcm/repository/DocumentVersionRepository.class
@@ -14,6 +15,7 @@ com/example/dcm/DcmApplication.class
 com/example/dcm/service/CaseService$CaseStatistics.class
 com/example/dcm/model/CaseAudit.class
 com/example/dcm/dto/ScheduleRequest.class
+com/example/dcm/service/ExportService$PageNumberEvents.class
 com/example/dcm/service/PriorityEngine$1.class
 com/example/dcm/model/Case$Status.class
 com/example/dcm/exception/ResourceNotFoundException.class
@@ -21,6 +23,7 @@ com/example/dcm/config/SecurityConfig.class
 com/example/dcm/model/CaseChecklistItem$ChecklistStatus.class
 com/example/dcm/dto/RegisterRequest.class
 com/example/dcm/repository/UserRepository.class
+com/example/dcm/controller/CaseAuditController.class
 com/example/dcm/dto/UserRequest.class
 com/example/dcm/model/Case$CaseType.class
 com/example/dcm/service/CaseService$EscalationEligibility.class

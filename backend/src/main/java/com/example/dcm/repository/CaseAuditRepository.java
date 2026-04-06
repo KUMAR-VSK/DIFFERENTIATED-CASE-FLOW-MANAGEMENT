@@ -34,8 +34,16 @@ public interface CaseAuditRepository extends JpaRepository<CaseAudit, Long> {
     // Find audit entries within a date range
     List<CaseAudit> findByCreatedAtBetween(LocalDateTime startDate, LocalDateTime endDate);
 
-    // Find audit entries by case number
-    List<CaseAudit> findByCaseNumber(String caseNumber);
+    // Find audit entries for a case by action type
+    List<CaseAudit> findByCaseEntityIdAndActionType(Long caseId, CaseAudit.ActionType actionType);
+
+    // Find audit entries for a case within a date range
+    List<CaseAudit> findByCaseEntityIdAndCreatedAtBetween(Long caseId, LocalDateTime startDate, LocalDateTime endDate);
+
+    // Find audit entries for a case by action type AND date range
+    List<CaseAudit> findByCaseEntityIdAndActionTypeAndCreatedAtBetween(
+            Long caseId, CaseAudit.ActionType actionType,
+            LocalDateTime startDate, LocalDateTime endDate);
 
     // Count audit entries for a case
     long countByCaseEntity(Case caseEntity);
