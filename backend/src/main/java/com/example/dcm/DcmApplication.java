@@ -8,7 +8,12 @@ import org.springframework.context.annotation.Bean;
 import com.example.dcm.model.User;
 import com.example.dcm.service.UserService;
 
+import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.scheduling.annotation.EnableScheduling;
+
 @SpringBootApplication
+@EnableAsync
+@EnableScheduling
 public class DcmApplication {
 
     public static void main(String[] args) {
