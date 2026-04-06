@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/cases/{caseId}/history")
+@RequestMapping("/api/cases")
 @CrossOrigin(origins = "*")
 public class CaseAuditController {
 
@@ -25,7 +25,7 @@ public class CaseAuditController {
      *   ?actionType=STATUS_CHANGED
      *   ?from=2026-01-01T00:00:00&to=2026-12-31T23:59:59
      */
-    @GetMapping
+    @GetMapping("/{caseId}/history")
     @PreAuthorize("hasRole('ADMIN') or hasRole('JUDGE') or hasRole('CLERK') or hasRole('ADVOCATE')")
     public ResponseEntity<List<CaseAudit>> getCaseHistory(
             @PathVariable Long caseId,
@@ -65,7 +65,7 @@ public class CaseAuditController {
      * GET /api/cases/history/recent
      * Returns 15 most recent audit records across ALL cases for the dashboard feed.
      */
-    @GetMapping("/recent")
+    @GetMapping("/history/recent")
     @PreAuthorize("hasRole('ADMIN') or hasRole('JUDGE') or hasRole('CLERK')")
     public ResponseEntity<List<CaseAudit>> getGlobalRecentHistory() {
         List<CaseAudit> recent = caseAuditRepository.findTop15ByOrderByCreatedAtDesc();
