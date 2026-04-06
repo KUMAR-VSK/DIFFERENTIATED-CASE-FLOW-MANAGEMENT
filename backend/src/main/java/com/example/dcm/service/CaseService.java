@@ -19,6 +19,7 @@ import com.example.dcm.model.User;
 import com.example.dcm.repository.CaseAuditRepository;
 import com.example.dcm.repository.CaseRepository;
 import com.example.dcm.repository.UserRepository;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 @Service
 @Transactional
@@ -35,6 +36,9 @@ public class CaseService {
 
     @Autowired
     private PriorityEngine priorityEngine;
+
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
 
     // Create a new case
     public Case createCase(Case caseEntity, String clerkUsername) {
@@ -75,7 +79,7 @@ public class CaseService {
             caseRepository.saveAll(allCases);
 
             // Create Audit trail
-            caseAuditRepository.save(new CaseAudit(savedCase, CaseAudit.ActionType.CASE_CREATED, "Case filed as " + savedCase.getCaseNumber()));
+            saveAuditAndBroadcast(new CaseAudit(savedCase, CaseAudit.ActionType.CASE_CREATED, "Case filed as " + savedCase.getCaseNumber()));
 
             return savedCase;
         } catch (Exception e) {
@@ -133,7 +137,7 @@ public class CaseService {
         if (performedByUsername != null) {
             userRepository.findByUsername(performedByUsername).ifPresent(audit::setPerformedBy);
         }
-        caseAuditRepository.save(audit);
+        saveAuditAndBroadcast(audit);
         return savedCase;
     }
 
@@ -162,7 +166,7 @@ public class CaseService {
         if (performedByUsername != null) {
             userRepository.findByUsername(performedByUsername).ifPresent(audit::setPerformedBy);
         }
-        caseAuditRepository.save(audit);
+        saveAuditAndBroadcast(audit);
         return savedCase;
     }
 
@@ -186,7 +190,7 @@ public class CaseService {
         if (performedByUsername != null) {
             userRepository.findByUsername(performedByUsername).ifPresent(audit::setPerformedBy);
         }
-        caseAuditRepository.save(audit);
+        saveAuditAndBroadcast(audit);
         return savedCase;
     }
 
@@ -554,7 +558,7 @@ public class CaseService {
         if (performedByUsername != null) {
             userRepository.findByUsername(performedByUsername).ifPresent(audit::setPerformedBy);
         }
-        caseAuditRepository.save(audit);
+        saveAuditAndBroadcast(audit);
         return savedCase;
     }
 
@@ -777,7 +781,7 @@ public class CaseService {
                 + ". Reason: " + reason);
         audit.setPreviousCourtLevel(currentLevel);
         audit.setNewCourtLevel(nextLevel);
-        caseAuditRepository.save(audit);
+        saveAuditAndBroadcast(audit);
 
         return savedCase;
     }
@@ -1198,5 +1202,10 @@ public class CaseService {
 
         return caseEntity.getAssignedAdvocate() != null &&
                caseEntity.getAssignedAdvocate().getId().equals(advocateId);
+    }
+
+    private void saveAuditAndBroadcast(CaseAudit audit) {
+        CaseAudit saved = caseAuditRepository.save(audit);
+        messagingTemplate.convertAndSend("/topic/audits", saved);
     }
 }
