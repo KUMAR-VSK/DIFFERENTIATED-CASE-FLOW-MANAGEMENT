@@ -21,6 +21,8 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 
 @Entity
 @Table(name = "court_cases", indexes = {
@@ -33,8 +35,11 @@ import jakarta.validation.constraints.Size;
     @Index(name = "idx_hearing_date", columnList = "hearing_date"),
     @Index(name = "idx_assigned_judge", columnList = "assigned_judge_id"),
     @Index(name = "idx_status_priority", columnList = "status, priority"),
-    @Index(name = "idx_court_status", columnList = "court_level, status")
+    @Index(name = "idx_court_status", columnList = "court_level, status"),
+    @Index(name = "idx_is_deleted", columnList = "is_deleted")
 })
+@SQLDelete(sql = "UPDATE court_cases SET is_deleted = true WHERE id = ?")
+@Where(clause = "is_deleted = false")
 public class Case {
 
     @Id
@@ -118,6 +123,9 @@ public class Case {
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @Column(name = "is_deleted", nullable = false)
+    private boolean isDeleted = false;
 
     @PrePersist
     protected void onCreate() {
@@ -286,4 +294,7 @@ public class Case {
 
     public LocalDateTime getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+
+    public boolean isDeleted() { return isDeleted; }
+    public void setDeleted(boolean deleted) { isDeleted = deleted; }
 }
