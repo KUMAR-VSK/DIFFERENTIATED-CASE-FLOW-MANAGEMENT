@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
+import SockJS from 'sockjs-client';
+import Stomp from 'stompjs';
 import { useAuth } from '../context/AuthContext';
 import BASE_URL from '../config/api';
 import { 
@@ -109,6 +111,37 @@ const Dashboard = () => {
     const timer = setTimeout(() => fetchDashboardData(false), 100);
     return () => clearTimeout(timer);
   }, [fetchDashboardData]);
+
+  // WebSocket for real-time updates
+  useEffect(() => {
+    if (!user) return;
+
+    let socket = null;
+    let stompClient = null;
+
+    try {
+      socket = new SockJS(BASE_URL + '/ws-audit');
+      stompClient = Stomp.over(socket);
+      stompClient.debug = null; // Disable logging for production-feel
+
+      stompClient.connect({}, () => {
+        stompClient.subscribe('/topic/audits', (message) => {
+          const newEvent = JSON.parse(message.body);
+          setRecentEvents(prev => [newEvent, ...prev].slice(0, 15));
+          // Optionally refresh stats when events happen
+          fetchDashboardData(true);
+        });
+      }, (error) => {
+        console.error('WebSocket connection error:', error);
+      });
+    } catch (err) {
+      console.error('Socket initialization failed:', err);
+    }
+
+    return () => {
+      if (stompClient) stompClient.disconnect();
+    };
+  }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Auto-refresh every 30 seconds
   useEffect(() => {
