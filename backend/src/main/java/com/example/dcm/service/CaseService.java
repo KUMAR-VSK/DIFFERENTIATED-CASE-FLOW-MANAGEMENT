@@ -496,12 +496,20 @@ public class CaseService {
 
         double avgPriority = allCases.stream().mapToInt(Case::getPriority).average().orElse(0.0);
 
-        // Calculate distribution stats
-        java.util.Map<String, Long> statusDistribution = allCases.stream()
-                .collect(java.util.stream.Collectors.groupingBy(c -> c.getStatus().name(), java.util.stream.Collectors.counting()));
+        // Initialize maps with all possible enum values
+        java.util.Map<String, Long> statusDistribution = new java.util.HashMap<>();
+        for (Case.Status s : Case.Status.values()) statusDistribution.put(s.name(), 0L);
         
-        java.util.Map<String, Long> typeDistribution = allCases.stream()
-                .collect(java.util.stream.Collectors.groupingBy(c -> c.getCaseType().name(), java.util.stream.Collectors.counting()));
+        java.util.Map<String, Long> typeDistribution = new java.util.HashMap<>();
+        for (Case.CaseType t : Case.CaseType.values()) typeDistribution.put(t.name(), 0L);
+
+        // Fill with actual data
+        allCases.forEach(c -> {
+            String status = c.getStatus().name();
+            String type = c.getCaseType().name();
+            statusDistribution.put(status, statusDistribution.getOrDefault(status, 0L) + 1);
+            typeDistribution.put(type, typeDistribution.getOrDefault(type, 0L) + 1);
+        });
 
         return new CaseStatistics(totalCases, filedCases, scheduledCases, completedCases, avgPriority, statusDistribution, typeDistribution);
     }
