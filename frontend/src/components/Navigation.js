@@ -82,7 +82,7 @@ const Navigation = () => {
                     to="/calendar"
                     className="text-slate-300 hover:text-white hover:bg-slate-800 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200"
                   >
-                    📅 Calendar
+                    Calendar
                   </Link>
                 )}
 

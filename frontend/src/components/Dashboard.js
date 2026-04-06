@@ -3,6 +3,27 @@ import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import BASE_URL from '../config/api';
+import { 
+  Chart as ChartJS, 
+  ArcElement, 
+  Tooltip, 
+  Legend, 
+  CategoryScale, 
+  LinearScale, 
+  BarElement, 
+  Title 
+} from 'chart.js';
+import { Doughnut, Bar } from 'react-chartjs-2';
+
+ChartJS.register(
+  ArcElement, 
+  Tooltip, 
+  Legend, 
+  CategoryScale, 
+  LinearScale, 
+  BarElement, 
+  Title
+);
 
 const Dashboard = () => {
   const { user, loading: authLoading } = useAuth();
@@ -14,6 +35,8 @@ const Dashboard = () => {
   const [toast, setToast] = useState(null);
   const [lastUpdated, setLastUpdated] = useState(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [recentEvents, setRecentEvents] = useState([]);
+  const [distribution, setDistribution] = useState({ status: {}, type: {} });
 
   const REFRESH_INTERVAL_MS = 30000; // 30 seconds
 
@@ -35,6 +58,7 @@ const Dashboard = () => {
         axios.get(BASE_URL + '/api/cases/statistics'),
         axios.get(BASE_URL + '/api/cases/court-stats'),
         axios.get(BASE_URL + '/api/cases/recent'),
+        axios.get(BASE_URL + '/api/cases/history/recent'),
       ];
 
       if (user.role === 'ADMIN' || user.role === 'JUDGE') {
@@ -44,7 +68,12 @@ const Dashboard = () => {
       const responses = await Promise.allSettled(requests);
 
       if (responses[0].status === 'fulfilled') {
-        setStats(prev => ({ ...prev, ...responses[0].value.data }));
+        const statsData = responses[0].value.data;
+        setStats(prev => ({ ...prev, ...statsData }));
+        setDistribution({
+          status: statsData.statusDistribution || {},
+          type: statsData.typeDistribution || {}
+        });
         setStatsError(false);
       } else {
         setStatsError(true);
@@ -57,8 +86,10 @@ const Dashboard = () => {
 
       if (responses[2].status === 'fulfilled') {
         setRecentCases(responses[2].value.data.slice(0, 5));
-      } else {
-        if (!silent) showToast('Unable to load recent cases', 'error');
+      }
+
+      if (responses[3].status === 'fulfilled') {
+        setRecentEvents(responses[3].value.data);
       }
 
       setLastUpdated(new Date());
@@ -104,6 +135,41 @@ const Dashboard = () => {
     if (priority >= 6) return 'bg-orange-100 text-orange-800 border-orange-200 dark:bg-orange-900 dark:text-orange-200 dark:border-orange-700';
     if (priority >= 4) return 'bg-yellow-100 text-yellow-800 border-yellow-200 dark:bg-yellow-900 dark:text-yellow-200 dark:border-yellow-700';
     return 'bg-green-100 text-green-800 border-green-200 dark:bg-green-900 dark:text-green-200 dark:border-green-700';
+  };
+
+  const getEventIcon = (type) => {
+    switch (type) {
+      case 'CASE_CREATED': return '✨';
+      case 'STATUS_CHANGED': return '🔄';
+      case 'JUDGE_ASSIGNED': return '⚖️';
+      case 'HEARING_SCHEDULED': return '📅';
+      case 'NOTE_ADDED': return '📝';
+      case 'COURT_ESCALATED': return '🚀';
+      default: return '📍';
+    }
+  };
+
+  const statusChartData = {
+    labels: Object.keys(distribution.status).map(s => s.replace(/_/g, ' ')),
+    datasets: [{
+      label: 'Cases',
+      data: Object.values(distribution.status),
+      backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#8b5cf6', '#6b7280', '#ef4444', '#f97316'],
+      borderWidth: 0,
+      hoverOffset: 15
+    }]
+  };
+
+  const typeChartData = {
+    labels: Object.keys(distribution.type).map(t => t.replace(/_/g, ' ')),
+    datasets: [{
+      label: 'Count',
+      data: Object.values(distribution.type),
+      backgroundColor: 'rgba(99, 102, 241, 0.8)',
+      borderColor: 'rgb(99, 102, 241)',
+      borderWidth: 2,
+      borderRadius: 8,
+    }]
   };
 
   if (loading) {
@@ -345,68 +411,114 @@ const Dashboard = () => {
             </div>
           )}
 
-          {/* Court Level Distribution */}
-          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-gray-100 dark:border-slate-700 overflow-hidden mb-8">
-            <div className="bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 px-6 py-4">
-              <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
-                  <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                  </svg>
+          {/* Analytics Insights and Recent Activity Feed */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+            {/* Analytics Column */}
+            <div className="lg:col-span-2 space-y-8">
+              {/* Distribution Charts */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-gray-100 dark:border-slate-700 p-6">
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Status Distribution</h3>
+                  <div className="h-[250px] flex items-center justify-center">
+                    {Object.keys(distribution.status).length > 0 ? (
+                      <Doughnut 
+                        data={statusChartData} 
+                        options={{ 
+                          maintainAspectRatio: false,
+                          plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } } }
+                        }} 
+                      />
+                    ) : (
+                      <p className="text-sm text-gray-500">No status data available</p>
+                    )}
+                  </div>
                 </div>
-                <div>
+                <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-gray-100 dark:border-slate-700 p-6">
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Case Type Distribution</h3>
+                  <div className="h-[250px]">
+                    {Object.keys(distribution.type).length > 0 ? (
+                      <Bar 
+                        data={typeChartData} 
+                        options={{ 
+                          maintainAspectRatio: false,
+                          plugins: { legend: { display: false } },
+                          scales: { y: { beginAtZero: true, grid: { display: false } }, x: { grid: { display: false } } }
+                        }} 
+                      />
+                    ) : (
+                      <p className="text-sm text-gray-500">No type data available</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Court Level Distribution (Refined) */}
+              <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-gray-100 dark:border-slate-700 overflow-hidden">
+                <div className="bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 px-6 py-4">
                   <h3 className="text-lg font-bold text-white">Court Level Distribution</h3>
-                  <p className="text-violet-200 text-xs">Active cases by court level</p>
+                </div>
+                <div className="p-6">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="p-4 bg-blue-50 dark:bg-slate-700 rounded-xl border border-blue-100 dark:border-slate-600">
+                      <p className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider mb-1">District Court</p>
+                      <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats?.districtCourtCases || 0}</p>
+                    </div>
+                    <div className="p-4 bg-amber-50 dark:bg-slate-700 rounded-xl border border-amber-100 dark:border-slate-600">
+                      <p className="text-xs font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider mb-1">High Court</p>
+                      <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats?.highCourtCases || 0}</p>
+                    </div>
+                    <div className="p-4 bg-rose-50 dark:bg-slate-700 rounded-xl border border-rose-100 dark:border-slate-600">
+                      <p className="text-xs font-bold text-rose-600 dark:text-rose-400 uppercase tracking-wider mb-1">Supreme Court</p>
+                      <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats?.supremeCourtCases || 0}</p>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
-            <div className="p-6">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-slate-700 dark:to-slate-600 rounded-xl p-5 border border-blue-200 dark:border-blue-600">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
-                      <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                      </svg>
-                    </div>
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">Entry Level</span>
-                  </div>
-                  <h4 className="text-base font-semibold text-gray-900 dark:text-white mb-1">District Court</h4>
-                  <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">All new cases filed here</p>
-                  <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{stats?.districtCourtCases || 0}</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Active cases</p>
-                </div>
 
-                <div className="bg-gradient-to-br from-amber-50 to-orange-100 dark:from-slate-700 dark:to-slate-600 rounded-xl p-5 border border-amber-200 dark:border-amber-600">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="w-10 h-10 bg-gradient-to-br from-amber-500 to-orange-500 rounded-lg flex items-center justify-center">
-                      <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                      </svg>
-                    </div>
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200">Appellate Level</span>
-                  </div>
-                  <h4 className="text-base font-semibold text-gray-900 dark:text-white mb-1">High Court</h4>
-                  <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">Escalated from District</p>
-                  <p className="text-2xl font-bold text-amber-600 dark:text-amber-400">{stats?.highCourtCases || 0}</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Active cases</p>
+            {/* Global Activity Feed Column */}
+            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-gray-100 dark:border-slate-700 overflow-hidden flex flex-col">
+              <div className="bg-slate-800 px-6 py-4 flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-bold text-white">System Activity</h3>
+                  <p className="text-slate-400 text-xs">Real-time audit updates</p>
                 </div>
-
-                <div className="bg-gradient-to-br from-red-50 to-rose-100 dark:from-slate-700 dark:to-slate-600 rounded-xl p-5 border border-red-200 dark:border-red-600">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-rose-500 rounded-lg flex items-center justify-center">
-                      <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                      </svg>
-                    </div>
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">Final Level</span>
-                  </div>
-                  <h4 className="text-base font-semibold text-gray-900 dark:text-white mb-1">Supreme Court</h4>
-                  <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">Highest appellate authority</p>
-                  <p className="text-2xl font-bold text-red-600 dark:text-red-400">{stats?.supremeCourtCases || 0}</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Active cases</p>
-                </div>
+                <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
               </div>
+              <div className="flex-1 overflow-y-auto max-h-[600px] p-4">
+                {recentEvents.length > 0 ? (
+                  <div className="space-y-4">
+                    {recentEvents.map((event, idx) => (
+                      <div key={event.id || idx} className="flex gap-3 p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors border border-transparent hover:border-slate-100 dark:hover:border-slate-600">
+                        <div className="flex-shrink-0 text-xl">{getEventIcon(event.actionType)}</div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">
+                            {event.description}
+                          </p>
+                          <div className="flex items-center justify-between mt-1">
+                            <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 uppercase">
+                              {event.performedBy ? event.performedBy.username : 'System'}
+                            </span>
+                            <span className="text-[10px] text-gray-400">
+                              {new Date(event.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="h-full flex flex-col items-center justify-center text-gray-400 py-10">
+                    <svg className="w-12 h-12 mb-2 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <p className="text-sm font-medium">No recent activity</p>
+                  </div>
+                )}
+              </div>
+              <Link to="/reports" className="block text-center py-3 bg-slate-50 dark:bg-slate-700/50 text-xs font-bold text-slate-600 dark:text-slate-400 hover:text-indigo-600 transition-colors border-t border-slate-100 dark:border-slate-600">
+                VIEW FULL AUDIT LOG
+              </Link>
             </div>
           </div>
 

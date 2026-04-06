@@ -60,4 +60,15 @@ public class CaseAuditController {
 
         return ResponseEntity.ok(results);
     }
+
+    /**
+     * GET /api/cases/history/recent
+     * Returns 15 most recent audit records across ALL cases for the dashboard feed.
+     */
+    @GetMapping("/recent")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('JUDGE') or hasRole('CLERK')")
+    public ResponseEntity<List<CaseAudit>> getGlobalRecentHistory() {
+        List<CaseAudit> recent = caseAuditRepository.findTop15ByOrderByCreatedAtDesc();
+        return ResponseEntity.ok(recent);
+    }
 }

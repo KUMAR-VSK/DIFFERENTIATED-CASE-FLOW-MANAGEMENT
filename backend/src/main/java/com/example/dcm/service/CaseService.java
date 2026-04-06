@@ -492,7 +492,14 @@ public class CaseService {
 
         double avgPriority = allCases.stream().mapToInt(Case::getPriority).average().orElse(0.0);
 
-        return new CaseStatistics(totalCases, filedCases, scheduledCases, completedCases, avgPriority);
+        // Calculate distribution stats
+        java.util.Map<String, Long> statusDistribution = allCases.stream()
+                .collect(java.util.stream.Collectors.groupingBy(c -> c.getStatus().name(), java.util.stream.Collectors.counting()));
+        
+        java.util.Map<String, Long> typeDistribution = allCases.stream()
+                .collect(java.util.stream.Collectors.groupingBy(c -> c.getCaseType().name(), java.util.stream.Collectors.counting()));
+
+        return new CaseStatistics(totalCases, filedCases, scheduledCases, completedCases, avgPriority, statusDistribution, typeDistribution);
     }
 
     // Get all cases (for case management - includes all statuses)
@@ -974,13 +981,18 @@ public class CaseService {
         private final long scheduledCases;
         private final long completedCases;
         private final double averagePriority;
+        private final java.util.Map<String, Long> statusDistribution;
+        private final java.util.Map<String, Long> typeDistribution;
 
-        public CaseStatistics(long totalCases, long filedCases, long scheduledCases, long completedCases, double averagePriority) {
+        public CaseStatistics(long totalCases, long filedCases, long scheduledCases, long completedCases, double averagePriority,
+                              java.util.Map<String, Long> statusDistribution, java.util.Map<String, Long> typeDistribution) {
             this.totalCases = totalCases;
             this.filedCases = filedCases;
             this.scheduledCases = scheduledCases;
             this.completedCases = completedCases;
             this.averagePriority = averagePriority;
+            this.statusDistribution = statusDistribution;
+            this.typeDistribution = typeDistribution;
         }
 
         // Getters
@@ -989,6 +1001,8 @@ public class CaseService {
         public long getScheduledCases() { return scheduledCases; }
         public long getCompletedCases() { return completedCases; }
         public double getAveragePriority() { return averagePriority; }
+        public java.util.Map<String, Long> getStatusDistribution() { return statusDistribution; }
+        public java.util.Map<String, Long> getTypeDistribution() { return typeDistribution; }
     }
 
     // Inner class for escalation eligibility

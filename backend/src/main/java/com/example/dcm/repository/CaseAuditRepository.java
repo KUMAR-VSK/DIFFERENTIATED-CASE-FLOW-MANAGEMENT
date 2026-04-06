@@ -45,6 +45,11 @@ public interface CaseAuditRepository extends JpaRepository<CaseAudit, Long> {
             Long caseId, CaseAudit.ActionType actionType,
             LocalDateTime startDate, LocalDateTime endDate);
 
+    // Find globally recent audit entries for dashboard
+    List<CaseAudit> findTop15ByOrderByCreatedAtDesc();
+
+    // Find globally recent audit entries for a specific user role (if needed)
+
     // Count audit entries for a case
     long countByCaseEntity(Case caseEntity);
 
