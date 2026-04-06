@@ -1,12 +1,31 @@
 package com.example.dcm.service;
 
 import com.example.dcm.model.Case;
-import com.itextpdf.text.*;
+import com.example.dcm.model.CaseAudit;
+import com.example.dcm.repository.CaseAuditRepository;
+import com.itextpdf.text.BaseColor;
+import com.itextpdf.text.Chunk;
+import com.itextpdf.text.Document;
+import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.Element;
+import com.itextpdf.text.Font;
+import com.itextpdf.text.FontFactory;
+import com.itextpdf.text.PageSize;
+import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.Phrase;
+import com.itextpdf.text.Rectangle;
 import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
-import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.usermodel.BorderStyle;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.FillPatternType;
+import org.apache.poi.ss.usermodel.IndexedColors;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
@@ -18,6 +37,10 @@ import java.util.List;
 public class ExportService {
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+    private static final DateTimeFormatter DISPLAY_FORMATTER = DateTimeFormatter.ofPattern("dd MMM yyyy, hh:mm a");
+
+    @Autowired
+    private CaseAuditRepository caseAuditRepository;
 
     /**
      * Export cases to Excel (XLSX format)
@@ -26,7 +49,6 @@ public class ExportService {
         try (Workbook workbook = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
             Sheet sheet = workbook.createSheet("Cases");
 
-            // Create header row with styling
             Row headerRow = sheet.createRow(0);
             CellStyle headerStyle = workbook.createCellStyle();
             org.apache.poi.ss.usermodel.Font headerFont = workbook.createFont();
@@ -46,14 +68,12 @@ public class ExportService {
                 org.apache.poi.ss.usermodel.Cell cell = headerRow.createCell(i);
                 cell.setCellValue(columns[i]);
                 cell.setCellStyle(headerStyle);
-                sheet.setColumnWidth(i, 5000); // Set width
+                sheet.setColumnWidth(i, 5000);
             }
 
-            // Create data rows
             int rowNum = 1;
             for (Case caseItem : cases) {
                 Row row = sheet.createRow(rowNum++);
-                
                 row.createCell(0).setCellValue(caseItem.getCaseNumber());
                 row.createCell(1).setCellValue(caseItem.getTitle());
                 row.createCell(2).setCellValue(caseItem.getCaseType().toString());
@@ -62,69 +82,51 @@ public class ExportService {
                 row.createCell(5).setCellValue(caseItem.getPriority());
                 row.createCell(6).setCellValue(caseItem.getFilingDate().format(DATE_FORMATTER));
                 row.createCell(7).setCellValue(
-                    caseItem.getHearingDate() != null 
-                        ? caseItem.getHearingDate().format(DATE_FORMATTER) 
-                        : "Not Scheduled"
-                );
+                    caseItem.getHearingDate() != null
+                        ? caseItem.getHearingDate().format(DATE_FORMATTER) : "Not Scheduled");
                 row.createCell(8).setCellValue(
-                    caseItem.getAssignedJudge() != null 
-                        ? caseItem.getAssignedJudge().getUsername() 
-                        : "Unassigned"
-                );
+                    caseItem.getAssignedJudge() != null
+                        ? caseItem.getAssignedJudge().getUsername() : "Unassigned");
             }
 
-            // Auto-size columns
-            for (int i = 0; i < columns.length; i++) {
-                sheet.autoSizeColumn(i);
-            }
-
+            for (int i = 0; i < columns.length; i++) sheet.autoSizeColumn(i);
             workbook.write(out);
             return out.toByteArray();
         }
     }
 
     /**
-     * Export cases to PDF
+     * Export all cases to PDF
      */
     public byte[] exportCasesToPDF(List<Case> cases) throws DocumentException, IOException {
-        Document document = new Document(PageSize.A4.rotate()); // Landscape for better table fit
+        Document document = new Document(PageSize.A4.rotate());
         ByteArrayOutputStream out = new ByteArrayOutputStream();
 
         try {
             PdfWriter.getInstance(document, out);
             document.open();
 
-            // Add title
-            com.itextpdf.text.Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18, BaseColor.BLACK);
+            Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18, BaseColor.BLACK);
             Paragraph title = new Paragraph("Case Management Report", titleFont);
             title.setAlignment(Element.ALIGN_CENTER);
             title.setSpacingAfter(20);
             document.add(title);
 
-            // Add generation date
-            com.itextpdf.text.Font dateFont = FontFactory.getFont(FontFactory.HELVETICA, 10, BaseColor.GRAY);
+            Font dateFont = FontFactory.getFont(FontFactory.HELVETICA, 10, BaseColor.GRAY);
             Paragraph date = new Paragraph("Generated: " + java.time.LocalDateTime.now().format(DATE_FORMATTER), dateFont);
             date.setAlignment(Element.ALIGN_RIGHT);
             date.setSpacingAfter(10);
             document.add(date);
 
-            // Create table
-            PdfPTable table = new PdfPTable(9); // 9 columns
+            PdfPTable table = new PdfPTable(9);
             table.setWidthPercentage(100);
             table.setSpacingBefore(10f);
             table.setSpacingAfter(10f);
-
-            // Set column widths
             float[] columnWidths = {1.2f, 2f, 1f, 1.2f, 1.2f, 0.7f, 1.5f, 1.5f, 1.2f};
             table.setWidths(columnWidths);
 
-            // Add header cells
-            com.itextpdf.text.Font headerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10, BaseColor.WHITE);
-            String[] headers = {
-                "Case Number", "Title", "Type", "Status", "Court Level",
-                "Priority", "Filing Date", "Hearing Date", "Judge"
-            };
-
+            Font headerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10, BaseColor.WHITE);
+            String[] headers = {"Case Number", "Title", "Type", "Status", "Court Level", "Priority", "Filing Date", "Hearing Date", "Judge"};
             for (String header : headers) {
                 PdfPCell cell = new PdfPCell(new Phrase(header, headerFont));
                 cell.setBackgroundColor(BaseColor.DARK_GRAY);
@@ -133,8 +135,7 @@ public class ExportService {
                 table.addCell(cell);
             }
 
-            // Add data rows
-            com.itextpdf.text.Font dataFont = FontFactory.getFont(FontFactory.HELVETICA, 8);
+            Font dataFont = FontFactory.getFont(FontFactory.HELVETICA, 8);
             for (Case caseItem : cases) {
                 table.addCell(new Phrase(caseItem.getCaseNumber(), dataFont));
                 table.addCell(new Phrase(truncate(caseItem.getTitle(), 40), dataFont));
@@ -143,103 +144,268 @@ public class ExportService {
                 table.addCell(new Phrase(caseItem.getCourtLevel().name(), dataFont));
                 table.addCell(new Phrase(String.valueOf(caseItem.getPriority()), dataFont));
                 table.addCell(new Phrase(caseItem.getFilingDate().format(DATE_FORMATTER), dataFont));
-                table.addCell(new Phrase(
-                    caseItem.getHearingDate() != null 
-                        ? caseItem.getHearingDate().format(DATE_FORMATTER) 
-                        : "Not Scheduled", 
-                    dataFont
-                ));
-                table.addCell(new Phrase(
-                    caseItem.getAssignedJudge() != null 
-                        ? caseItem.getAssignedJudge().getUsername() 
-                        : "Unassigned", 
-                    dataFont
-                ));
+                table.addCell(new Phrase(caseItem.getHearingDate() != null ? caseItem.getHearingDate().format(DATE_FORMATTER) : "Not Scheduled", dataFont));
+                table.addCell(new Phrase(caseItem.getAssignedJudge() != null ? caseItem.getAssignedJudge().getUsername() : "Unassigned", dataFont));
             }
-
             document.add(table);
-
-            // Add summary
             document.add(new Paragraph("\n"));
-            com.itextpdf.text.Font summaryFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10);
-            document.add(new Paragraph("Total Cases: " + cases.size(), summaryFont));
-
+            document.add(new Paragraph("Total Cases: " + cases.size(), FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10)));
         } finally {
             document.close();
         }
-
         return out.toByteArray();
     }
 
     /**
-     * Export single case details to PDF
+     * Export single case history PDF — unique timeline with performer names & timestamps
      */
     public byte[] exportCaseDetailToPDF(Case caseItem) throws DocumentException {
-        Document document = new Document(PageSize.A4);
+        List<CaseAudit> history = caseAuditRepository.findByCaseEntityOrderByCreatedAtAsc(caseItem);
+        return buildCaseHistoryPDF(caseItem, history);
+    }
+
+    private byte[] buildCaseHistoryPDF(Case caseItem, List<CaseAudit> history) throws DocumentException {
+        Document document = new Document(PageSize.A4, 40, 40, 50, 40);
         ByteArrayOutputStream out = new ByteArrayOutputStream();
+
+        // ── Color palette ──────────────────────────────────────────────
+        BaseColor headerBg   = new BaseColor(15, 52, 96);
+        BaseColor accentBlue = new BaseColor(22, 96, 186);
+        BaseColor lightBlue  = new BaseColor(232, 242, 254);
+        BaseColor oddBg      = new BaseColor(245, 248, 255);
+        BaseColor evenBg     = new BaseColor(255, 255, 255);
+        BaseColor labelColor = new BaseColor(15, 52, 96);
+        BaseColor mutedGray  = new BaseColor(120, 120, 130);
+        BaseColor borderClr  = new BaseColor(210, 220, 235);
+
+        // Action-type pill colours
+        BaseColor GREEN  = new BaseColor(0,  153, 102);
+        BaseColor BLUE   = new BaseColor(33, 150, 243);
+        BaseColor PURPLE = new BaseColor(156, 39, 176);
+        BaseColor ORANGE = new BaseColor(255, 152,  0);
+        BaseColor RED    = new BaseColor(198,  40, 40);
+        BaseColor SLATE  = new BaseColor( 96, 125, 139);
+
+        // ── Fonts ──────────────────────────────────────────────────────
+        Font titleFt  = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 22, BaseColor.WHITE);
+        Font subFt    = FontFactory.getFont(FontFactory.HELVETICA, 11, new BaseColor(200, 220, 255));
+        Font secFt    = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12, labelColor);
+        Font lblFt    = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10, labelColor);
+        Font valFt    = FontFactory.getFont(FontFactory.HELVETICA, 10, BaseColor.BLACK);
+        Font tsFt     = FontFactory.getFont(FontFactory.HELVETICA_OBLIQUE, 8, mutedGray);
+        Font actFt    = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 9, BaseColor.WHITE);
+        Font descFt   = FontFactory.getFont(FontFactory.HELVETICA, 10, BaseColor.BLACK);
+        Font byFt     = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 9, accentBlue);
+        Font detFt    = FontFactory.getFont(FontFactory.HELVETICA_OBLIQUE, 9, mutedGray);
+        Font footerFt = FontFactory.getFont(FontFactory.HELVETICA, 8, mutedGray);
 
         try {
             PdfWriter.getInstance(document, out);
             document.open();
 
-            // Title
-            com.itextpdf.text.Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 20, BaseColor.BLACK);
-            Paragraph title = new Paragraph("Case Details Report", titleFont);
-            title.setAlignment(Element.ALIGN_CENTER);
-            title.setSpacingAfter(20);
-            document.add(title);
+            // ── BANNER ────────────────────────────────────────────────
+            PdfPTable banner = new PdfPTable(1);
+            banner.setWidthPercentage(100);
+            PdfPCell bc = new PdfPCell();
+            bc.setBackgroundColor(headerBg);
+            bc.setPadding(18);
+            bc.setBorder(Rectangle.NO_BORDER);
+            Paragraph bt = new Paragraph("CASE HISTORY REPORT", titleFt);
+            bt.setAlignment(Element.ALIGN_CENTER);
+            bc.addElement(bt);
+            Paragraph bs = new Paragraph(caseItem.getCaseNumber() + "  \u2022  " + caseItem.getTitle(), subFt);
+            bs.setAlignment(Element.ALIGN_CENTER);
+            bs.setSpacingBefore(5);
+            bc.addElement(bs);
+            banner.addCell(bc);
+            document.add(banner);
+            document.add(new Paragraph(" ", FontFactory.getFont(FontFactory.HELVETICA, 5)));
 
-            // Case number
-            com.itextpdf.text.Font headerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 14);
-            com.itextpdf.text.Font normalFont = FontFactory.getFont(FontFactory.HELVETICA, 12);
+            // ── CASE OVERVIEW GRID ────────────────────────────────────
+            Paragraph ov = new Paragraph("CASE OVERVIEW", secFt);
+            ov.setSpacingBefore(8);
+            ov.setSpacingAfter(5);
+            document.add(ov);
 
-            document.add(new Paragraph("Case Number: " + caseItem.getCaseNumber(), headerFont));
-            document.add(new Paragraph(" ", normalFont)); // Spacing
+            PdfPTable grid = new PdfPTable(new float[]{1.3f, 2f, 1.3f, 2f});
+            grid.setWidthPercentage(100);
+            grid.setSpacingAfter(12);
 
-            // Details
-            addLabelValue(document, "Title", caseItem.getTitle());
-            addLabelValue(document, "Case Type", caseItem.getCaseType().toString());
-            addLabelValue(document, "Status", caseItem.getStatus().toString());
-            addLabelValue(document, "Court Level", caseItem.getCourtLevel().getDisplayName());
-            addLabelValue(document, "Priority", String.valueOf(caseItem.getPriority()));
-            addLabelValue(document, "Filing Date", caseItem.getFilingDate().format(DATE_FORMATTER));
-            addLabelValue(document, "Hearing Date", 
-                caseItem.getHearingDate() != null 
-                    ? caseItem.getHearingDate().format(DATE_FORMATTER) 
-                    : "Not Scheduled");
-            addLabelValue(document, "Assigned Judge", 
-                caseItem.getAssignedJudge() != null 
-                    ? caseItem.getAssignedJudge().getUsername() 
-                    : "Unassigned");
+            addInfoRow(grid, "Case Number",   caseItem.getCaseNumber(),                  lblFt, valFt, lightBlue, BaseColor.WHITE, borderClr);
+            addInfoRow(grid, "Case Type",     caseItem.getCaseType().toString(),          lblFt, valFt, BaseColor.WHITE, lightBlue, borderClr);
+            addInfoRow(grid, "Status",        caseItem.getStatus().toString(),            lblFt, valFt, lightBlue, BaseColor.WHITE, borderClr);
+            addInfoRow(grid, "Court Level",   caseItem.getCourtLevel().getDisplayName(), lblFt, valFt, BaseColor.WHITE, lightBlue, borderClr);
+            addInfoRow(grid, "Priority",      caseItem.getPriority() + " / 10",          lblFt, valFt, lightBlue, BaseColor.WHITE, borderClr);
+            addInfoRow(grid, "Filing Date",   caseItem.getFilingDate().format(DISPLAY_FORMATTER), lblFt, valFt, BaseColor.WHITE, lightBlue, borderClr);
+            addInfoRow(grid, "Hearing Date",
+                caseItem.getHearingDate() != null ? caseItem.getHearingDate().format(DISPLAY_FORMATTER) : "Not Scheduled",
+                lblFt, valFt, lightBlue, BaseColor.WHITE, borderClr);
+            addInfoRow(grid, "Assigned Judge",
+                caseItem.getAssignedJudge() != null
+                    ? caseItem.getAssignedJudge().getFirstName() + " " + caseItem.getAssignedJudge().getLastName()
+                    : "Unassigned",
+                lblFt, valFt, BaseColor.WHITE, lightBlue, borderClr);
 
-            if (caseItem.getDescription() != null && !caseItem.getDescription().isEmpty()) {
-                document.add(new Paragraph(" ", normalFont));
-                document.add(new Paragraph("Description:", headerFont));
-                document.add(new Paragraph(caseItem.getDescription(), normalFont));
+            document.add(grid);
+
+            // ── FILING CLERK ──────────────────────────────────────────
+            if (caseItem.getFilingClerk() != null) {
+                com.example.dcm.model.User clk = caseItem.getFilingClerk();
+                Paragraph clkP = new Paragraph(
+                    "Filed by: " + clk.getFirstName() + " " + clk.getLastName()
+                    + " [@" + clk.getUsername() + "]  |  Role: " + clk.getRole(), detFt);
+                clkP.setSpacingAfter(8);
+                document.add(clkP);
             }
 
-            if (caseItem.getNotes() != null && !caseItem.getNotes().isEmpty()) {
-                document.add(new Paragraph(" ", normalFont));
-                document.add(new Paragraph("Notes:", headerFont));
-                document.add(new Paragraph(caseItem.getNotes(), normalFont));
+            // ── TIMELINE HEADER ───────────────────────────────────────
+            PdfPTable tlHdr = new PdfPTable(1);
+            tlHdr.setWidthPercentage(100);
+            PdfPCell tlC = new PdfPCell();
+            tlC.setBackgroundColor(accentBlue);
+            tlC.setPadding(9);
+            tlC.setBorder(Rectangle.NO_BORDER);
+            Paragraph tlT = new Paragraph(
+                "CHANGE HISTORY TIMELINE  (" + history.size() + " event" + (history.size() == 1 ? "" : "s") + ")",
+                FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12, BaseColor.WHITE));
+            tlT.setAlignment(Element.ALIGN_CENTER);
+            tlC.addElement(tlT);
+            tlHdr.addCell(tlC);
+            document.add(tlHdr);
+            document.add(new Paragraph(" ", FontFactory.getFont(FontFactory.HELVETICA, 3)));
+
+            // ── EVENTS ───────────────────────────────────────────────
+            if (history.isEmpty()) {
+                Paragraph none = new Paragraph("No history recorded for this case yet.", valFt);
+                none.setAlignment(Element.ALIGN_CENTER);
+                none.setSpacingBefore(12);
+                document.add(none);
+            } else {
+                int idx = 0;
+                for (CaseAudit audit : history) {
+                    BaseColor pillColor = resolvePillColor(audit.getActionType(),
+                        GREEN, BLUE, PURPLE, ORANGE, RED, SLATE);
+                    BaseColor rowBg = (idx % 2 == 0) ? oddBg : evenBg;
+
+                    PdfPTable card = new PdfPTable(new float[]{0.018f, 0.982f});
+                    card.setWidthPercentage(100);
+                    card.setSpacingAfter(4);
+
+                    PdfPCell stripe = new PdfPCell(new Phrase(" "));
+                    stripe.setBackgroundColor(pillColor);
+                    stripe.setBorder(Rectangle.NO_BORDER);
+                    card.addCell(stripe);
+
+                    PdfPCell content = new PdfPCell();
+                    content.setBackgroundColor(rowBg);
+                    content.setBorderColor(borderClr);
+                    content.setBorderWidth(0.5f);
+                    content.setPaddingTop(8);
+                    content.setPaddingBottom(8);
+                    content.setPaddingLeft(10);
+                    content.setPaddingRight(10);
+
+                    PdfPTable topRow = new PdfPTable(new float[]{1f, 1f});
+                    topRow.setWidthPercentage(100);
+
+                    PdfPCell pillCell = new PdfPCell(
+                        new Phrase("  " + humanizeAction(audit.getActionType()) + "  ", actFt));
+                    pillCell.setBackgroundColor(pillColor);
+                    pillCell.setBorder(Rectangle.NO_BORDER);
+                    pillCell.setPaddingTop(4);
+                    pillCell.setPaddingBottom(4);
+                    pillCell.setPaddingLeft(5);
+                    pillCell.setPaddingRight(5);
+                    topRow.addCell(pillCell);
+
+                    String ts = audit.getCreatedAt() != null
+                        ? audit.getCreatedAt().format(DISPLAY_FORMATTER) : "Unknown Time";
+                    PdfPCell tsCell = new PdfPCell(new Phrase(ts, tsFt));
+                    tsCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                    tsCell.setBorder(Rectangle.NO_BORDER);
+                    tsCell.setBackgroundColor(rowBg);
+                    topRow.addCell(tsCell);
+                    content.addElement(topRow);
+
+                    Paragraph d = new Paragraph(
+                        audit.getDescription() != null ? audit.getDescription() : "\u2014", descFt);
+                    d.setSpacingBefore(5);
+                    content.addElement(d);
+
+                    String performer;
+                    if (audit.getPerformedBy() != null) {
+                        com.example.dcm.model.User u = audit.getPerformedBy();
+                        String role = u.getRole() != null ? " (" + u.getRole().name() + ")" : "";
+                        performer = u.getFirstName() + " " + u.getLastName()
+                            + "  [@" + u.getUsername() + "]" + role;
+                    } else {
+                        performer = "System";
+                    }
+                    Paragraph byP = new Paragraph("Updated by:  " + performer, byFt);
+                    byP.setSpacingBefore(4);
+                    content.addElement(byP);
+
+                    if (audit.getDetails() != null && !audit.getDetails().isEmpty()) {
+                        Paragraph det = new Paragraph("Details: " + audit.getDetails(), detFt);
+                        det.setSpacingBefore(3);
+                        content.addElement(det);
+                    }
+
+                    card.addCell(content);
+                    document.add(card);
+                    idx++;
+                }
             }
+
+            // ── FOOTER ────────────────────────────────────────────────
+            document.add(new Paragraph(" ", FontFactory.getFont(FontFactory.HELVETICA, 6)));
+            com.itextpdf.text.pdf.draw.LineSeparator footerLine =
+                new com.itextpdf.text.pdf.draw.LineSeparator();
+            footerLine.setLineColor(new BaseColor(200, 210, 225));
+            document.add(new Chunk(footerLine));
+
+            Paragraph footer = new Paragraph(
+                "Differentiated Case Flow Management System  \u2022  Report generated on: "
+                + java.time.LocalDateTime.now().format(DISPLAY_FORMATTER),
+                footerFt);
+            footer.setAlignment(Element.ALIGN_CENTER);
+            footer.setSpacingBefore(5);
+            document.add(footer);
 
         } finally {
             document.close();
         }
-
         return out.toByteArray();
     }
 
-    private void addLabelValue(Document document, String label, String value) throws DocumentException {
-        com.itextpdf.text.Font labelFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12);
-        com.itextpdf.text.Font valueFont = FontFactory.getFont(FontFactory.HELVETICA, 12);
-        
-        Paragraph p = new Paragraph();
-        p.add(new Chunk(label + ": ", labelFont));
-        p.add(new Chunk(value, valueFont));
-        p.setSpacingAfter(5);
-        document.add(p);
+    private void addInfoRow(PdfPTable table, String label, String value,
+            Font lblFt, Font valFt, BaseColor bg1, BaseColor bg2, BaseColor border) throws DocumentException {
+        PdfPCell l = new PdfPCell(new Phrase(label, lblFt));
+        l.setBackgroundColor(bg1); l.setPadding(7); l.setBorderColor(border);
+        table.addCell(l);
+        PdfPCell v = new PdfPCell(new Phrase(value != null ? value : "\u2014", valFt));
+        v.setBackgroundColor(bg2); v.setPadding(7); v.setBorderColor(border);
+        table.addCell(v);
+    }
+
+    private BaseColor resolvePillColor(CaseAudit.ActionType type,
+            BaseColor green, BaseColor blue, BaseColor purple,
+            BaseColor orange, BaseColor red, BaseColor slate) {
+        if (type == null) return slate;
+        return switch (type) {
+            case CASE_CREATED                              -> green;
+            case STATUS_CHANGED, CASE_COMPLETED,
+                 CASE_DISMISSED, CASE_REOPENED            -> blue;
+            case JUDGE_ASSIGNED                           -> purple;
+            case HEARING_SCHEDULED                        -> orange;
+            case COURT_ESCALATED, APPEAL_FILED            -> red;
+            default                                       -> slate;
+        };
+    }
+
+    private String humanizeAction(CaseAudit.ActionType type) {
+        if (type == null) return "UPDATE";
+        return type.name().replace("_", " ");
     }
 
     private String truncate(String text, int maxLength) {
