@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import SockJS from 'sockjs-client';
-import Stomp from 'stompjs';
+import { Stomp } from '@stomp/stompjs';
 import { useAuth } from '../context/AuthContext';
 import BASE_URL from '../config/api';
 import { 
@@ -122,17 +122,17 @@ const Dashboard = () => {
     try {
       socket = new SockJS(BASE_URL + '/ws-audit');
       stompClient = Stomp.over(socket);
-      stompClient.debug = null; // Disable logging for production-feel
-
-      stompClient.connect({}, () => {
+      
+      stompClient.connect({}, (frame) => {
         stompClient.subscribe('/topic/audits', (message) => {
-          const newEvent = JSON.parse(message.body);
-          setRecentEvents(prev => [newEvent, ...prev].slice(0, 15));
-          // Optionally refresh stats when events happen
-          fetchDashboardData(true);
+          if (message.body) {
+            const newEvent = JSON.parse(message.body);
+            setRecentEvents(prev => [newEvent, ...prev].slice(0, 15));
+            fetchDashboardData(true);
+          }
         });
       }, (error) => {
-        console.error('WebSocket connection error:', error);
+        console.error('STOMP connection error:', error);
       });
     } catch (err) {
       console.error('Socket initialization failed:', err);
@@ -510,7 +510,8 @@ const Dashboard = () => {
             </div>
 
             {/* Global Activity Feed Column */}
-            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-gray-100 dark:border-slate-700 overflow-hidden flex flex-col">
+            <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl rounded-2xl shadow-xl border border-white/20 dark:border-slate-700/50 overflow-hidden flex flex-col relative">
+              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-white/50 dark:to-slate-900/50 pointer-events-none"></div>
               <div className="bg-slate-800 px-6 py-4 flex items-center justify-between">
                 <div>
                   <h3 className="text-lg font-bold text-white">System Activity</h3>
@@ -541,11 +542,14 @@ const Dashboard = () => {
                     ))}
                   </div>
                 ) : (
-                  <div className="h-full flex flex-col items-center justify-center text-gray-400 py-10">
-                    <svg className="w-12 h-12 mb-2 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <p className="text-sm font-medium">No recent activity</p>
+                  <div className="h-full flex flex-col items-center justify-center text-gray-400 py-16">
+                    <div className="w-20 h-20 bg-slate-100 dark:bg-slate-700/50 rounded-full flex items-center justify-center mb-4 animate-pulse">
+                      <svg className="w-10 h-10 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                    <p className="text-sm font-bold text-slate-500 dark:text-slate-400">Waiting for activity...</p>
+                    <p className="text-[10px] text-slate-400 mt-1 uppercase tracking-widest">Real-time feed active</p>
                   </div>
                 )}
               </div>
@@ -572,9 +576,9 @@ const Dashboard = () => {
             </div>
             <div className="p-6">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="flex items-center justify-between p-4 bg-orange-50 dark:bg-orange-900/20 rounded-xl border border-orange-200 dark:border-orange-700">
+                <div className="flex items-center justify-between p-4 bg-orange-50 dark:bg-orange-900/20 rounded-xl border border-orange-200 dark:border-orange-700 hover:shadow-md transition-all duration-300 group hover:scale-[1.02]">
                   <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-amber-500 rounded-lg flex items-center justify-center">
+                    <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-amber-500 rounded-lg flex items-center justify-center group-hover:rotate-12 transition-transform">
                       <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                       </svg>
@@ -587,9 +591,9 @@ const Dashboard = () => {
                   <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">{stats?.escalationEligible || 0}</p>
                 </div>
 
-                <div className="flex items-center justify-between p-4 bg-red-50 dark:bg-red-900/20 rounded-xl border border-red-200 dark:border-red-700">
+                <div className="flex items-center justify-between p-4 bg-red-50 dark:bg-red-900/20 rounded-xl border border-red-200 dark:border-red-700 hover:shadow-md transition-all duration-300 group hover:scale-[1.02]">
                   <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-rose-500 rounded-lg flex items-center justify-center">
+                    <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-rose-500 rounded-lg flex items-center justify-center group-hover:rotate-12 transition-transform">
                       <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                       </svg>
@@ -602,9 +606,9 @@ const Dashboard = () => {
                   <p className="text-2xl font-bold text-red-600 dark:text-red-400">{stats?.escalatedCases || 0}</p>
                 </div>
 
-                <div className="flex items-center justify-between p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-200 dark:border-blue-700">
+                <div className="flex items-center justify-between p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-200 dark:border-blue-700 hover:shadow-md transition-all duration-300 group hover:scale-[1.02]">
                   <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-lg flex items-center justify-center">
+                    <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-lg flex items-center justify-center group-hover:rotate-12 transition-transform">
                       <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                       </svg>
