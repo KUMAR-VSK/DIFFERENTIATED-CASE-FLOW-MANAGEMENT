@@ -26,6 +26,13 @@ const CaseDetail = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState('overview');
+  const stages = [
+    { label: 'Filing', statuses: ['FILED'] },
+    { label: 'Review', statuses: ['UNDER_REVIEW'] },
+    { label: 'Scheduled', statuses: ['SCHEDULED'] },
+    { label: 'In Progress', statuses: ['IN_PROGRESS', 'ESCALATED'] },
+    { label: 'Resolution', statuses: ['COMPLETED', 'DISMISSED'] }
+  ];
   const [documents, setDocuments] = useState([]);
   const [notes, setNotes] = useState([]);
   const [showNoteModal, setShowNoteModal] = useState(false);
@@ -560,6 +567,63 @@ const CaseDetail = () => {
           >
             Back to Cases
           </Link>
+        </div>
+      </div>
+
+      {/* Lifecycle Progress Visualizer */}
+      <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 p-6 overflow-hidden">
+        <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-8">Judicial Lifecycle</h3>
+        <div className="relative">
+          {/* Progress Line */}
+          <div className="absolute top-1/2 left-0 w-full h-1 bg-gray-200 dark:bg-slate-700 -translate-y-1/2 rounded-full overflow-hidden">
+            <div 
+              className="h-full bg-gradient-to-r from-blue-500 to-indigo-600 transition-all duration-1000 ease-in-out"
+              style={{ 
+                width: `${Math.max(0, (stages.findIndex(s => s.statuses.includes(caseData.status)) / (stages.length - 1)) * 100)}%` 
+              }}
+            ></div>
+          </div>
+
+          {/* Stages */}
+          <div className="relative flex justify-between">
+            {stages.map((stage, index) => {
+              const currentStageIndex = stages.findIndex(s => s.statuses.includes(caseData.status));
+              const isCompleted = index < currentStageIndex;
+              const isActive = index === currentStageIndex;
+              
+              return (
+                <div key={stage.label} className="flex flex-col items-center">
+                  <div 
+                    className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all duration-500 z-10 ${
+                      isCompleted 
+                        ? 'bg-blue-600 border-blue-600 text-white shadow-[0_0_15px_rgba(37,99,235,0.4)]' 
+                        : isActive 
+                          ? 'bg-white dark:bg-slate-800 border-blue-500 text-blue-600 dark:text-blue-400 scale-110 shadow-lg' 
+                          : 'bg-white dark:bg-slate-800 border-gray-300 dark:border-slate-600 text-gray-400'
+                    }`}
+                  >
+                    {isCompleted ? (
+                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
+                      </svg>
+                    ) : (
+                      <span className="font-bold">{index + 1}</span>
+                    )}
+                  </div>
+                  <div className="mt-4 text-center">
+                    <p className={`text-sm font-bold ${isActive ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400'}`}>
+                      {stage.label}
+                    </p>
+                    {isActive && (
+                      <span className="text-[10px] text-blue-500 dark:text-blue-300 uppercase tracking-tighter animate-pulse">
+                        Current Stage
+                      </span>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
       </div>
 
