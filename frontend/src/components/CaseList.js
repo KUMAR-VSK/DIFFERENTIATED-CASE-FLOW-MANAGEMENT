@@ -23,7 +23,7 @@ const CaseList = () => {
   });
   const casesPerPage = 20;
 
-  const fetchCases = async (page = 0) => {
+  const fetchCases = async (page = 0, currentFilters = filters) => {
     try {
       setLoading(true);
       let response;
@@ -33,7 +33,16 @@ const CaseList = () => {
         setTotalPages(1);
         setTotalElements(response.data.length);
       } else {
-        response = await axios.get(`${BASE_URL}/api/cases/management`, {
+        // Map frontend filters to CaseSearchCriteria DTO
+        const searchCriteria = {
+          keyword: currentFilters.search || null,
+          statuses: currentFilters.status ? [currentFilters.status] : null,
+          caseTypes: currentFilters.caseType ? [currentFilters.caseType] : null,
+          minPriority: currentFilters.priority ? parseInt(currentFilters.priority) : null,
+          maxPriority: currentFilters.priority ? parseInt(currentFilters.priority) : null,
+        };
+
+        response = await axios.post(`${BASE_URL}/api/cases/search`, searchCriteria, {
           params: {
             page,
             size: casesPerPage,
@@ -56,6 +65,18 @@ const CaseList = () => {
     fetchCases(currentPage);
   }, [currentPage, sortConfig]);
 
+  // Debounce search/filter changes
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (currentPage !== 0) {
+        setCurrentPage(0);
+      } else {
+        fetchCases(0);
+      }
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [filters]);
+
   useEffect(() => {
     if (location.state?.refresh) {
       fetchCases(0);
@@ -64,19 +85,8 @@ const CaseList = () => {
     }
   }, [location.state]);
 
-  // Filter application (client-side on current page)
-  const filteredCases = cases.filter(caseItem => {
-    if (filters.status && caseItem.status !== filters.status) return false;
-    if (filters.caseType && caseItem.caseType !== filters.caseType) return false;
-    if (filters.priority && caseItem.priority !== parseInt(filters.priority)) return false;
-    if (filters.search) {
-      const q = filters.search.toLowerCase();
-      return caseItem.title.toLowerCase().includes(q) ||
-        caseItem.caseNumber.toLowerCase().includes(q) ||
-        (caseItem.description && caseItem.description.toLowerCase().includes(q));
-    }
-    return true;
-  });
+  // Cases are now filtered server-side
+  const displayedCases = cases;
 
 
   const handleFilterChange = (field, value) => {
@@ -99,7 +109,7 @@ const CaseList = () => {
 
   const handleSelectAll = (e) => {
     if (e.target.checked) {
-      setSelectedCases(filteredCases.map(c => c.id));
+      setSelectedCases(displayedCases.map(c => c.id));
     } else {
       setSelectedCases([]);
     }
@@ -273,7 +283,7 @@ const CaseList = () => {
 
         {/* Data Table / List */}
         <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 overflow-hidden">
-          {filteredCases.length > 0 ? (
+          {displayedCases.length > 0 ? (
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200 dark:divide-slate-700">
                 <thead className="bg-gray-50 dark:bg-slate-900/50">
@@ -282,7 +292,7 @@ const CaseList = () => {
                       <input
                         type="checkbox"
                         className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                        checked={selectedCases.length === filteredCases.length && filteredCases.length > 0}
+                        checked={selectedCases.length === displayedCases.length && displayedCases.length > 0}
                         onChange={handleSelectAll}
                       />
                     </th>
@@ -316,7 +326,7 @@ const CaseList = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 dark:divide-slate-700">
-                  {filteredCases.map((caseItem) => (
+                  {displayedCases.map((caseItem) => (
                     <tr
                       key={caseItem.id}
                       className={`hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors ${selectedCases.includes(caseItem.id) ? 'bg-blue-50 dark:bg-slate-700' : ''}`}

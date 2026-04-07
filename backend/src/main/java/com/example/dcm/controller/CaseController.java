@@ -24,11 +24,15 @@ import com.example.dcm.model.User;
 import com.example.dcm.service.CaseService;
 import com.example.dcm.dto.ReasonRequest;
 import com.example.dcm.dto.ScheduleRequest;
+import com.example.dcm.dto.CaseSearchCriteria;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.PageRequest;
 
 @RestController
 @RequestMapping("/api/cases")
@@ -97,6 +101,33 @@ public class CaseController {
             cases = caseService.getAllCasesPaged(page, size, sortBy, direction);
         }
         return ResponseEntity.ok(cases);
+    }
+
+    // Search cases using Specifications - paginated
+    @PostMapping("/search")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('JUDGE') or hasRole('CLERK')")
+    @Operation(summary = "Search cases with dynamic filters")
+    public ResponseEntity<Page<Case>> searchCases(
+            @RequestBody CaseSearchCriteria criteria,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "filingDate") String sortBy,
+            @RequestParam(defaultValue = "desc") String direction,
+            Authentication authentication) {
+        
+        String username = authentication.getName();
+        User currentUser = caseService.getUserByUsername(username);
+        
+        // Non-admins only see cases at their court level
+        if (currentUser.getRole() != User.Role.ADMIN && currentUser.getCourtLevel() != null) {
+            criteria.setCourtLevels(List.of(com.example.dcm.model.Case.CourtLevel.valueOf(currentUser.getCourtLevel().name())));
+        }
+
+        Sort sort = direction.equalsIgnoreCase("asc") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+        
+        Page<Case> results = caseService.searchCases(criteria, pageable);
+        return ResponseEntity.ok(results);
     }
 
     // Get case by ID

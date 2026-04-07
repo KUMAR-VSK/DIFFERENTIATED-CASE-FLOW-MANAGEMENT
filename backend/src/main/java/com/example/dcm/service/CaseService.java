@@ -19,7 +19,10 @@ import com.example.dcm.model.User;
 import com.example.dcm.repository.CaseAuditRepository;
 import com.example.dcm.repository.CaseRepository;
 import com.example.dcm.repository.UserRepository;
+import com.example.dcm.specification.CaseSpecification;
+import com.example.dcm.dto.CaseSearchCriteria;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.data.jpa.domain.Specification;
 
 @Service
 @Transactional
@@ -1141,6 +1144,14 @@ public class CaseService {
     }
 
     // ========== UTILITY METHODS ==========
+
+    /**
+     * Search cases using dynamic criteria (Specification) - paginated
+     */
+    public Page<Case> searchCases(CaseSearchCriteria criteria, Pageable pageable) {
+        Specification<Case> spec = CaseSpecification.searchByCriteria(criteria);
+        return caseRepository.findAll(spec, pageable);
+    }
 
     /**
      * Get user by username (for controller-level auth checks)
