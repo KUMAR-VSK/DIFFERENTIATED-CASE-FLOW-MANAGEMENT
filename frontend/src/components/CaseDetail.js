@@ -106,12 +106,16 @@ const CaseDetail = () => {
         .then(res => setAdvocates(res.data))
         .catch(() => setAdvocates([]));
 
-      // Also fetch judges for assignment
-      axios.get(BASE_URL + '/api/auth/users')
-        .then(res => setJudges(res.data.filter(u => u.role === 'JUDGE')))
-        .catch(() => setJudges([]));
+      // Fetch judges with workload analysis if Admin
+      if (caseData && caseData.courtLevel) {
+        axios.get(`${BASE_URL}/api/cases/judges/workload`, {
+          params: { level: caseData.courtLevel }
+        })
+          .then(res => setJudges(res.data))
+          .catch(() => setJudges([]));
+      }
     }
-  }, [user.role]);
+  }, [user.role, caseData?.courtLevel]);
 
   const fetchDocuments = async (caseId) => {
     try {

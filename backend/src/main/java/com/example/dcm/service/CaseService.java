@@ -21,6 +21,7 @@ import com.example.dcm.repository.CaseRepository;
 import com.example.dcm.repository.UserRepository;
 import com.example.dcm.specification.CaseSpecification;
 import com.example.dcm.dto.CaseSearchCriteria;
+import com.example.dcm.dto.JudgeWorkloadDTO;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.data.jpa.domain.Specification;
 
@@ -1151,6 +1152,35 @@ public class CaseService {
     public Page<Case> searchCases(CaseSearchCriteria criteria, Pageable pageable) {
         Specification<Case> spec = CaseSpecification.searchByCriteria(criteria);
         return caseRepository.findAll(spec, pageable);
+    }
+
+    /**
+     * Get judge workload statistics for recommendation logic
+     */
+    public List<JudgeWorkloadDTO> getJudgeWorkloads(User.CourtLevel level) {
+        List<User> judges = userRepository.findByRoleAndCourtLevel(User.Role.JUDGE, level);
+        List<JudgeWorkloadDTO> workloadList = new java.util.ArrayList<>();
+
+        for (User judge : judges) {
+            List<Case> activeCases = caseRepository.findByAssignedJudge(judge).stream()
+                    .filter(c -> c.getStatus() != Case.Status.COMPLETED && c.getStatus() != Case.Status.DISMISSED)
+                    .toList();
+            
+            long count = activeCases.size();
+            long totalPriority = activeCases.stream().mapToLong(Case::getPriority).sum();
+            
+            workloadList.add(new JudgeWorkloadDTO(judge, count, totalPriority));
+        }
+
+        // Sort by workload score (ascending, lower is better)
+        workloadList.sort(java.util.Comparator.comparingDouble(JudgeWorkloadDTO::getWorkloadScore));
+
+        // Mark top 3 as recommended
+        for (int i = 0; i < Math.min(3, workloadList.size()); i++) {
+            workloadList.get(i).setRecommended(true);
+        }
+
+        return workloadList;
     }
 
     /**

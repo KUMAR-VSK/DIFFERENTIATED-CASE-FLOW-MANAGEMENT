@@ -25,6 +25,7 @@ import com.example.dcm.service.CaseService;
 import com.example.dcm.dto.ReasonRequest;
 import com.example.dcm.dto.ScheduleRequest;
 import com.example.dcm.dto.CaseSearchCriteria;
+import com.example.dcm.dto.JudgeWorkloadDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -177,6 +178,7 @@ public class CaseController {
     // Assign judge to case
     @PutMapping("/{id}/assign-judge")
     @PreAuthorize("hasRole('ADMIN') or hasRole('CLERK')")
+    @Operation(summary = "Assign a judge to a case with workload awareness")
     public ResponseEntity<Case> assignJudge(@PathVariable Long id, @RequestBody Map<String, Long> request, Authentication authentication) {
         try {
             Long judgeId = request.get("judgeId");
@@ -185,6 +187,14 @@ public class CaseController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().build();
         }
+    }
+
+    // Get judge workloads for intelligent assignment
+    @GetMapping("/judges/workload")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('CLERK')")
+    @Operation(summary = "Get judge workloads for optimized case distribution")
+    public ResponseEntity<List<JudgeWorkloadDTO>> getJudgeWorkloads(@RequestParam User.CourtLevel level) {
+        return ResponseEntity.ok(caseService.getJudgeWorkloads(level));
     }
 
     // Judge takes over case 

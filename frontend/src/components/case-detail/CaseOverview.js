@@ -493,18 +493,56 @@ const CaseOverview = ({
                                 ) : (
                                     <p className="text-xs text-blue-600 dark:text-blue-400 mb-2">No judge assigned yet.</p>
                                 )}
-                                <select
-                                    className="w-full text-xs px-2 py-1.5 border border-blue-300 dark:border-blue-700 rounded-md bg-white dark:bg-slate-800 text-gray-700 dark:text-gray-300 focus:ring-1 focus:ring-blue-500"
-                                    defaultValue=""
-                                    onChange={(e) => onAssignJudge && onAssignJudge(e.target.value)}
-                                >
-                                    <option value="">Select a judge…</option>
-                                    {(judges || []).map(judge => (
-                                        <option key={judge.id} value={judge.id}>
-                                            {judge.username} - {judge.courtLevel}
-                                        </option>
-                                    ))}
-                                </select>
+                                <div className="space-y-3 mt-4 max-h-64 overflow-y-auto pr-2 custom-scrollbar">
+                                    {(judges || []).length > 0 ? (
+                                        judges.map(workloadInfo => {
+                                            const { judge, activeCaseCount, totalPriorityPoints, recommended } = workloadInfo;
+                                            return (
+                                                <div 
+                                                    key={judge.id} 
+                                                    className={`p-3 rounded-lg border transition-all duration-300 ${
+                                                        recommended 
+                                                            ? 'bg-blue-50 dark:bg-blue-900/40 border-blue-200 dark:border-blue-700 shadow-sm' 
+                                                            : 'bg-white dark:bg-slate-800 border-gray-100 dark:border-slate-700'
+                                                    } hover:shadow-md hover:border-blue-300`}
+                                                >
+                                                    <div className="flex justify-between items-start">
+                                                        <div>
+                                                            <p className="text-sm font-bold text-gray-900 dark:text-white">
+                                                                Judge {judge.firstName} {judge.lastName}
+                                                            </p>
+                                                            <div className="flex items-center gap-2 mt-1">
+                                                                <span className="text-[10px] bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-1.5 py-0.5 rounded ring-1 ring-slate-200 dark:ring-slate-600">
+                                                                    Cases: {activeCaseCount}
+                                                                </span>
+                                                                <span className="text-[10px] bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-1.5 py-0.5 rounded ring-1 ring-slate-200 dark:ring-slate-600">
+                                                                    Load: {totalPriorityPoints}p
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                        {recommended && (
+                                                            <span className="translate-x-1 -translate-y-1 bg-green-100 text-green-700 text-[9px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-tighter border border-green-200 animate-pulse">
+                                                                Recommended
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    <button
+                                                        onClick={() => onAssignJudge && onAssignJudge(judge.id)}
+                                                        className={`w-full mt-3 py-1.5 rounded-md text-xs font-bold transition-colors ${
+                                                            recommended 
+                                                                ? 'bg-blue-600 text-white hover:bg-blue-700' 
+                                                                : 'bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200'
+                                                        }`}
+                                                    >
+                                                        Assign to Case
+                                                    </button>
+                                                </div>
+                                            );
+                                        })
+                                    ) : (
+                                        <p className="text-xs text-gray-500 italic py-2">Loading judge availability...</p>
+                                    )}
+                                </div>
                             </div>
                         )}
 
