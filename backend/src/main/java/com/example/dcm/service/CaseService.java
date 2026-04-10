@@ -124,6 +124,7 @@ public class CaseService {
     }
 
     // Update case status
+    @CacheEvict(value = "cases", key = "#caseId")
     public Case updateCaseStatus(Long caseId, Case.Status newStatus) {
         return updateCaseStatus(caseId, newStatus, null);
     }
@@ -146,6 +147,7 @@ public class CaseService {
     }
 
     // Assign judge to case
+    @CacheEvict(value = "cases", key = "#caseId")
     public Case assignJudge(Long caseId, Long judgeId) {
         return assignJudge(caseId, judgeId, null);
     }
@@ -175,6 +177,7 @@ public class CaseService {
     }
 
     // Schedule hearing
+    @CacheEvict(value = "cases", key = "#caseId")
     public Case scheduleHearing(Long caseId, LocalDateTime hearingDate) {
         return scheduleHearing(caseId, hearingDate, null);
     }
@@ -315,6 +318,7 @@ public class CaseService {
     }
 
     // Update case priority
+    @CacheEvict(value = "cases", key = "#caseId")
     public Case updatePriority(Long caseId) {
         Case caseEntity = caseRepository.findById(caseId)
                 .orElseThrow(() -> new IllegalArgumentException("Case not found"));
@@ -327,6 +331,7 @@ public class CaseService {
     }
 
     // Set manual priority
+    @CacheEvict(value = "cases", key = "#caseId")
     public Case setManualPriority(Long caseId, Integer priority) {
         Case caseEntity = caseRepository.findById(caseId)
                 .orElseThrow(() -> new IllegalArgumentException("Case not found"));
@@ -635,6 +640,7 @@ public class CaseService {
     }
 
     // Get case by ID
+    @Cacheable(value = "cases", key = "#id")
     public Optional<Case> getCaseById(Long id) {
         return caseRepository.findById(id);
     }
