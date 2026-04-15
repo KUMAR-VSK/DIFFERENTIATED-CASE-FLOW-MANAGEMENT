@@ -28,6 +28,9 @@ import com.example.dcm.dto.CaseSearchCriteria;
 import com.example.dcm.dto.JudgeWorkloadDTO;
 import com.example.dcm.dto.CaseDTO;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -55,6 +58,12 @@ public class CaseController {
     // Get all cases (for admins and judges)
     @GetMapping
     @PreAuthorize("hasRole('ADMIN') or hasRole('JUDGE') or hasRole('CLERK')")
+    @Operation(summary = "Get all cases", description = "Retrieve all cases based on user role. Admins see all cases, judges see cases from their court level.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Successfully retrieved cases"),
+        @ApiResponse(responseCode = "403", description = "Access denied"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     public ResponseEntity<List<Case>> getAllCases(Authentication authentication) {
         String username = authentication.getName();
         User currentUser = caseService.getUserByUsername(username);
@@ -73,6 +82,12 @@ public class CaseController {
     // Get recent cases (sorted by creation date, descending)
     @GetMapping("/recent")
     @PreAuthorize("hasRole('ADMIN') or hasRole('JUDGE') or hasRole('CLERK') or hasRole('ADVOCATE')")
+    @Operation(summary = "Get recent cases", description = "Retrieve recently created cases sorted by filing date in descending order")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Successfully retrieved recent cases"),
+        @ApiResponse(responseCode = "403", description = "Access denied"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     public ResponseEntity<List<Case>> getRecentCases(Authentication authentication) {
         String username = authentication.getName();
         User currentUser = caseService.getUserByUsername(username);
@@ -91,12 +106,18 @@ public class CaseController {
     // Get all cases for case management (includes filed cases) - paginated
     @GetMapping("/management")
     @PreAuthorize("hasRole('ADMIN') or hasRole('JUDGE') or hasRole('CLERK')")
+    @Operation(summary = "Get paginated cases for management", description = "Retrieve all cases with pagination for case management. Supports sorting and filtering.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Successfully retrieved cases"),
+        @ApiResponse(responseCode = "403", description = "Access denied"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     public ResponseEntity<Page<Case>> getAllCasesForManagement(
             Authentication authentication,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size,
-            @RequestParam(defaultValue = "filingDate") String sortBy,
-            @RequestParam(defaultValue = "desc") String direction) {
+            @Parameter(description = "Page number (0-based)", example = "0") @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "Page size", example = "20") @RequestParam(defaultValue = "20") int size,
+            @Parameter(description = "Sort field", example = "filingDate") @RequestParam(defaultValue = "filingDate") String sortBy,
+            @Parameter(description = "Sort direction (asc/desc)", example = "desc") @RequestParam(defaultValue = "desc") String direction) {
         String username = authentication.getName();
         User currentUser = caseService.getUserByUsername(username);
 
@@ -114,13 +135,19 @@ public class CaseController {
     // Search cases using Specifications - paginated
     @PostMapping("/search")
     @PreAuthorize("hasRole('ADMIN') or hasRole('JUDGE') or hasRole('CLERK')")
-    @Operation(summary = "Search cases with dynamic filters")
+    @Operation(summary = "Search cases with dynamic filters", description = "Search cases using multiple criteria including case number, title, status, court level, priority range, and date ranges")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Successfully searched cases"),
+        @ApiResponse(responseCode = "400", description = "Invalid search criteria"),
+        @ApiResponse(responseCode = "403", description = "Access denied"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     public ResponseEntity<Page<Case>> searchCases(
-            @RequestBody CaseSearchCriteria criteria,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size,
-            @RequestParam(defaultValue = "filingDate") String sortBy,
-            @RequestParam(defaultValue = "desc") String direction,
+            @Parameter(description = "Search criteria", required = true) @RequestBody CaseSearchCriteria criteria,
+            @Parameter(description = "Page number (0-based)", example = "0") @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "Page size", example = "20") @RequestParam(defaultValue = "20") int size,
+            @Parameter(description = "Sort field", example = "filingDate") @RequestParam(defaultValue = "filingDate") String sortBy,
+            @Parameter(description = "Sort direction (asc/desc)", example = "desc") @RequestParam(defaultValue = "desc") String direction,
             Authentication authentication) {
         
         String username = authentication.getName();
@@ -141,7 +168,15 @@ public class CaseController {
     // Get case by ID
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN') or hasRole('JUDGE') or hasRole('CLERK') or hasRole('ADVOCATE')")
-    public ResponseEntity<CaseDTO> getCaseById(@PathVariable Long id) {
+    @Operation(summary = "Get case by ID", description = "Retrieve detailed information about a specific case by its ID")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Successfully retrieved case"),
+        @ApiResponse(responseCode = "404", description = "Case not found"),
+        @ApiResponse(responseCode = "403", description = "Access denied"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    public ResponseEntity<CaseDTO> getCaseById(
+            @Parameter(description = "Case ID", required = true, example = "1") @PathVariable Long id) {
         Optional<CaseDTO> caseOptional = caseService.getCaseDTOById(id);
         return caseOptional.map(ResponseEntity::ok)
                            .orElse(ResponseEntity.notFound().build());
@@ -150,9 +185,16 @@ public class CaseController {
     // Create new case (clerks only) - optionally assign advocate at filing time
     @PostMapping
     @PreAuthorize("hasRole('CLERK') or hasRole('ADMIN')")
+    @Operation(summary = "Create new case", description = "Create a new case with optional advocate assignment. Only clerks and admins can create cases.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Case created successfully"),
+        @ApiResponse(responseCode = "400", description = "Invalid case data or business rule violation"),
+        @ApiResponse(responseCode = "403", description = "Access denied"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     public ResponseEntity<?> createCase(
-            @Valid @RequestBody Case caseEntity,
-            @RequestParam(required = false) Long advocateId,
+            @Parameter(description = "Case details", required = true) @Valid @RequestBody Case caseEntity,
+            @Parameter(description = "Optional advocate ID to assign at filing time", example = "5") @RequestParam(required = false) Long advocateId,
             Authentication authentication) {
         try {
             String username = authentication.getName();
@@ -173,7 +215,18 @@ public class CaseController {
     // Update case status
     @PutMapping("/{id}/status")
     @PreAuthorize("hasRole('ADMIN') or hasRole('JUDGE') or hasRole('CLERK')")
-    public ResponseEntity<Case> updateCaseStatus(@PathVariable Long id, @RequestParam Case.Status status, Authentication authentication) {
+    @Operation(summary = "Update case status", description = "Update the status of a specific case. Valid statuses: PENDING, ACTIVE, COMPLETED, DISMISSED, etc.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Case status updated successfully"),
+        @ApiResponse(responseCode = "400", description = "Invalid status transition"),
+        @ApiResponse(responseCode = "404", description = "Case not found"),
+        @ApiResponse(responseCode = "403", description = "Access denied"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    public ResponseEntity<Case> updateCaseStatus(
+            @Parameter(description = "Case ID", required = true, example = "1") @PathVariable Long id, 
+            @Parameter(description = "New case status", required = true, example = "ACTIVE") @RequestParam Case.Status status, 
+            Authentication authentication) {
         try {
             Case updatedCase = caseService.updateCaseStatus(id, status, authentication.getName());
             return ResponseEntity.ok(updatedCase);
@@ -185,8 +238,18 @@ public class CaseController {
     // Assign judge to case
     @PutMapping("/{id}/assign-judge")
     @PreAuthorize("hasRole('ADMIN') or hasRole('CLERK')")
-    @Operation(summary = "Assign a judge to a case with workload awareness")
-    public ResponseEntity<Case> assignJudge(@PathVariable Long id, @RequestBody Map<String, Long> request, Authentication authentication) {
+    @Operation(summary = "Assign a judge to a case with workload awareness", description = "Assign a judge to a specific case considering current workload distribution")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Judge assigned successfully"),
+        @ApiResponse(responseCode = "400", description = "Invalid judge ID or assignment not allowed"),
+        @ApiResponse(responseCode = "404", description = "Case or judge not found"),
+        @ApiResponse(responseCode = "403", description = "Access denied"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    public ResponseEntity<Case> assignJudge(
+            @Parameter(description = "Case ID", required = true, example = "1") @PathVariable Long id, 
+            @Parameter(description = "Request body containing judge ID", required = true) @RequestBody Map<String, Long> request, 
+            Authentication authentication) {
         try {
             Long judgeId = request.get("judgeId");
             Case updatedCase = caseService.assignJudge(id, judgeId, authentication.getName());
@@ -199,15 +262,31 @@ public class CaseController {
     // Get judge workloads for intelligent assignment
     @GetMapping("/judges/workload")
     @PreAuthorize("hasRole('ADMIN') or hasRole('CLERK')")
-    @Operation(summary = "Get judge workloads for optimized case distribution")
-    public ResponseEntity<List<JudgeWorkloadDTO>> getJudgeWorkloads(@RequestParam User.CourtLevel level) {
+    @Operation(summary = "Get judge workloads for optimized case distribution", description = "Retrieve workload statistics for all judges at a specific court level to optimize case assignments")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Successfully retrieved judge workloads"),
+        @ApiResponse(responseCode = "403", description = "Access denied"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    public ResponseEntity<List<JudgeWorkloadDTO>> getJudgeWorkloads(
+            @Parameter(description = "Court level for filtering judges", required = true, example = "DISTRICT") @RequestParam User.CourtLevel level) {
         return ResponseEntity.ok(caseService.getJudgeWorkloads(level));
     }
 
     // Judge takes over case 
     @PutMapping("/{id}/take-over")
     @PreAuthorize("hasRole('JUDGE')")
-    public ResponseEntity<?> takeOverCase(@PathVariable Long id, Authentication authentication) {
+    @Operation(summary = "Judge takes over case", description = "Allow a judge to take ownership of a case for themselves")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Case taken over successfully"),
+        @ApiResponse(responseCode = "400", description = "Cannot take over case (wrong court level, etc.)"),
+        @ApiResponse(responseCode = "404", description = "Case not found"),
+        @ApiResponse(responseCode = "403", description = "Access denied"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    public ResponseEntity<?> takeOverCase(
+            @Parameter(description = "Case ID", required = true, example = "1") @PathVariable Long id, 
+            Authentication authentication) {
         try {
             String username = authentication.getName();
             User judge = caseService.getUserByUsername(username);
@@ -221,9 +300,17 @@ public class CaseController {
     // Schedule hearing
     @PutMapping("/{id}/schedule")
     @PreAuthorize("hasRole('ADMIN') or hasRole('JUDGE')")
+    @Operation(summary = "Schedule hearing", description = "Schedule a hearing date and time for a specific case")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Hearing scheduled successfully"),
+        @ApiResponse(responseCode = "400", description = "Invalid hearing date or scheduling conflict"),
+        @ApiResponse(responseCode = "404", description = "Case not found"),
+        @ApiResponse(responseCode = "403", description = "Access denied"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     public ResponseEntity<Case> scheduleHearing(
-            @PathVariable Long id,
-            @Valid @RequestBody ScheduleRequest request,
+            @Parameter(description = "Case ID", required = true, example = "1") @PathVariable Long id,
+            @Parameter(description = "Hearing schedule details", required = true) @Valid @RequestBody ScheduleRequest request,
             Authentication authentication) {
         try {
             LocalDateTime hearingDate = LocalDateTime.parse(request.getHearingDate().replace("Z", ""));
@@ -239,7 +326,15 @@ public class CaseController {
     // Get cases by judge
     @GetMapping("/judge/{judgeId}")
     @PreAuthorize("hasRole('ADMIN') or hasRole('JUDGE')")
-    public ResponseEntity<List<Case>> getCasesByJudge(@PathVariable Long judgeId) {
+    @Operation(summary = "Get cases by judge", description = "Retrieve all cases assigned to a specific judge")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Successfully retrieved cases"),
+        @ApiResponse(responseCode = "403", description = "Access denied"),
+        @ApiResponse(responseCode = "404", description = "Judge not found"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    public ResponseEntity<List<Case>> getCasesByJudge(
+            @Parameter(description = "Judge ID", required = true, example = "1") @PathVariable Long judgeId) {
         List<Case> cases = caseService.getCasesByJudge(judgeId);
         return ResponseEntity.ok(cases);
     }
@@ -247,7 +342,15 @@ public class CaseController {
     // Get cases accessible to a judge based on their court level (new endpoint for court-level authorization)
     @GetMapping("/judge/{judgeId}/court-level")
     @PreAuthorize("hasRole('ADMIN') or hasRole('JUDGE')")
-    public ResponseEntity<List<Case>> getCasesByJudgeCourtLevel(@PathVariable Long judgeId) {
+    @Operation(summary = "Get cases by judge court level", description = "Retrieve cases accessible to a judge based on their court level")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Successfully retrieved cases"),
+        @ApiResponse(responseCode = "400", description = "Invalid judge ID"),
+        @ApiResponse(responseCode = "403", description = "Access denied"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    public ResponseEntity<List<Case>> getCasesByJudgeCourtLevel(
+            @Parameter(description = "Judge ID", required = true, example = "1") @PathVariable Long judgeId) {
         try {
             List<Case> cases = caseService.getCasesByJudgeCourtLevel(judgeId);
             return ResponseEntity.ok(cases);
@@ -259,9 +362,16 @@ public class CaseController {
     // Check if judge can access a specific case (new endpoint for authorization)
     @GetMapping("/judge/{judgeId}/case/{caseId}/access")
     @PreAuthorize("hasRole('ADMIN') or hasRole('JUDGE')")
+    @Operation(summary = "Check judge case access", description = "Check if a judge has permission to access a specific case")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Successfully checked access"),
+        @ApiResponse(responseCode = "400", description = "Invalid judge or case ID"),
+        @ApiResponse(responseCode = "403", description = "Access denied"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     public ResponseEntity<Map<String, Boolean>> canJudgeAccessCase(
-            @PathVariable Long judgeId, 
-            @PathVariable Long caseId) {
+            @Parameter(description = "Judge ID", required = true, example = "1") @PathVariable Long judgeId, 
+            @Parameter(description = "Case ID", required = true, example = "1") @PathVariable Long caseId) {
         try {
             boolean canAccess = caseService.canJudgeAccessCase(judgeId, caseId);
             return ResponseEntity.ok(Map.of("canAccess", canAccess));
@@ -273,6 +383,12 @@ public class CaseController {
     // Get unscheduled cases
     @GetMapping("/unscheduled")
     @PreAuthorize("hasRole('ADMIN') or hasRole('JUDGE')")
+    @Operation(summary = "Get unscheduled cases", description = "Retrieve all cases that don't have scheduled hearings")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Successfully retrieved unscheduled cases"),
+        @ApiResponse(responseCode = "403", description = "Access denied"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     public ResponseEntity<List<Case>> getUnscheduledCases(Authentication authentication) {
         String username = authentication.getName();
         User currentUser = caseService.getUserByUsername(username);
@@ -291,6 +407,12 @@ public class CaseController {
     // Get high priority cases
     @GetMapping("/high-priority")
     @PreAuthorize("hasRole('ADMIN') or hasRole('JUDGE')")
+    @Operation(summary = "Get high priority cases", description = "Retrieve all cases with high priority (8-10) for urgent attention")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Successfully retrieved high priority cases"),
+        @ApiResponse(responseCode = "403", description = "Access denied"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     public ResponseEntity<List<Case>> getHighPriorityCases(Authentication authentication) {
         String username = authentication.getName();
         User currentUser = caseService.getUserByUsername(username);
@@ -309,6 +431,12 @@ public class CaseController {
     // Get all scheduled hearings for calendar view
     @GetMapping("/hearings")
     @PreAuthorize("hasRole('ADMIN') or hasRole('JUDGE') or hasRole('CLERK')")
+    @Operation(summary = "Get all scheduled hearings", description = "Retrieve all cases with scheduled hearings for calendar view")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Successfully retrieved scheduled hearings"),
+        @ApiResponse(responseCode = "403", description = "Access denied"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     public ResponseEntity<List<Case>> getAllHearings(Authentication authentication) {
         String username = authentication.getName();
         User currentUser = caseService.getUserByUsername(username);
@@ -327,7 +455,15 @@ public class CaseController {
     // Update case priority
     @PutMapping("/{id}/priority")
     @PreAuthorize("hasRole('ADMIN') or hasRole('CLERK')")
-    public ResponseEntity<Case> updatePriority(@PathVariable Long id) {
+    @Operation(summary = "Update case priority", description = "Recalculate and update the priority of a specific case based on business rules")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Priority updated successfully"),
+        @ApiResponse(responseCode = "404", description = "Case not found"),
+        @ApiResponse(responseCode = "403", description = "Access denied"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    public ResponseEntity<Case> updatePriority(
+            @Parameter(description = "Case ID", required = true, example = "1") @PathVariable Long id) {
         try {
             Case updatedCase = caseService.updatePriority(id);
             return ResponseEntity.ok(updatedCase);
@@ -339,7 +475,17 @@ public class CaseController {
     // Set manual priority
     @PutMapping("/{id}/set-priority")
     @PreAuthorize("hasRole('ADMIN') or hasRole('CLERK')")
-    public ResponseEntity<Case> setManualPriority(@PathVariable Long id, @RequestParam Integer priority) {
+    @Operation(summary = "Set manual priority", description = "Manually set a specific priority value for a case (1-10 scale)")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Priority set successfully"),
+        @ApiResponse(responseCode = "400", description = "Invalid priority value (must be 1-10)"),
+        @ApiResponse(responseCode = "404", description = "Case not found"),
+        @ApiResponse(responseCode = "403", description = "Access denied"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    public ResponseEntity<Case> setManualPriority(
+            @Parameter(description = "Case ID", required = true, example = "1") @PathVariable Long id, 
+            @Parameter(description = "Priority value (1-10)", required = true, example = "5") @RequestParam Integer priority) {
         try {
             if (priority < 1 || priority > 10) {
                 return ResponseEntity.badRequest().build();
@@ -354,7 +500,17 @@ public class CaseController {
     // Add or update case notes
     @PutMapping("/{id}/notes")
     @PreAuthorize("hasRole('ADMIN') or hasRole('JUDGE') or hasRole('CLERK')")
-    public ResponseEntity<Case> updateCaseNotes(@PathVariable Long id, @RequestBody Map<String, String> request, Authentication authentication) {
+    @Operation(summary = "Update case notes", description = "Add or update judicial notes for a specific case")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Case notes updated successfully"),
+        @ApiResponse(responseCode = "404", description = "Case not found"),
+        @ApiResponse(responseCode = "403", description = "Access denied"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    public ResponseEntity<Case> updateCaseNotes(
+            @Parameter(description = "Case ID", required = true, example = "1") @PathVariable Long id, 
+            @Parameter(description = "Request body containing notes", required = true) @RequestBody Map<String, String> request, 
+            Authentication authentication) {
         try {
             String notes = request.get("notes");
             Case updatedCase = caseService.updateCaseNotes(id, notes, authentication.getName());
@@ -367,6 +523,12 @@ public class CaseController {
     // Get case statistics (allow multiple roles)
     @GetMapping("/statistics")
     @PreAuthorize("hasRole('ADMIN') or hasRole('CLERK') or hasRole('JUDGE') or hasRole('ADVOCATE')")
+    @Operation(summary = "Get case statistics", description = "Retrieve statistical summary of cases based on user role and court level")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Successfully retrieved case statistics"),
+        @ApiResponse(responseCode = "403", description = "Access denied"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     public ResponseEntity<CaseService.CaseStatistics> getCaseStatistics(Authentication authentication) {
         String username = authentication.getName();
         User currentUser = caseService.getUserByUsername(username);
@@ -383,6 +545,12 @@ public class CaseController {
     // Get court level statistics
     @GetMapping("/court-stats")
     @PreAuthorize("hasRole('ADMIN') or hasRole('CLERK') or hasRole('JUDGE') or hasRole('ADVOCATE')")
+    @Operation(summary = "Get court level statistics", description = "Retrieve statistical breakdown of cases by court level")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Successfully retrieved court level statistics"),
+        @ApiResponse(responseCode = "403", description = "Access denied"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     public ResponseEntity<CaseService.CourtLevelStats> getCourtLevelStats(Authentication authentication) {
         String username = authentication.getName();
         User currentUser = caseService.getUserByUsername(username);
@@ -399,7 +567,15 @@ public class CaseController {
     // Generate case report
     @GetMapping("/{id}/report")
     @PreAuthorize("hasRole('ADMIN') or hasRole('JUDGE')")
-    public ResponseEntity<String> generateCaseReport(@PathVariable Long id) {
+    @Operation(summary = "Generate case report", description = "Generate a detailed text report for a specific case")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Report generated successfully"),
+        @ApiResponse(responseCode = "404", description = "Case not found"),
+        @ApiResponse(responseCode = "403", description = "Access denied"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    public ResponseEntity<String> generateCaseReport(
+            @Parameter(description = "Case ID", required = true, example = "1") @PathVariable Long id) {
         try {
             String report = caseService.generateCaseReport(id);
             return ResponseEntity.ok()
@@ -414,7 +590,15 @@ public class CaseController {
     // Generate case PDF (placeholder - returns formatted text for now)
     @GetMapping("/{id}/pdf")
     @PreAuthorize("hasRole('ADMIN') or hasRole('JUDGE') or hasRole('CLERK') or hasRole('ADVOCATE')")
-    public ResponseEntity<byte[]> generateCasePDF(@PathVariable Long id) {
+    @Operation(summary = "Generate case PDF", description = "Generate a PDF document for a specific case with proper filename based on case number")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "PDF generated successfully"),
+        @ApiResponse(responseCode = "404", description = "Case not found"),
+        @ApiResponse(responseCode = "403", description = "Access denied"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    public ResponseEntity<byte[]> generateCasePDF(
+            @Parameter(description = "Case ID", required = true, example = "1") @PathVariable Long id) {
         System.out.println("PDF endpoint called for case ID: " + id);
         try {
             Optional<Case> caseOptional = caseService.getCaseById(id);

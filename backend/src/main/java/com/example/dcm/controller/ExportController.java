@@ -4,6 +4,10 @@ import com.example.dcm.model.Case;
 import com.example.dcm.repository.CaseRepository;
 import com.example.dcm.service.ExportService;
 import com.example.dcm.exception.ResourceNotFoundException;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -38,6 +42,12 @@ public class ExportController {
      * GET /api/export/cases/excel
      */
     @GetMapping("/cases/excel")
+    @Operation(summary = "Export all cases to Excel", description = "Export all cases in the system to an Excel file with timestamp")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Excel file generated successfully"),
+        @ApiResponse(responseCode = "403", description = "Access denied"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     public ResponseEntity<byte[]> exportCasesToExcel() {
         try {
             List<Case> cases = caseRepository.findAll();
@@ -59,6 +69,12 @@ public class ExportController {
      * GET /api/export/cases/pdf
      */
     @GetMapping("/cases/pdf")
+    @Operation(summary = "Export all cases to PDF", description = "Export all cases in the system to a single PDF document with timestamp")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "PDF file generated successfully"),
+        @ApiResponse(responseCode = "403", description = "Access denied"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     public ResponseEntity<byte[]> exportCasesToPDF() {
         try {
             List<Case> cases = caseRepository.findAll();
@@ -80,7 +96,15 @@ public class ExportController {
      * GET /api/export/case/{id}/pdf
      */
     @GetMapping("/case/{id}/pdf")
-    public ResponseEntity<byte[]> exportCaseDetailToPDF(@PathVariable Long id) {
+    @Operation(summary = "Export single case to PDF", description = "Export detailed information for a specific case to PDF with proper filename based on case number")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "PDF file generated successfully"),
+        @ApiResponse(responseCode = "404", description = "Case not found"),
+        @ApiResponse(responseCode = "403", description = "Access denied"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    public ResponseEntity<byte[]> exportCaseDetailToPDF(
+            @Parameter(description = "Case ID", required = true, example = "1") @PathVariable Long id) {
         try {
             Case caseItem = caseRepository.findById(id)
                     .orElseThrow(() -> new ResourceNotFoundException("Case", "id", id));

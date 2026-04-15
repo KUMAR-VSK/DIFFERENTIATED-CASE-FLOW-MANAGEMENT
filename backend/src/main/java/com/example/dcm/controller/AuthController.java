@@ -22,13 +22,21 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.dcm.dto.AuthResponse;
+import com.example.dcm.dto.LoginRequest;
+import com.example.dcm.dto.RegisterRequest;
 import com.example.dcm.model.User;
 import com.example.dcm.security.JwtUtil;
 import com.example.dcm.service.UserService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
 @RequestMapping("/api/auth")
 @CrossOrigin(origins = "*")
+@Tag(name = "Authentication", description = "Authentication and user management endpoints")
 public class AuthController {
 
     @Autowired
@@ -42,6 +50,12 @@ public class AuthController {
 
     // Get current user info
     @GetMapping("/me")
+    @Operation(summary = "Get current user info", description = "Retrieve information about the currently authenticated user")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Successfully retrieved user info"),
+        @ApiResponse(responseCode = "401", description = "Not authenticated"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     public ResponseEntity<User> getCurrentUser(Authentication authentication) {
         if (authentication == null) {
             return ResponseEntity.status(401).build();
@@ -54,7 +68,14 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody Map<String, String> credentials) {
+    @Operation(summary = "User login", description = "Authenticate user with username and password and return JWT tokens")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Login successful"),
+        @ApiResponse(responseCode = "401", description = "Invalid credentials"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    public ResponseEntity<?> login(
+            @Parameter(description = "Login credentials", required = true) @RequestBody Map<String, String> credentials) {
         try {
             String username = credentials.get("username");
             String password = credentials.get("password");
@@ -84,6 +105,12 @@ public class AuthController {
     // Get all users (admin only)
     @GetMapping("/users")
     @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Get all users", description = "Retrieve list of all users in the system (admin only)")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Successfully retrieved users"),
+        @ApiResponse(responseCode = "403", description = "Access denied"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     public ResponseEntity<List<User>> getAllUsers() {
         List<User> users = userService.getAllUsers();
         return ResponseEntity.ok(users);
@@ -92,7 +119,15 @@ public class AuthController {
     // Create new user (admin only)
     @PostMapping("/users")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<User> createUser(@RequestBody User user) {
+    @Operation(summary = "Create user", description = "Create a new user with specified role and court level (admin only)")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "User created successfully"),
+        @ApiResponse(responseCode = "400", description = "Invalid user data"),
+        @ApiResponse(responseCode = "403", description = "Access denied"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    public ResponseEntity<User> createUser(
+            @Parameter(description = "User details", required = true) @RequestBody User user) {
         try {
             User createdUser = userService.createUser(user);
             return ResponseEntity.ok(createdUser);
@@ -102,7 +137,14 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody User user) {
+    @Operation(summary = "User registration", description = "Register a new user with default CLERK role")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Registration successful"),
+        @ApiResponse(responseCode = "400", description = "Invalid user data or username already exists"),
+        @ApiResponse(responseCode = "500", description = "Registration failed")
+    })
+    public ResponseEntity<?> register(
+            @Parameter(description = "User registration details", required = true) @RequestBody User user) {
         try {
             // Set default role to CLERK for new registrations
             if (user.getRole() == null || 
@@ -135,7 +177,17 @@ public class AuthController {
     // Update user (admin only)
     @PutMapping("/users/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<User> updateUser(@PathVariable Long id, @RequestBody User userDetails) {
+    @Operation(summary = "Update user", description = "Update user details (admin only)")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "User updated successfully"),
+        @ApiResponse(responseCode = "404", description = "User not found"),
+        @ApiResponse(responseCode = "400", description = "Invalid user data"),
+        @ApiResponse(responseCode = "403", description = "Access denied"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    public ResponseEntity<User> updateUser(
+            @Parameter(description = "User ID", required = true, example = "1") @PathVariable Long id, 
+            @Parameter(description = "Updated user details", required = true) @RequestBody User userDetails) {
         try {
             User updatedUser = userService.updateUser(id, userDetails);
             return ResponseEntity.ok(updatedUser);
