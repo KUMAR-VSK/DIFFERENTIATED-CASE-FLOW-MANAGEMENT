@@ -289,14 +289,11 @@ const CaseDetail = () => {
 
       // Extract filename from Content-Disposition header
       const contentDisposition = response.headers['content-disposition'];
-      let filename = `case-report-${id}.pdf`; // fallback
-      console.log('Export Content-Disposition header:', contentDisposition);
+      let filename = caseData?.caseNumber ? `${caseData.caseNumber}.pdf` : `case-report-${id}.pdf`;
       if (contentDisposition) {
         const filenameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
-        console.log('Export Filename match:', filenameMatch);
         if (filenameMatch && filenameMatch[1]) {
           filename = filenameMatch[1].replace(/['"]/g, '');
-          console.log('Export Extracted filename:', filename);
         }
       }
 
@@ -327,14 +324,11 @@ const CaseDetail = () => {
 
       // Extract filename from Content-Disposition header
       const contentDisposition = response.headers['content-disposition'];
-      let filename = `case-report-${id}.pdf`; // fallback
-      console.log('Generate Content-Disposition header:', contentDisposition);
+      let filename = caseData?.caseNumber ? `${caseData.caseNumber}.pdf` : `case-report-${id}.pdf`;
       if (contentDisposition) {
         const filenameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
-        console.log('Generate Filename match:', filenameMatch);
         if (filenameMatch && filenameMatch[1]) {
           filename = filenameMatch[1].replace(/['"]/g, '');
-          console.log('Generate Extracted filename:', filename);
         }
       }
 
@@ -529,7 +523,7 @@ const CaseDetail = () => {
 
       // Extract filename from Content-Disposition header
       const contentDisposition = response.headers['content-disposition'];
-      let filename = `case-history-${id}.pdf`; // fallback
+      let filename = caseData?.caseNumber ? `${caseData.caseNumber}.pdf` : `case-history-${id}.pdf`;
       if (contentDisposition) {
         const filenameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
         if (filenameMatch && filenameMatch[1]) {
