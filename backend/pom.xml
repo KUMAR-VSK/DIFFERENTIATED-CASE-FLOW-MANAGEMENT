@@ -99,8 +99,16 @@
             <version>2.3.0</version>
         </dependency>
 
+        <!-- Spring Cache (for @Cacheable / @CacheEvict) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-cache</artifactId>
+        </dependency>
+
         <!-- Bucket4j for rate limiting -->
         <dependency>
+            <groupId>com.bucket4j</groupId>
+            <artifactId>bucket4j-core</artifactId>
             <version>8.7.0</version>
         </dependency>
 

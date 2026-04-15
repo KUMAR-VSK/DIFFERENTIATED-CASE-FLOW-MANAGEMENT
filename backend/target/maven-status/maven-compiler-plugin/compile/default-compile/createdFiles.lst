@@ -7,6 +7,7 @@ com/example/dcm/config/PasswordEncoderConfig.class
 com/example/dcm/repository/CaseTemplateRepository.class
 com/example/dcm/dto/ReasonRequest.class
 com/example/dcm/repository/CaseAuditRepository.class
+com/example/dcm/config/CacheConfig.class
 com/example/dcm/controller/DocumentController$DocumentInfo.class
 com/example/dcm/model/Document$DocumentType.class
 com/example/dcm/model/CaseNote.class
@@ -49,6 +50,7 @@ com/example/dcm/model/Document.class
 com/example/dcm/controller/AdvancedAnalyticsController.class
 com/example/dcm/repository/CaseChecklistItemRepository.class
 com/example/dcm/controller/DocumentController.class
+com/example/dcm/config/WebSocketConfig.class
 com/example/dcm/model/CaseAudit$ActionType.class
 com/example/dcm/exception/ErrorResponse.class
 com/example/dcm/model/User.class
@@ -57,8 +59,10 @@ com/example/dcm/controller/ExportController.class
 com/example/dcm/model/CaseChecklistItem.class
 com/example/dcm/model/DocumentApproval.class
 com/example/dcm/controller/TemplateController.class
+com/example/dcm/service/PriorityAgingService.class
 com/example/dcm/specification/CaseSpecification.class
 com/example/dcm/security/JwtAuthenticationFilter.class
+com/example/dcm/dto/JudgeWorkloadDTO.class
 com/example/dcm/dto/CaseSearchCriteria.class
 com/example/dcm/security/JwtUtil.class
 com/example/dcm/security/RateLimitingFilter.class

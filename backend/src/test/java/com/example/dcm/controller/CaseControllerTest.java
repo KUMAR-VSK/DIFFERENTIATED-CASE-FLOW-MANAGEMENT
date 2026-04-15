@@ -6,7 +6,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -149,7 +151,9 @@ class CaseControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     void getCaseStatistics_ShouldReturnStatistics() throws Exception {
-        CaseService.CaseStatistics stats = new CaseService.CaseStatistics(10, 5, 3, 2, 5.0);
+        Map<String, Long> statusDist = new HashMap<>();
+        Map<String, Long> typeDist = new HashMap<>();
+        CaseService.CaseStatistics stats = new CaseService.CaseStatistics(10L, 5L, 3L, 2L, 5.0, statusDist, typeDist);
         when(caseService.getCaseStatistics()).thenReturn(stats);
         when(caseService.getUserByUsername("testuser")).thenReturn(testUser);
 
