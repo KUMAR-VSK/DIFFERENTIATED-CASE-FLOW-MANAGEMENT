@@ -50,6 +50,7 @@
 /Users/kumarvs/Downloads/S8 PROJECT/backend/src/main/java/com/example/dcm/DcmApplication.java
 /Users/kumarvs/Downloads/S8 PROJECT/backend/src/main/java/com/example/dcm/config/WebSocketConfig.java
 /Users/kumarvs/Downloads/S8 PROJECT/backend/src/main/java/com/example/dcm/model/DocumentVersion.java
+/Users/kumarvs/Downloads/S8 PROJECT/backend/src/main/java/com/example/dcm/dto/CaseDTO.java
 /Users/kumarvs/Downloads/S8 PROJECT/backend/src/main/java/com/example/dcm/config/SecurityConfig.java
 /Users/kumarvs/Downloads/S8 PROJECT/backend/src/main/java/com/example/dcm/model/DocumentApproval.java
 /Users/kumarvs/Downloads/S8 PROJECT/backend/src/main/java/com/example/dcm/service/CaseService.java

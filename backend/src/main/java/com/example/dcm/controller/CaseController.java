@@ -26,6 +26,7 @@ import com.example.dcm.dto.ReasonRequest;
 import com.example.dcm.dto.ScheduleRequest;
 import com.example.dcm.dto.CaseSearchCriteria;
 import com.example.dcm.dto.JudgeWorkloadDTO;
+import com.example.dcm.dto.CaseDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -134,10 +135,10 @@ public class CaseController {
     // Get case by ID
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN') or hasRole('JUDGE') or hasRole('CLERK') or hasRole('ADVOCATE')")
-    public ResponseEntity<Case> getCaseById(@PathVariable Long id) {
-        Optional<Case> caseOptional = caseService.getCaseById(id);
+    public ResponseEntity<CaseDTO> getCaseById(@PathVariable Long id) {
+        Optional<CaseDTO> caseOptional = caseService.getCaseDTOById(id);
         return caseOptional.map(ResponseEntity::ok)
-                          .orElse(ResponseEntity.notFound().build());
+                           .orElse(ResponseEntity.notFound().build());
     }
 
     // Create new case (clerks only) - optionally assign advocate at filing time

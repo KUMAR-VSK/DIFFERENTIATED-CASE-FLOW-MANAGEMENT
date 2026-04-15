@@ -13,6 +13,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+
+import com.example.dcm.dto.CaseDTO;
 import org.springframework.transaction.annotation.Transactional;
 
 
@@ -646,6 +648,11 @@ public class CaseService {
     @Cacheable(value = "cases", key = "#id")
     public Optional<Case> getCaseById(Long id) {
         return caseRepository.findById(id);
+    }
+
+    public Optional<CaseDTO> getCaseDTOById(Long id) {
+        Optional<Case> caseOptional = caseRepository.findById(id);
+        return caseOptional.map(CaseDTO::new);
     }
 
     // Get recent cases (sorted by creation date, descending)

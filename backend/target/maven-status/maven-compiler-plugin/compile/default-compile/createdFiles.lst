@@ -41,6 +41,7 @@ com/example/dcm/controller/CaseController.class
 com/example/dcm/service/UserService.class
 com/example/dcm/exception/GlobalExceptionHandler.class
 com/example/dcm/config/OpenApiConfig.class
+com/example/dcm/dto/CaseDTO.class
 com/example/dcm/repository/DocumentApprovalRepository.class
 com/example/dcm/controller/AnalyticsController.class
 com/example/dcm/repository/CaseRepository.class

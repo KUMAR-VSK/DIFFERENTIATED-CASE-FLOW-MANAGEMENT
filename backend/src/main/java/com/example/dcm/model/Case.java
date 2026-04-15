@@ -2,6 +2,7 @@ package com.example.dcm.model;
 
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -108,14 +109,17 @@ public class Case {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "assigned_judge_id")
+    @JsonIgnore
     private User assignedJudge;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "assigned_advocate_id")
+    @JsonIgnore
     private User assignedAdvocate;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "filing_clerk_id")
+    @JsonIgnore
     private User filingClerk;
 
     @Column(name = "created_at")
