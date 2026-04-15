@@ -415,24 +415,32 @@ public class CaseController {
     @GetMapping("/{id}/pdf")
     @PreAuthorize("hasRole('ADMIN') or hasRole('JUDGE') or hasRole('CLERK') or hasRole('ADVOCATE')")
     public ResponseEntity<byte[]> generateCasePDF(@PathVariable Long id) {
+        System.out.println("PDF endpoint called for case ID: " + id);
         try {
             Optional<Case> caseOptional = caseService.getCaseById(id);
             if (caseOptional.isEmpty()) {
+                System.out.println("Case not found: " + id);
                 return ResponseEntity.notFound().build();
             }
 
             Case caseEntity = caseOptional.get();
+            System.out.println("Found case: " + caseEntity.getCaseNumber());
             byte[] pdfContent = caseService.generateCasePDF(id);
+            System.out.println("Generated PDF content, size: " + pdfContent.length);
 
             String filename = generateCasePDFFilename(caseEntity);
+            System.out.println("Generated filename: " + filename);
 
             return ResponseEntity.ok()
                     .header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
                     .contentType(org.springframework.http.MediaType.APPLICATION_PDF)
                     .body(pdfContent);
         } catch (IllegalArgumentException e) {
+            System.out.println("IllegalArgumentException: " + e.getMessage());
             return ResponseEntity.notFound().build();
         } catch (Exception e) {
+            System.out.println("Exception in PDF generation: " + e.getMessage());
+            e.printStackTrace();
             return ResponseEntity.internalServerError().build();
         }
     }
