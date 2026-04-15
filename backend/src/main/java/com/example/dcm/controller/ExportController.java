@@ -27,6 +27,27 @@ public class ExportController {
     @Autowired
     private CaseRepository caseRepository;
 
+    // Helper method to generate PDF filename with case number, year, and court
+    private String generateCasePDFFilename(Case caseEntity) {
+        String caseNumber = caseEntity.getCaseNumber();
+        String courtLevel = caseEntity.getCourtLevel().name();
+
+        // Extract year from case number (format: CASE-YYYY-XXXX)
+        String year = "2026"; // Default fallback
+        if (caseNumber != null && caseNumber.startsWith("CASE-")) {
+            String[] parts = caseNumber.split("-");
+            if (parts.length >= 2) {
+                year = parts[1];
+            }
+        }
+
+        // Format court level for filename (remove underscores, capitalize)
+        String courtFormatted = courtLevel.toLowerCase().replace("_", " ");
+        courtFormatted = courtFormatted.substring(0, 1).toUpperCase() + courtFormatted.substring(1);
+
+        return String.format("%s_%s_%sCourt.pdf", caseNumber, year, courtFormatted);
+    }
+
     /**
      * Export all cases to Excel
      * GET /api/export/cases/excel
@@ -78,13 +99,13 @@ public class ExportController {
         try {
             Case caseItem = caseRepository.findById(id)
                     .orElseThrow(() -> new ResourceNotFoundException("Case", "id", id));
-            
+
             byte[] pdfFile = exportService.exportCaseDetailToPDF(caseItem);
 
-            String filename = caseItem.getCaseNumber() + "_details.pdf";
+            String filename = generateCasePDFFilename(caseItem);
 
             return ResponseEntity.ok()
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + filename)
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
                     .contentType(MediaType.APPLICATION_PDF)
                     .body(pdfFile);
         } catch (Exception e) {

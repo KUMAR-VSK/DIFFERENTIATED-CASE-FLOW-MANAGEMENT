@@ -46,6 +46,27 @@ public class CaseController {
     @Autowired
     private CaseService caseService;
 
+    // Helper method to generate PDF filename with case number, year, and court
+    private String generateCasePDFFilename(Case caseEntity) {
+        String caseNumber = caseEntity.getCaseNumber();
+        String courtLevel = caseEntity.getCourtLevel().name();
+
+        // Extract year from case number (format: CASE-YYYY-XXXX)
+        String year = "2026"; // Default fallback
+        if (caseNumber != null && caseNumber.startsWith("CASE-")) {
+            String[] parts = caseNumber.split("-");
+            if (parts.length >= 2) {
+                year = parts[1];
+            }
+        }
+
+        // Format court level for filename (remove underscores, capitalize)
+        String courtFormatted = courtLevel.toLowerCase().replace("_", " ");
+        courtFormatted = courtFormatted.substring(0, 1).toUpperCase() + courtFormatted.substring(1);
+
+        return String.format("%s_%s_%sCourt.pdf", caseNumber, year, courtFormatted);
+    }
+
     // Get all cases (for admins and judges)
     @GetMapping
     @PreAuthorize("hasRole('ADMIN') or hasRole('JUDGE') or hasRole('CLERK')")
@@ -410,9 +431,18 @@ public class CaseController {
     @PreAuthorize("hasRole('ADMIN') or hasRole('JUDGE') or hasRole('CLERK') or hasRole('ADVOCATE')")
     public ResponseEntity<byte[]> generateCasePDF(@PathVariable Long id) {
         try {
+            Optional<Case> caseOptional = caseService.getCaseById(id);
+            if (caseOptional.isEmpty()) {
+                return ResponseEntity.notFound().build();
+            }
+
+            Case caseEntity = caseOptional.get();
             byte[] pdfContent = caseService.generateCasePDF(id);
+
+            String filename = generateCasePDFFilename(caseEntity);
+
             return ResponseEntity.ok()
-                    .header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"case-history-" + id + ".pdf\"")
+                    .header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
                     .contentType(org.springframework.http.MediaType.APPLICATION_PDF)
                     .body(pdfContent);
         } catch (IllegalArgumentException e) {
