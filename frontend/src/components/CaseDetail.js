@@ -523,20 +523,17 @@ const CaseDetail = () => {
   const handleDownloadHistoryPDF = async () => {
     setIsDownloadingHistory(true);
     try {
-      const response = await axios.get(`${BASE_URL}/api/cases/${id}/pdf`, {
+      const response = await axios.get(`${BASE_URL}/api/export/case/${id}/pdf`, {
         responseType: 'blob'
       });
 
       // Extract filename from Content-Disposition header
       const contentDisposition = response.headers['content-disposition'];
       let filename = `case-history-${id}.pdf`; // fallback
-      console.log('History Content-Disposition header:', contentDisposition);
       if (contentDisposition) {
         const filenameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
-        console.log('History Filename match:', filenameMatch);
         if (filenameMatch && filenameMatch[1]) {
           filename = filenameMatch[1].replace(/['"]/g, '');
-          console.log('History Extracted filename:', filename);
         }
       }
 
