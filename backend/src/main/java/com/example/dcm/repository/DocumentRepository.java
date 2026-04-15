@@ -2,6 +2,8 @@ package com.example.dcm.repository;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -20,6 +22,9 @@ public interface DocumentRepository extends JpaRepository<Document, Long> {
 
     // Find documents by case ID
     List<Document> findByCaseEntityId(Long caseId);
+
+    // Find documents by case ID with pagination
+    Page<Document> findByCaseEntityId(Long caseId, Pageable pageable);
 
     // Find documents uploaded by a specific user
     List<Document> findByUploadedBy(User user);

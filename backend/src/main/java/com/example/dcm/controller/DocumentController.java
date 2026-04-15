@@ -11,6 +11,9 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -152,28 +155,56 @@ public class DocumentController {
                 .body(fileContent);
     }
 
-    // Get documents by case ID
+    // Get documents by case ID with pagination
     @GetMapping("/case/{caseId}")
     @PreAuthorize("hasRole('ADMIN') or hasRole('JUDGE') or hasRole('CLERK')")
-    public ResponseEntity<List<DocumentInfo>> getDocumentsByCaseId(@PathVariable Long caseId) {
+    public ResponseEntity<?> getDocumentsByCaseId(
+            @PathVariable Long caseId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "uploadDate") String sortBy,
+            @RequestParam(defaultValue = "desc") String direction,
+            @RequestParam(defaultValue = "false") boolean paginated) {
         try {
-            // Fetch documents from database
-            List<Document> documents = documentRepository.findByCaseEntityId(caseId);
-            
-            // Convert to DocumentInfo format
-            List<DocumentInfo> docInfos = new ArrayList<>();
-            for (Document doc : documents) {
-                DocumentInfo info = new DocumentInfo();
-                info.setId(doc.getId());
-                info.setOriginalFileName(doc.getOriginalFileName());
-                info.setFileType(doc.getFileType());
-                info.setFileSize(doc.getFileSize());
-                info.setUploadDate(doc.getUploadDate().toString());
-                info.setUrl("http://localhost:8080" + doc.getUrl());
-                docInfos.add(info);
-            }
+            if (paginated) {
+                // Return paginated response
+                Sort.Direction sortDirection = direction.equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC;
+                Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
+                
+                org.springframework.data.domain.Page<Document> documentsPage = documentRepository.findByCaseEntityId(caseId, pageable);
+                
+                // Convert to DocumentInfo format
+                org.springframework.data.domain.Page<DocumentInfo> docInfoPage = documentsPage.map(doc -> {
+                    DocumentInfo info = new DocumentInfo();
+                    info.setId(doc.getId());
+                    info.setOriginalFileName(doc.getOriginalFileName());
+                    info.setFileType(doc.getFileType());
+                    info.setFileSize(doc.getFileSize());
+                    info.setUploadDate(doc.getUploadDate().toString());
+                    info.setUrl("http://localhost:8080" + doc.getUrl());
+                    return info;
+                });
+                
+                return ResponseEntity.ok(docInfoPage);
+            } else {
+                // Return list response (backward compatibility)
+                List<Document> documents = documentRepository.findByCaseEntityId(caseId);
+                
+                // Convert to DocumentInfo format
+                List<DocumentInfo> docInfos = new ArrayList<>();
+                for (Document doc : documents) {
+                    DocumentInfo info = new DocumentInfo();
+                    info.setId(doc.getId());
+                    info.setOriginalFileName(doc.getOriginalFileName());
+                    info.setFileType(doc.getFileType());
+                    info.setFileSize(doc.getFileSize());
+                    info.setUploadDate(doc.getUploadDate().toString());
+                    info.setUrl("http://localhost:8080" + doc.getUrl());
+                    docInfos.add(info);
+                }
 
-            return ResponseEntity.ok(docInfos);
+                return ResponseEntity.ok(docInfos);
+            }
         } catch (Exception e) {
             return ResponseEntity.notFound().build();
         }
