@@ -46,29 +46,10 @@ public class CaseController {
     @Autowired
     private CaseService caseService;
 
-    // Helper method to generate PDF filename with case title, number, and court
+    // Helper method to generate PDF filename with case number
     private String generateCasePDFFilename(Case caseEntity) {
         String caseNumber = caseEntity.getCaseNumber();
-        String caseTitle = caseEntity.getTitle();
-        String courtLevel = caseEntity.getCourtLevel().name();
-
-        // Extract year from case number (format: CASE-YYYY-XXXX)
-        String year = "2026"; // Default fallback
-        if (caseNumber != null && caseNumber.startsWith("CASE-")) {
-            String[] parts = caseNumber.split("-");
-            if (parts.length >= 2) {
-                year = parts[1];
-            }
-        }
-
-        // Sanitize case title for filename (remove special characters, limit length)
-        String sanitizedTitle = caseTitle != null ? caseTitle.replaceAll("[^a-zA-Z0-9\\s-]", "").replaceAll("\\s+", "_").substring(0, Math.min(caseTitle.length(), 30)) : "Case";
-
-        // Format court level for filename (remove underscores, capitalize)
-        String courtFormatted = courtLevel.toLowerCase().replace("_", " ");
-        courtFormatted = courtFormatted.substring(0, 1).toUpperCase() + courtFormatted.substring(1);
-
-        return String.format("%s_%s_%sCourt.pdf", sanitizedTitle, caseNumber, courtFormatted);
+        return String.format("%s.pdf", caseNumber);
     }
 
     // Get all cases (for admins and judges)
