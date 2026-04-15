@@ -3,6 +3,8 @@ package com.example.dcm.repository;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -25,6 +27,9 @@ public interface CaseAuditRepository extends JpaRepository<CaseAudit, Long> {
     // Find audit entries by case ID
     List<CaseAudit> findByCaseEntityId(Long caseId);
 
+    // Find audit entries by case ID with pagination
+    Page<CaseAudit> findByCaseEntityId(Long caseId, Pageable pageable);
+
     // Find audit entries by action type
     List<CaseAudit> findByCaseEntityAndActionType(Case caseEntity, CaseAudit.ActionType actionType);
 
@@ -37,13 +42,24 @@ public interface CaseAuditRepository extends JpaRepository<CaseAudit, Long> {
     // Find audit entries for a case by action type
     List<CaseAudit> findByCaseEntityIdAndActionType(Long caseId, CaseAudit.ActionType actionType);
 
+    // Find audit entries for a case by action type with pagination
+    Page<CaseAudit> findByCaseEntityIdAndActionType(Long caseId, CaseAudit.ActionType actionType, Pageable pageable);
+
     // Find audit entries for a case within a date range
     List<CaseAudit> findByCaseEntityIdAndCreatedAtBetween(Long caseId, LocalDateTime startDate, LocalDateTime endDate);
+
+    // Find audit entries for a case within a date range with pagination
+    Page<CaseAudit> findByCaseEntityIdAndCreatedAtBetween(Long caseId, LocalDateTime startDate, LocalDateTime endDate, Pageable pageable);
 
     // Find audit entries for a case by action type AND date range
     List<CaseAudit> findByCaseEntityIdAndActionTypeAndCreatedAtBetween(
             Long caseId, CaseAudit.ActionType actionType,
             LocalDateTime startDate, LocalDateTime endDate);
+
+    // Find audit entries for a case by action type AND date range with pagination
+    Page<CaseAudit> findByCaseEntityIdAndActionTypeAndCreatedAtBetween(
+            Long caseId, CaseAudit.ActionType actionType,
+            LocalDateTime startDate, LocalDateTime endDate, Pageable pageable);
 
     // Find globally recent audit entries for dashboard
     List<CaseAudit> findTop15ByOrderByCreatedAtDesc();
