@@ -1,4 +1,5 @@
 com/example/dcm/repository/DocumentRepository.class
+com/example/dcm/config/JacksonConfig.class
 com/example/dcm/service/ExportService$1.class
 com/example/dcm/service/CaseService.class
 com/example/dcm/model/CaseNote$NoteType.class

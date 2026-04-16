@@ -2,6 +2,9 @@ package com.example.dcm.model;
 
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -25,6 +28,7 @@ public class CaseAudit {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "case_id", nullable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Case caseEntity;
 
     @Column(name = "case_number", nullable = false)
@@ -55,6 +59,7 @@ public class CaseAudit {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "performed_by_id")
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private User performedBy;
 
     @Column(length = 2000)

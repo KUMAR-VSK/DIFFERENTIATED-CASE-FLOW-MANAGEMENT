@@ -146,6 +146,11 @@ public class UserService implements UserDetailsService {
         return userRepository.save(judge);
     }
 
+    // Get users by role
+    public java.util.List<User> getUsersByRole(User.Role role) {
+        return userRepository.findByRole(role);
+    }
+
     // Delete user
     public void deleteUser(Long id) {
         if (!userRepository.existsById(id)) {

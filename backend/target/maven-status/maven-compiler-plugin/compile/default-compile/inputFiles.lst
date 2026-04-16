@@ -32,6 +32,7 @@
 /Users/kumarvs/Downloads/S8 PROJECT/backend/src/main/java/com/example/dcm/controller/CaseController.java
 /Users/kumarvs/Downloads/S8 PROJECT/backend/src/main/java/com/example/dcm/service/CaseFlowAnalyticsService.java
 /Users/kumarvs/Downloads/S8 PROJECT/backend/src/main/java/com/example/dcm/repository/CaseRepository.java
+/Users/kumarvs/Downloads/S8 PROJECT/backend/src/main/java/com/example/dcm/config/JacksonConfig.java
 /Users/kumarvs/Downloads/S8 PROJECT/backend/src/main/java/com/example/dcm/controller/CaseAuditController.java
 /Users/kumarvs/Downloads/S8 PROJECT/backend/src/main/java/com/example/dcm/model/Case.java
 /Users/kumarvs/Downloads/S8 PROJECT/backend/src/main/java/com/example/dcm/service/ExportService.java

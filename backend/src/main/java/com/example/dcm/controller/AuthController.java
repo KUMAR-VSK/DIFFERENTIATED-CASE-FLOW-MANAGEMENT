@@ -223,6 +223,24 @@ public class AuthController {
         }
     }
 
+    // Get all advocates
+    @GetMapping("/advocates")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('CLERK')")
+    @Operation(summary = "Get all advocates", description = "Retrieve list of all users with ADVOCATE role for case assignment")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Successfully retrieved advocates"),
+        @ApiResponse(responseCode = "403", description = "Access denied"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    public ResponseEntity<List<User>> getAdvocates() {
+        try {
+            List<User> advocates = userService.getUsersByRole(User.Role.ADVOCATE);
+            return ResponseEntity.ok(advocates);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
     // Update user role (admin only)
     @PutMapping("/users/{id}/role")
     @PreAuthorize("hasRole('ADMIN')")
