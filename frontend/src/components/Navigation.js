@@ -11,6 +11,8 @@ const Navigation = () => {
   const handleLogout = () => {
     logout();
     navigate('/login');
+    // Force reload to clear any lingering state
+    window.location.reload();
   };
 
   const getRoleColor = (role) => {

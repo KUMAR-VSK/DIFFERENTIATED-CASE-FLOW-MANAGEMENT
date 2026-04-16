@@ -141,6 +141,8 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('token');
     localStorage.removeItem('refreshToken');
     localStorage.removeItem('user');
+    // Ensure axios does not send stale Authorization header after logout
+    delete axios.defaults.headers.common['Authorization'];
   };
 
   return (
