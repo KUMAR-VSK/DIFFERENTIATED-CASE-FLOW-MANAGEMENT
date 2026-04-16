@@ -136,13 +136,27 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem('token');
-    localStorage.removeItem('refreshToken');
-    localStorage.removeItem('user');
-    // Ensure axios does not send stale Authorization header after logout
-    delete axios.defaults.headers.common['Authorization'];
+  const logout = async () => {
+    try {
+      // Optional: Call backend logout endpoint if available
+      // This can be used for logging audit purposes
+      try {
+        await axios.post('/api/auth/logout');
+      } catch (error) {
+        // Backend logout endpoint might not exist, but that's okay for JWT
+        console.log('Backend logout not available, proceeding with client-side logout');
+      }
+    } catch (error) {
+      console.error('Error during logout:', error);
+    } finally {
+      // Always clear client-side state
+      setUser(null);
+      localStorage.removeItem('token');
+      localStorage.removeItem('refreshToken');
+      localStorage.removeItem('user');
+      // Ensure axios does not send stale Authorization header after logout
+      delete axios.defaults.headers.common['Authorization'];
+    }
   };
 
   return (

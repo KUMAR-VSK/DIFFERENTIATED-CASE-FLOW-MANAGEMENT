@@ -8,11 +8,18 @@ const Navigation = () => {
   const { darkMode, toggleDarkMode } = useTheme();
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
-    // Force reload to clear any lingering state
-    window.location.reload();
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate('/login');
+      // Force reload to clear any lingering state
+      window.location.reload();
+    } catch (error) {
+      console.error('Logout failed:', error);
+      // Still navigate to login even if logout fails
+      navigate('/login');
+      window.location.reload();
+    }
   };
 
   const getRoleColor = (role) => {

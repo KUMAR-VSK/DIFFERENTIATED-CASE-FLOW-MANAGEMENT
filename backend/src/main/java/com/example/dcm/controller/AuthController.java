@@ -198,6 +198,31 @@ public class AuthController {
         }
     }
 
+    // Logout endpoint
+    @PostMapping("/logout")
+    @Operation(summary = "User logout", description = "Logout user and clear session (for audit logging)")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Logout successful"),
+        @ApiResponse(responseCode = "401", description = "Not authenticated"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    public ResponseEntity<?> logout(Authentication authentication) {
+        try {
+            if (authentication != null) {
+                String username = authentication.getName();
+                // Log the logout event for audit purposes
+                System.out.println("User logged out: " + username + " at " + java.time.LocalDateTime.now());
+                // In a real application, you might want to:
+                // - Log the logout event to database
+                // - Invalidate refresh tokens if using them
+                // - Update user last activity timestamp
+            }
+            return ResponseEntity.ok(Map.of("message", "Logged out successfully"));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(Map.of("error", "Logout failed"));
+        }
+    }
+
     // Update user role (admin only)
     @PutMapping("/users/{id}/role")
     @PreAuthorize("hasRole('ADMIN')")
