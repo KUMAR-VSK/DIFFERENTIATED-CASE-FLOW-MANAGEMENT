@@ -1,70 +1,118 @@
-# Getting Started with Create React App
+# Differentiated Case Flow Management System (DCM) - Frontend Client
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## Overview
+This directory contains the frontend client application for the Differentiated Case Flow Management (DCM) System. It is a Single Page Application (SPA) designed to provide an interactive interface for judicial clerks, judges, advocates, and administrators to track cases, manage workflows, schedule hearings, and handle legal documents.
 
-## Available Scripts
+## Technology Stack
 
-In the project directory, you can run:
+*   **Framework**: React 19
+*   **Routing**: React Router DOM 6
+*   **State Management**: React Context API (incorporating AuthContext for user authentication and ThemeContext for display configuration)
+*   **Styling**: Tailwind CSS 3.x and PostCSS
+*   **Components & Icons**: Material UI (MUI) Icon libraries
+*   **Data Visualization**: Chart.js and React Chartjs 2
+*   **Calendar**: FullCalendar React
+*   **HTTP Client**: Axios
+*   **WebSocket Client**: SockJS-client and @stomp/stompjs
+*   **Build Tool**: React Scripts (Create React App underlying configuration)
 
-### `npm start`
+---
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+## Client Architecture & Directory Layout
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+The frontend codebase is organized into modular directories under the `src` root:
 
-### `npm test`
+```
+frontend/src/
+├── components/         # Reusable structural and UI layout components
+│   ├── Layout.js       # Main application shell incorporating theme wrappers
+│   ├── Navigation.js   # Dynamic role-based navigation sidebar
+│   └── ProtectedRoute.js # Route guard enforcing authentication and authorization
+├── context/            # Global React Contexts
+│   ├── AuthContext.js  # Manages JWT tokens, user profiles, and session storage
+│   └── ThemeContext.js # Controls light and dark mode state transitions
+├── pages/              # View components mapped to routing paths
+│   ├── Analytics.js    # Case flow visualization dashboard and bottleneck reports
+│   ├── CalendarView.js # Monthly and weekly hearing scheduling views
+│   ├── CaseDetail.js   # In-depth case record view including note editors and audits
+│   ├── CaseForm.js     # Form component for filing and registering new cases
+│   ├── CaseList.js     # Case lists with search filters and sorting options
+│   ├── Checklists.js   # Case templates and checklist step trackers
+│   ├── Dashboard.js    # Metric summary charts and live audit activity feed
+│   ├── Documents.js    # Document manager, version history, and approval panels
+│   ├── Login.js        # Authentication portal for registered users
+│   ├── Register.js     # Registration portal for new users
+│   └── UserManagement.js # User role and court jurisdiction table
+├── services/           # Network and communication layers
+│   ├── api.js          # Pre-configured Axios instance with JWT interceptors
+│   └── websocket.js    # WebSocket handlers for receiving live audit broadcasts
+├── App.js              # Primary route mapping configuration
+└── index.js            # Main React bootstrapper
+```
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+---
 
-### `npm run build`
+## Key Features
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### 1. Interactive Analytics Dashboard
+*   Summarizes system metrics (active files, scheduled cases, completed cases).
+*   Visualizes case distributions using Chart.js doughnut and line charts.
+*   Presents a live WebSocket feed showing recent system activities and modifications.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### 2. Case Search and Filtering
+*   Full-text search querying case numbers and titles.
+*   Filters cases based on court levels (District, High, Supreme), status values, and priority ranges.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+### 3. Integrated Scheduling Calendar
+*   Aggregates and displays scheduled hearings.
+*   Enables drag-and-drop hearing scheduling for judicial officers.
 
-### `npm run eject`
+### 4. Interactive Checklist Workflows
+*   Visual progress tracking indicators representing checklist item completions.
+*   Task status transitions (Pending, In Progress, Completed, Skipped, Overdue) with enforcement of mandatory check steps.
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+### 5. Advanced Document Manager
+*   Drag-and-drop file upload container supporting files up to 50MB.
+*   Displays version history, allowing users to trace document updates and restore previous drafts.
+*   Features a review panel for verifying, approving, or requesting revisions on sensitive evidence files.
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+---
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+## Configuration & Environment Setup
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+### Environment Variables
+Configure the endpoint URL for the backend API by creating a `.env` file in the frontend root directory:
+```properties
+REACT_APP_API_URL=http://localhost:8080/api
+REACT_APP_WS_URL=http://localhost:8080/ws
+```
 
-## Learn More
+### Installation
+Install the required packages using npm:
+```bash
+npm install
+```
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+### Running the Application (Development Mode)
+Start the React development server:
+```bash
+npm start
+```
+The client application will start at `http://localhost:3000`. The development server supports hot-reloading for code changes.
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+### Compilation (Production Build)
+To compile the frontend project for production:
+```bash
+npm run build
+```
+This script compiles the React application into static assets located inside the `build` directory. The production bundle is minified, optimized, and ready to be served by a web server such as Nginx or Apache.
 
-### Code Splitting
+---
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+## Verification & Testing
 
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+To execute frontend unit tests:
+```bash
+npm test
+```
+The test suite utilizes React Testing Library and Jest to verify component rendering, layout responsiveness, and Context provider state transitions.
